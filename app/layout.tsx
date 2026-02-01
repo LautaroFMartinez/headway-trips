@@ -1,6 +1,6 @@
 import type React from 'react';
 import type { Metadata, Viewport } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google';
+import { DM_Sans, Playfair_Display } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { ServiceWorkerRegister } from '@/components/service-worker-register';
 import { ScrollToTop } from '@/components/scroll-to-top';
@@ -8,8 +8,18 @@ import { WhatsAppButton } from '@/components/whatsapp-button';
 import { GoogleAnalytics } from '@/components/google-analytics';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-serif' });
+const dmSans = DM_Sans({ 
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-serif',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -76,8 +86,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#0d7377' },
-    { media: '(prefers-color-scheme: dark)', color: '#14919b' },
+    { media: '(prefers-color-scheme: light)', color: '#1a365d' },
+    { media: '(prefers-color-scheme: dark)', color: '#c9a962' },
   ],
   width: 'device-width',
   initialScale: 1,
@@ -105,7 +115,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
         <link rel="preconnect" href="https://vitals.vercel-insights.com" />
       </head>
-      <body className={`${inter.className} ${playfair.variable} font-sans antialiased`}>
+      <body className={`${dmSans.variable} ${playfair.variable} font-sans antialiased`}>
         {children}
         <ScrollToTop />
         <WhatsAppButton />

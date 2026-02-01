@@ -38,8 +38,8 @@ export async function generateMetadata({ params }: SegmentPageProps): Promise<Me
     title: segment.title,
     description: segment.metaDescription,
     keywords: segment.keywords,
-    ogImage: segment.heroImage,
-    path: `/segmento/${segment.slug}`,
+    image: segment.heroImage,
+    url: `/segmento/${segment.slug}`,
   });
 }
 
@@ -154,7 +154,23 @@ export default function SegmentPage({ params }: SegmentPageProps) {
                 <p className="text-muted-foreground">Explorá estos viajes ideales para {segment.title.toLowerCase()}</p>
               </div>
             </div>
-            <TripGrid trips={relatedTrips} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedTrips.map((trip) => (
+                <Link key={trip.id} href={`/viaje/${trip.id}`} className="group relative overflow-hidden rounded-lg border border-border bg-card hover:shadow-lg transition-all">
+                  <div className="relative h-48">
+                    <Image src={trip.image} alt={trip.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 33vw" />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">{trip.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-4">{trip.subtitle}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-primary font-bold">{trip.price}</span>
+                      <span className="text-sm text-muted-foreground">{trip.duration}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </section>
         )}
 

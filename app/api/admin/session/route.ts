@@ -12,7 +12,6 @@ export async function GET() {
     return NextResponse.json({
       authenticated: true,
       admin: session.admin,
-      expiresAt: session.expiresAt,
     });
   } catch {
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });

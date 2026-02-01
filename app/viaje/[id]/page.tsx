@@ -30,7 +30,7 @@ async function getTrip(id: string): Promise<Trip | null> {
           heroImage: data.hero_image || data.image || '/placeholder-trip.jpg',
           highlights: data.highlights || [],
           tags: data.tags || [],
-          pdfUrl: data.pdf_url || undefined,
+          pdfUrl: (data as { pdf_url?: string }).pdf_url || undefined,
         };
       }
     }

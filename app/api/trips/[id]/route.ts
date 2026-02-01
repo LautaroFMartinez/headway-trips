@@ -21,7 +21,7 @@ interface DatabaseTrip {
   includes: string[] | null;
   excludes: string[] | null;
   itinerary: unknown;
-  pdf_url: string | null;
+  pdf_url?: string | null;
 }
 
 function transformTrip(trip: DatabaseTrip) {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         const { data, error } = await supabase.from('trips').select('*').eq('id', id).single();
 
         if (!error && data) {
-          return NextResponse.json({ data: transformTrip(data as DatabaseTrip), source: 'supabase' });
+          return NextResponse.json({ data: transformTrip(data as unknown as DatabaseTrip), source: 'supabase' });
         }
       }
     }

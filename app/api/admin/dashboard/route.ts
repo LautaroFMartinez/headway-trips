@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
     const { data: quotesWithTrips } = await supabase.from('quote_requests').select('trip_id, trips(region)').not('trip_id', 'is', null);
 
     const regionCounts: Record<string, number> = {};
-    (quotesWithTrips || []).forEach((q: { trips?: { region?: string } }) => {
-      const region = q.trips?.region || 'Sin especificar';
+    (quotesWithTrips || []).forEach((q: { trip_id: string; trips: { region: string }[] }) => {
+      const region = q.trips?.[0]?.region || 'Sin especificar';
       regionCounts[region] = (regionCounts[region] || 0) + 1;
     });
 
