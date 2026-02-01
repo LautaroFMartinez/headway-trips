@@ -91,28 +91,15 @@ export function TripDetailClient({ trip }: TripDetailClientProps) {
 
                 {/* PDF Viewer */}
                 <div className="bg-card border border-border rounded-xl overflow-hidden mb-6">
-                  <iframe
-                    src={`${trip.pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
-                    className="w-full h-[500px] sm:h-[600px] md:h-[700px]"
-                    title={`Itinerario de ${trip.title}`}
-                  />
+                  <iframe src={`${trip.pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`} className="w-full h-[500px] sm:h-[600px] md:h-[700px]" title={`Itinerario de ${trip.title}`} />
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <a
-                    href={trip.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all hover:scale-105"
-                  >
+                  <a href={trip.pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all hover:scale-105">
                     <FileText className="w-4 h-4" />
                     Abrir en nueva pestaña
                   </a>
-                  <a
-                    href={trip.pdfUrl}
-                    download
-                    className="inline-flex items-center justify-center gap-2 border border-border text-foreground px-6 py-3 rounded-full font-medium hover:bg-card transition-colors"
-                  >
+                  <a href={trip.pdfUrl} download className="inline-flex items-center justify-center gap-2 border border-border text-foreground px-6 py-3 rounded-full font-medium hover:bg-card transition-colors">
                     <Download className="w-4 h-4" />
                     Descargar PDF
                   </a>

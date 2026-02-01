@@ -55,10 +55,7 @@ export function createBrowserClient() {
 /**
  * Autentica al admin usando Supabase Auth
  */
-export async function authenticateAdmin(
-  email: string,
-  password: string
-): Promise<{ success: boolean; admin?: AdminUser; error?: string }> {
+export async function authenticateAdmin(email: string, password: string): Promise<{ success: boolean; admin?: AdminUser; error?: string }> {
   const supabase = await createServerClient();
 
   const { data, error } = await supabase.auth.signInWithPassword({
