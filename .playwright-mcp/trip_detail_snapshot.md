@@ -1,0 +1,261 @@
+### New console messages
+- [WARNING] Image with src "http://localhost:3000/1.png" has either width or height modified, but not ...
+- [WARNING] Image with src "http://localhost:3000/2.png" has either width or height modified, but not ...
+- [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will b...
+- [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pagev...
+- [LOG] %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: ...
+
+### Page state
+- Page URL: http://localhost:3000/
+- Page Title: Headway Trips - Tu Agencia de Viajes de Confianza
+- Page Snapshot:
+```yaml
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - link "Headway Trips Logo Headway Trips" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img "Headway Trips Logo" [ref=e6]
+        - generic [ref=e7]: Headway Trips
+      - navigation "Navegación principal" [ref=e8]:
+        - link "Inicio" [ref=e9] [cursor=pointer]:
+          - /url: /
+          - text: Inicio
+        - link "Destinos" [ref=e10] [cursor=pointer]:
+          - /url: "#destinos"
+          - text: Destinos
+        - link "Comparador" [ref=e11] [cursor=pointer]:
+          - /url: /comparador
+          - text: Comparador
+        - link "Nosotros" [ref=e12] [cursor=pointer]:
+          - /url: "#nosotros"
+          - text: Nosotros
+        - link "Contacto" [ref=e13] [cursor=pointer]:
+          - /url: "#contacto"
+          - text: Contacto
+      - link "Explorar Viajes" [ref=e15] [cursor=pointer]:
+        - /url: "#destinos"
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - paragraph [ref=e20]: Tu próxima aventura comienza aquí
+        - heading "Descubrí destinos únicos con Headway Trips" [level=1] [ref=e21]
+        - paragraph [ref=e22]: Creamos experiencias de viaje inolvidables. Explorá nuestros destinos y encontrá el viaje perfecto para vos.
+        - generic [ref=e23]:
+          - link "Ver Destinos" [ref=e24] [cursor=pointer]:
+            - /url: "#destinos"
+          - link "Contactanos" [ref=e25] [cursor=pointer]:
+            - /url: "#contacto"
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - img "Destino montaña en Patagonia" [ref=e30]
+            - img "Destino playa tropical" [ref=e32]
+          - generic [ref=e33]:
+            - img "Ciudad histórica colonial" [ref=e35]
+            - img "Aventura en naturaleza" [ref=e37]
+        - generic [ref=e39]:
+          - img "Headway Trips Logo" [ref=e40]
+          - generic [ref=e41]:
+            - paragraph [ref=e42]: +500 viajeros
+            - paragraph [ref=e43]: nos eligieron este año
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - paragraph [ref=e47]: Nuestros Destinos
+        - heading "Elegí tu próxima aventura" [level=2] [ref=e48]
+        - paragraph [ref=e49]: Explorá nuestras opciones de viaje y descubrí los detalles de cada destino
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - img [ref=e52]
+          - textbox "Buscar destinos" [ref=e55]:
+            - /placeholder: Buscar destinos por nombre, región o actividad...
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - generic [ref=e58]: Región
+            - generic [ref=e59]:
+              - button "Todas" [ref=e60]
+              - button "Patagonia" [ref=e61]
+              - button "Litoral" [ref=e62]
+              - button "Cuyo" [ref=e63]
+              - button "Norte" [ref=e64]
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - generic [ref=e67]: Precio Máximo
+              - generic [ref=e68]: $370,000
+            - slider [active] [ref=e368]
+          - generic [ref=e72]:
+            - generic [ref=e73]:
+              - generic [ref=e74]: Duración Máxima
+              - generic [ref=e75]: 15 días
+            - slider [ref=e370]
+          - generic [ref=e79]:
+            - paragraph [ref=e80]: Mostrando 1 resultados
+            - button "Limpiar todos los filtros" [ref=e371]
+      - generic [ref=e373]:
+        - link "Mendoza 4 días" [ref=e374] [cursor=pointer]:
+          - /url: /viaje/mendoza
+          - generic [ref=e375]:
+            - img "Mendoza" [ref=e376]
+            - generic [ref=e377]: 4 días
+        - button "Agregar a favoritos" [ref=e378]:
+          - img [ref=e379]
+        - link "Región de Cuyo Mendoza vino montaña gastronomía Desde $320.000 Ver detalles" [ref=e381] [cursor=pointer]:
+          - /url: /viaje/mendoza
+          - generic [ref=e382]:
+            - paragraph [ref=e383]: Región de Cuyo
+            - heading "Mendoza" [level=3] [ref=e384]
+            - generic [ref=e385]:
+              - generic [ref=e386]: vino
+              - generic [ref=e387]: montaña
+              - generic [ref=e388]: gastronomía
+            - generic [ref=e389]:
+              - generic [ref=e390]: Desde $320.000
+              - generic [ref=e391]:
+                - text: Ver detalles
+                - img [ref=e392]
+    - generic [ref=e216]:
+      - generic [ref=e217]:
+        - paragraph [ref=e218]: Por qué elegirnos
+        - heading "Tu viaje soñado está a un click de distancia" [level=2] [ref=e219]
+        - paragraph [ref=e220]: Con más de 10 años de experiencia en el mercado turístico, en Headway Trips nos especializamos en crear experiencias de viaje memorables que superan expectativas.
+        - generic [ref=e221]:
+          - generic [ref=e222]:
+            - img [ref=e224]
+            - generic [ref=e226]:
+              - heading "Viajes Seguros" [level=3] [ref=e227]
+              - paragraph [ref=e228]: Garantizamos tu seguridad con seguros de viaje completos y asistencia 24/7 en todos nuestros destinos.
+          - generic [ref=e229]:
+            - img [ref=e231]
+            - generic [ref=e233]:
+              - heading "Experiencias Únicas" [level=3] [ref=e234]
+              - paragraph [ref=e235]: Diseñamos cada viaje con pasión, incluyendo actividades exclusivas que no encontrarás en otro lado.
+          - generic [ref=e236]:
+            - img [ref=e238]
+            - generic [ref=e241]:
+              - heading "Destinos Seleccionados" [level=3] [ref=e242]
+              - paragraph [ref=e243]: Elegimos cuidadosamente cada destino para ofrecerte los mejores paisajes y experiencias de Argentina.
+          - generic [ref=e244]:
+            - img [ref=e246]
+            - generic [ref=e248]:
+              - heading "Atención Personalizada" [level=3] [ref=e249]
+              - paragraph [ref=e250]: Nuestro equipo te acompaña antes, durante y después del viaje para que disfrutes sin preocupaciones.
+      - generic [ref=e251]:
+        - generic [ref=e252]:
+          - img "Viajeros felices en aventura" [ref=e254]
+          - generic [ref=e255]:
+            - img "Paisaje argentino al atardecer" [ref=e257]
+            - img "Equipo profesional" [ref=e259]
+        - generic [ref=e260]:
+          - generic [ref=e261]:
+            - paragraph [ref=e262]: 500+
+            - paragraph [ref=e263]: Viajeros
+          - generic [ref=e264]:
+            - paragraph [ref=e265]: 10+
+            - paragraph [ref=e266]: Años
+          - generic [ref=e267]:
+            - paragraph [ref=e268]: 50+
+            - paragraph [ref=e269]: Destinos
+    - generic [ref=e271]:
+      - generic [ref=e272]:
+        - heading "Preguntas Frecuentes" [level=2] [ref=e273]
+        - paragraph [ref=e274]: Resolvemos tus dudas para que viajes tranquilo
+      - generic [ref=e275]:
+        - heading "¿Cómo reservo mi viaje?" [level=3] [ref=e277]:
+          - button "¿Cómo reservo mi viaje?" [ref=e278]:
+            - text: ¿Cómo reservo mi viaje?
+            - img
+        - heading "¿Cuáles son las formas de pago?" [level=3] [ref=e280]:
+          - button "¿Cuáles son las formas de pago?" [ref=e281]:
+            - text: ¿Cuáles son las formas de pago?
+            - img
+        - heading "¿Incluyen seguro de viaje?" [level=3] [ref=e283]:
+          - button "¿Incluyen seguro de viaje?" [ref=e284]:
+            - text: ¿Incluyen seguro de viaje?
+            - img
+        - heading "¿Qué pasa si necesito cancelar?" [level=3] [ref=e286]:
+          - button "¿Qué pasa si necesito cancelar?" [ref=e287]:
+            - text: ¿Qué pasa si necesito cancelar?
+            - img
+        - heading "¿Organizan viajes a medida?" [level=3] [ref=e289]:
+          - button "¿Organizan viajes a medida?" [ref=e290]:
+            - text: ¿Organizan viajes a medida?
+            - img
+    - generic [ref=e292]:
+      - generic [ref=e293]:
+        - generic [ref=e294]:
+          - generic [ref=e295]:
+            - img "Headway Trips Logo" [ref=e296]
+            - generic [ref=e297]: Headway Trips
+          - paragraph [ref=e298]: Tu agencia de viajes de confianza. Creamos experiencias únicas para que disfrutes cada destino al máximo.
+          - generic [ref=e299]:
+            - link "Instagram de Headway Trips" [ref=e300] [cursor=pointer]:
+              - /url: https://instagram.com/headwaytrips
+              - img [ref=e301]
+            - link "Facebook de Headway Trips" [ref=e304] [cursor=pointer]:
+              - /url: https://facebook.com/headwaytrips
+              - img [ref=e305]
+        - generic [ref=e307]:
+          - heading "Navegación" [level=4] [ref=e308]
+          - list [ref=e309]:
+            - listitem [ref=e310]:
+              - link "Inicio" [ref=e311] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e312]:
+              - link "Destinos" [ref=e313] [cursor=pointer]:
+                - /url: "#destinos"
+            - listitem [ref=e314]:
+              - link "Nosotros" [ref=e315] [cursor=pointer]:
+                - /url: "#nosotros"
+            - listitem [ref=e316]:
+              - link "Contacto" [ref=e317] [cursor=pointer]:
+                - /url: "#contacto"
+            - listitem [ref=e318]:
+              - link "Blog de Viajes" [ref=e319] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e320]:
+              - link "Mapa del sitio" [ref=e321] [cursor=pointer]:
+                - /url: /sitemap.xml
+            - listitem [ref=e322]:
+              - link "Políticas de Privacidad" [ref=e323] [cursor=pointer]:
+                - /url: /politicas
+        - generic [ref=e324]:
+          - heading "Destinos" [level=4] [ref=e325]
+          - list [ref=e326]:
+            - listitem [ref=e327]:
+              - link "Bariloche" [ref=e328] [cursor=pointer]:
+                - /url: /viaje/bariloche
+            - listitem [ref=e329]:
+              - link "Cataratas del Iguazú" [ref=e330] [cursor=pointer]:
+                - /url: /viaje/cataratas
+            - listitem [ref=e331]:
+              - link "Mendoza" [ref=e332] [cursor=pointer]:
+                - /url: /viaje/mendoza
+            - listitem [ref=e333]:
+              - link "El Calafate" [ref=e334] [cursor=pointer]:
+                - /url: /viaje/calafate
+        - generic [ref=e335]:
+          - heading "Contacto" [level=4] [ref=e336]
+          - list [ref=e337]:
+            - listitem [ref=e338]:
+              - link "info@headwaytrips.com" [ref=e339] [cursor=pointer]:
+                - /url: mailto:info@headwaytrips.com
+                - img [ref=e340]
+                - text: info@headwaytrips.com
+            - listitem [ref=e343]:
+              - link "+54 11 1234-5678" [ref=e344] [cursor=pointer]:
+                - /url: tel:+5411123456789
+                - img [ref=e345]
+                - text: +54 11 1234-5678
+            - listitem [ref=e347]:
+              - img [ref=e348]
+              - generic [ref=e351]: Buenos Aires, Argentina
+      - generic [ref=e352]:
+        - paragraph [ref=e353]: © 2026 Headway Trips. Todos los derechos reservados.
+        - generic [ref=e354]:
+          - link "Privacidad" [ref=e355] [cursor=pointer]:
+            - /url: /privacidad
+          - link "Términos" [ref=e356] [cursor=pointer]:
+            - /url: /terminos
+  - button "Open Next.js Dev Tools" [ref=e362] [cursor=pointer]:
+    - img [ref=e363]
+  - alert [ref=e366]
+```

@@ -1,0 +1,128 @@
+### New console messages
+- [WARNING] Image with src "http://localhost:3000/1.png" has either width or height modified, but not ...
+
+### Page state
+- Page URL: http://localhost:3000/viaje/bariloche
+- Page Title: Bariloche - Patagonia Argentina | Headway Trips
+- Page Snapshot:
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e48]:
+    - generic [ref=e50]:
+      - link "Headway Trips Logo Headway Trips" [ref=e51] [cursor=pointer]:
+        - /url: /
+        - img "Headway Trips Logo" [ref=e52]
+        - generic [ref=e53]: Headway Trips
+      - link "Ver todos los destinos" [ref=e54] [cursor=pointer]:
+        - /url: /#destinos
+        - img [ref=e55]
+        - text: Ver todos los destinos
+    - generic [ref=e57]:
+      - img "Bariloche" [ref=e58]
+      - generic [ref=e61]:
+        - paragraph [ref=e62]: Patagonia Argentina
+        - heading "Bariloche" [level=1] [ref=e63]
+    - generic [ref=e64]:
+      - navigation "Breadcrumb" [ref=e66]:
+        - link "Inicio" [ref=e67] [cursor=pointer]:
+          - /url: /
+          - img [ref=e68]
+          - generic [ref=e71]: Inicio
+        - generic [ref=e72]:
+          - img [ref=e73]
+          - link "Destinos" [ref=e75] [cursor=pointer]:
+            - /url: /#destinos
+        - generic [ref=e76]:
+          - img [ref=e77]
+          - generic [ref=e79]: Bariloche
+      - generic [ref=e80]:
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - heading "Sobre este viaje" [level=2] [ref=e83]
+            - paragraph [ref=e84]: Descubrí la magia de la Patagonia argentina en San Carlos de Bariloche. Lagos cristalinos, montañas nevadas, bosques milenarios y la mejor gastronomía regional te esperan.
+          - generic [ref=e85]:
+            - heading "Destacados del viaje" [level=3] [ref=e86]
+            - list [ref=e87]:
+              - listitem [ref=e88]: Circuito Chico
+              - listitem [ref=e90]: Cerro Catedral
+              - listitem [ref=e92]: Isla Victoria
+              - listitem [ref=e94]: Chocolaterías artesanales
+          - generic [ref=e97]:
+            - heading "Galería de fotos" [level=3] [ref=e98]
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - img "Bariloche - Foto 1" [ref=e101]
+                - img [ref=e103]
+              - generic [ref=e108]:
+                - img "Bariloche - Foto 2" [ref=e109]
+                - img [ref=e111]
+          - generic [ref=e116]:
+            - generic [ref=e117]: montaña
+            - generic [ref=e118]: naturaleza
+            - generic [ref=e119]: gastronomía
+            - generic [ref=e120]: lagos
+          - generic [ref=e121]:
+            - heading "Itinerario Completo" [level=3] [ref=e122]
+            - paragraph [ref=e123]: "Descargá el PDF con toda la información detallada del viaje: itinerario día por día, servicios incluidos, condiciones y más."
+            - generic [ref=e125]:
+              - img [ref=e127]
+              - paragraph [ref=e130]: Itinerario_Bariloche.pdf
+              - paragraph [ref=e131]: Hacé click para descargar el documento
+            - link "Descargar PDF" [ref=e132] [cursor=pointer]:
+              - /url: /pdfs/bariloche.pdf
+              - img [ref=e133]
+              - text: Descargar PDF
+        - generic [ref=e137]:
+          - generic [ref=e138]:
+            - paragraph [ref=e139]: Desde $450.000
+            - paragraph [ref=e140]: por persona
+            - generic [ref=e141]:
+              - generic [ref=e142]:
+                - img [ref=e143]
+                - generic [ref=e146]: 7 días
+              - generic [ref=e147]:
+                - img [ref=e148]
+                - generic [ref=e151]: Patagonia Argentina
+              - generic [ref=e152]:
+                - img [ref=e153]
+                - generic [ref=e155]: Salidas programadas
+            - link "Consultar por WhatsApp" [ref=e156] [cursor=pointer]:
+              - /url: https://wa.me/5411123456789?text=Hola! Me interesa el viaje a Bariloche
+              - img [ref=e157]
+              - text: Consultar por WhatsApp
+            - link "Volver a destinos" [ref=e159] [cursor=pointer]:
+              - /url: /#destinos
+              - img [ref=e160]
+              - text: Volver a destinos
+          - generic [ref=e162]:
+            - heading "Compartir este viaje" [level=3] [ref=e163]
+            - generic [ref=e164]:
+              - link "Compartir en Facebook" [ref=e165] [cursor=pointer]:
+                - /url: https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fheadwaytrips.com%2Fviaje%2Fbariloche
+                - button "Compartir en Facebook" [ref=e166]:
+                  - img
+                  - generic [ref=e167]: Compartir en Facebook
+              - link "Compartir en Twitter" [ref=e168] [cursor=pointer]:
+                - /url: https://twitter.com/intent/tweet?text=Bariloche%20-%20Headway%20Trips&url=https%3A%2F%2Fheadwaytrips.com%2Fviaje%2Fbariloche
+                - button "Compartir en Twitter" [ref=e169]:
+                  - img
+                  - generic [ref=e170]: Compartir en Twitter
+              - link "Compartir en LinkedIn" [ref=e171] [cursor=pointer]:
+                - /url: https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fheadwaytrips.com%2Fviaje%2Fbariloche&title=Bariloche%20-%20Headway%20Trips
+                - button "Compartir en LinkedIn" [ref=e172]:
+                  - img
+                  - generic [ref=e173]: Compartir en LinkedIn
+              - link "Compartir en Email" [ref=e174] [cursor=pointer]:
+                - /url: mailto:?subject=Bariloche%20-%20Headway%20Trips&body=https%3A%2F%2Fheadwaytrips.com%2Fviaje%2Fbariloche
+                - button "Compartir en Email" [ref=e175]:
+                  - img
+                  - generic [ref=e176]: Compartir en Email
+              - button "Copiar enlace" [ref=e177]:
+                - img
+                - generic [ref=e178]: Copiar enlace
+          - paragraph [ref=e180]: ¿Tenés dudas sobre este viaje? Contactanos por WhatsApp o email y te asesoramos sin compromiso.
+    - paragraph [ref=e183]: © 2026 Headway Trips. Todos los derechos reservados.
+  - button "Open Next.js Dev Tools" [ref=e43] [cursor=pointer]:
+    - img [ref=e44]
+  - alert [ref=e47]
+```
