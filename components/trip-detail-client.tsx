@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { ArrowLeft, Download, Calendar, MapPin, Clock, MessageCircle, FileText } from 'lucide-react';
 import type { Trip } from '@/lib/trips-data';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -17,144 +16,212 @@ export function TripDetailClient({ trip }: TripDetailClientProps) {
   return (
     <main className="min-h-screen bg-background">
       {/* Header */}
-      <motion.header initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 sm:gap-3">
-            <Image src="/1.png" alt="Headway Trips Logo" width={44} height={44} className="object-contain" priority />
-            <span className="font-serif text-lg sm:text-xl font-semibold text-foreground">Headway Trips</span>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <Image 
+              src="/icono.png" 
+              alt="Headway Trips Logo" 
+              width={36} 
+              height={36} 
+              className="object-contain" 
+              priority 
+            />
+            <span className="text-xl font-semibold text-foreground">Headway Trips</span>
           </Link>
-          <Link href="/#destinos" className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link 
+            href="/#destinos" 
+            className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ArrowLeft className="w-4 h-4" />
             Ver todos los destinos
           </Link>
         </div>
-      </motion.header>
+      </header>
 
       {/* Hero Image */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }} className="relative h-[45vh] sm:h-[50vh] md:h-[60vh] mt-[72px]">
-        <Image src={trip.heroImage || '/placeholder.svg'} alt={trip.title} fill priority className="object-cover" sizes="100vw" />
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-12">
-          <div className="max-w-7xl mx-auto">
-            <p className="text-primary-foreground/90 text-sm uppercase tracking-widest font-medium mb-2">{trip.subtitle}</p>
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-background">{trip.title}</h1>
+      <div className="relative h-[50vh] md:h-[60vh] mt-[72px]">
+        <Image 
+          src={trip.heroImage || '/placeholder.svg'} 
+          alt={trip.title} 
+          fill 
+          priority 
+          className="object-cover" 
+          sizes="100vw" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+          <div className="container mx-auto">
+            <span className="inline-block text-white/80 text-sm uppercase tracking-widest mb-2">
+              {trip.subtitle}
+            </span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white">
+              {trip.title}
+            </h1>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <div className="container mx-auto px-6 py-8 md:py-12">
         {/* Breadcrumbs */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="mb-8">
-          <Breadcrumbs items={[{ label: 'Destinos', href: '/#destinos' }, { label: trip.title }]} />
-        </motion.div>
+        <div className="mb-8">
+          <Breadcrumbs 
+            items={[
+              { label: 'Destinos', href: '/#destinos' }, 
+              { label: trip.title }
+            ]} 
+          />
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Main Content */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8">
             <div>
-              <h2 className="font-serif text-2xl font-semibold text-foreground mb-4">Sobre este viaje</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">Sobre este viaje</h2>
               <p className="text-muted-foreground leading-relaxed text-lg">{trip.description}</p>
             </div>
 
             <div>
-              <h3 className="font-serif text-xl font-semibold text-foreground mb-4">Destacados del viaje</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-4">Destacados del viaje</h3>
               <ul className="grid sm:grid-cols-2 gap-3">
                 {trip.highlights.map((highlight, index) => (
-                  <motion.li key={index} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 + index * 0.1 }} className="flex items-center gap-3 text-foreground">
-                    <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                  <li 
+                    key={index} 
+                    className="flex items-center gap-3 text-foreground"
+                  >
+                    <span className="w-2 h-2 bg-accent rounded-full shrink-0" />
                     {highlight}
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
             </div>
 
             {/* Image Gallery */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}>
-              <ImageGallery images={[trip.heroImage, trip.image].filter(Boolean)} title={trip.title} />
-            </motion.div>
+            <ImageGallery 
+              images={[trip.heroImage, trip.image].filter(Boolean)} 
+              title={trip.title} 
+            />
 
             {/* Tags */}
             <div className="flex flex-wrap gap-2">
               {trip.tags.map((tag) => (
-                <span key={tag} className="text-sm bg-secondary text-muted-foreground px-3 py-1.5 rounded-full capitalize">
+                <span 
+                  key={tag} 
+                  className="text-sm bg-secondary text-muted-foreground px-3 py-1.5 rounded-lg capitalize"
+                >
                   {tag}
                 </span>
               ))}
             </div>
 
-            {/* PDF Section - Solo mostrar si hay PDF */}
+            {/* PDF Section */}
             {trip.pdfUrl && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="bg-secondary rounded-2xl p-5 sm:p-6 md:p-8">
-                <h3 className="font-serif text-xl font-semibold text-foreground mb-4">Itinerario Completo</h3>
-                <p className="text-muted-foreground mb-6">Consultá el itinerario detallado del viaje: día por día, servicios incluidos, condiciones y más.</p>
+              <div className="bg-secondary/50 rounded-2xl p-6 md:p-8 border border-border">
+                <h3 className="text-xl font-semibold text-foreground mb-4">Itinerario Completo</h3>
+                <p className="text-muted-foreground mb-6">
+                  Consulta el itinerario detallado del viaje: dia por dia, servicios incluidos y mas.
+                </p>
 
-                {/* PDF Viewer */}
                 <div className="bg-card border border-border rounded-xl overflow-hidden mb-6">
-                  <iframe src={`${trip.pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`} className="w-full h-[500px] sm:h-[600px] md:h-[700px]" title={`Itinerario de ${trip.title}`} />
+                  <iframe 
+                    src={`${trip.pdfUrl}#toolbar=1&navpanes=0`} 
+                    className="w-full h-[500px] md:h-[600px]" 
+                    title={`Itinerario de ${trip.title}`} 
+                  />
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <a href={trip.pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all hover:scale-105">
+                  <a 
+                    href={trip.pdfUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                  >
                     <FileText className="w-4 h-4" />
                     Abrir en nueva pestaña
                   </a>
-                  <a href={trip.pdfUrl} download className="inline-flex items-center justify-center gap-2 border border-border text-foreground px-6 py-3 rounded-full font-medium hover:bg-card transition-colors">
+                  <a 
+                    href={trip.pdfUrl} 
+                    download 
+                    className="inline-flex items-center justify-center gap-2 border border-border text-foreground px-6 py-3 rounded-lg font-medium hover:bg-secondary transition-colors"
+                  >
                     <Download className="w-4 h-4" />
                     Descargar PDF
                   </a>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Sidebar */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 }} className="lg:col-span-1">
+          <div className="lg:col-span-1">
             <div className="sticky top-28 space-y-6">
-              <div className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+              <div className="bg-card border border-border rounded-2xl p-6">
                 <p className="text-3xl font-bold text-foreground mb-1">{trip.price}</p>
                 <p className="text-muted-foreground text-sm mb-6">por persona</p>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex items-center gap-3 text-foreground">
-                    <Clock className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span>{trip.duration}</span>
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Clock className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="text-sm">{trip.duration}</span>
                   </div>
                   <div className="flex items-center gap-3 text-foreground">
-                    <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span>{trip.subtitle}</span>
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <MapPin className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="text-sm">{trip.subtitle}</span>
                   </div>
                   <div className="flex items-center gap-3 text-foreground">
-                    <Calendar className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span>Salidas programadas</span>
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="text-sm">Salidas programadas</span>
                   </div>
                 </div>
 
-                <a href={`https://wa.me/5411123456789?text=Hola! Me interesa el viaje a ${trip.title}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground py-3.5 rounded-full font-medium hover:bg-primary/90 transition-all hover:scale-105 mb-3">
+                <a 
+                  href={`https://wa.me/5491112345678?text=Hola! Me interesa el viaje a ${trip.title}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors mb-3"
+                >
                   <MessageCircle className="w-4 h-4" />
                   Consultar por WhatsApp
                 </a>
 
-                <Link href="/#destinos" className="flex items-center justify-center gap-2 w-full border border-border text-foreground py-3.5 rounded-full font-medium hover:bg-secondary transition-colors">
+                <Link 
+                  href="/#destinos" 
+                  className="flex items-center justify-center gap-2 w-full border border-border text-foreground py-3 rounded-lg font-medium hover:bg-secondary transition-colors"
+                >
                   <ArrowLeft className="w-4 h-4" />
                   Volver a destinos
                 </Link>
               </div>
 
-              <ShareButtons title={`${trip.title} - Headway Trips`} url={`https://headwaytrips.com/viaje/${trip.id}`} />
+              <ShareButtons 
+                title={`${trip.title} - Headway Trips`} 
+                url={`https://headwaytrips.com/viaje/${trip.id}`} 
+              />
 
-              <div className="bg-secondary/50 rounded-2xl p-5 sm:p-6">
-                <p className="text-sm text-muted-foreground leading-relaxed">¿Tenés dudas sobre este viaje? Contactanos por WhatsApp o email y te asesoramos sin compromiso.</p>
+              <div className="bg-secondary/50 rounded-2xl p-5 border border-border">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Tenes dudas sobre este viaje? Contactanos por WhatsApp o email y te asesoramos sin compromiso.
+                </p>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="bg-foreground text-background py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <p className="text-background/50 text-sm">© 2026 Headway Trips. Todos los derechos reservados.</p>
+      <footer className="bg-primary text-primary-foreground py-8 mt-16">
+        <div className="container mx-auto px-6 text-center">
+          <p className="text-primary-foreground/70 text-sm">
+            2025 Headway Trips. Todos los derechos reservados.
+          </p>
         </div>
       </footer>
     </main>
