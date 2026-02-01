@@ -1,17 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase';
-import { trips } from '@/lib/trips-data';
+import { trips as staticTrips } from '@/lib/trips-data';
+
+interface DatabaseTrip {
+  id: string;
+  title: string;
+  subtitle: string;
+  region: string;
+  description: string;
+  duration: string;
+  duration_days: number;
+  price: string;
+  price_value: number;
+  image: string;
+  hero_image: string | null;
+  highlights: string[] | null;
+  tags: string[] | null;
+  available: boolean;
+  featured: boolean;
+  includes: string[] | null;
+  excludes: string[] | null;
+  itinerary: string | null;
+}
+
+interface FormattedTrip {
+  id: string;
+  title: string;
+  subtitle: string;
+  region: string;
+  description: string;
+  duration: string;
+  durationDays: number;
+  price: string;
+  priceValue: number;
+  image: string;
+  heroImage: string;
+  highlights: string[];
+  tags: string[];
+  available: boolean;
+  featured: boolean;
+  includes: string[];
+  excludes: string[];
+  itinerary: string;
+}
+
+function transformTrip(trip: DatabaseTrip): FormattedTrip {
+  return {
+    id: trip.id,
+    title: trip.title,
+    subtitle: trip.subtitle || '',
+    region: trip.region || 'sudamerica',
+    description: trip.description || '',
+    duration: trip.duration || `${trip.duration_days} días`,
+    durationDays: trip.duration_days || 1,
+    price: trip.price || `Desde USD $${trip.price_value}`,
+    priceValue: trip.price_value || 0,
+    image: trip.image || '/placeholder-trip.jpg',
+    heroImage: trip.hero_image || trip.image || '/placeholder-trip.jpg',
+    highlights: trip.highlights || [],
+    tags: trip.tags || [],
+    available: trip.available ?? true,
+    featured: trip.featured ?? false,
+    includes: trip.includes || [],
+    excludes: trip.excludes || [],
+    itinerary: trip.itinerary || '',
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
     // Si Supabase no está configurado, usar datos estáticos
     if (!isSupabaseConfigured()) {
-      return NextResponse.json({ data: trips, count: trips.length, source: 'static' });
+      return NextResponse.json({ data: staticTrips, count: staticTrips.length, source: 'static' });
     }
 
     const supabase = createServerClient();
     if (!supabase) {
-      return NextResponse.json({ data: trips, count: trips.length, source: 'static' });
+      return NextResponse.json({ data: staticTrips, count: staticTrips.length, source: 'static' });
     }
 
     const { searchParams } = new URL(request.url);
@@ -71,11 +136,16 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      return NextResponse.json({ error: 'Error fetching trips', details: error.message }, { status: 500 });
+      console.error('Supabase error:', error);
+      return NextResponse.json({ data: staticTrips, count: staticTrips.length, source: 'static' });
     }
 
-    return NextResponse.json({ data, count: data?.length || 0 });
+    // Transformar datos al formato esperado por el frontend
+    const transformedData = (data as DatabaseTrip[]).map(transformTrip);
+
+    return NextResponse.json({ data: transformedData, count: transformedData.length, source: 'supabase' });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('API error:', error);
+    return NextResponse.json({ data: staticTrips, count: staticTrips.length, source: 'static' });
   }
 }

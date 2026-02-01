@@ -12,6 +12,7 @@ export interface Trip {
   heroImage: string;
   highlights: string[];
   tags: string[];
+  pdfUrl?: string;
 }
 
 export const trips: Trip[] = [

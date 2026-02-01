@@ -1,354 +1,533 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
+  }
   public: {
     Tables: {
-      trips: {
+      admin_sessions: {
         Row: {
-          id: string;
-          title: string;
-          subtitle: string;
-          region: string;
-          description: string;
-          duration: string;
-          duration_days: number;
-          price: string;
-          price_value: number;
-          image: string;
-          hero_image: string;
-          highlights: string[];
-          tags: string[];
-          available: boolean;
-          includes: string[];
-          excludes: string[];
-          start_dates: string[];
-          max_capacity: number;
-          current_bookings: number;
-          difficulty_level: 'easy' | 'moderate' | 'challenging' | 'difficult';
-          min_age: number;
-          accommodation_type: string;
-          cancellation_policy: string;
-          created_at: string;
-          updated_at: string;
-        };
+          admin_id: string | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          token: string
+        }
         Insert: {
-          id: string;
-          title: string;
-          subtitle: string;
-          region: string;
-          description: string;
-          duration: string;
-          duration_days: number;
-          price: string;
-          price_value: number;
-          image: string;
-          hero_image: string;
-          highlights?: string[];
-          tags?: string[];
-          available?: boolean;
-          includes?: string[];
-          excludes?: string[];
-          start_dates?: string[];
-          max_capacity?: number;
-          current_bookings?: number;
-          difficulty_level?: 'easy' | 'moderate' | 'challenging' | 'difficult';
-          min_age?: number;
-          accommodation_type?: string;
-          cancellation_policy?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
+          admin_id?: string | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          token: string
+        }
         Update: {
-          id?: string;
-          title?: string;
-          subtitle?: string;
-          region?: string;
-          description?: string;
-          duration?: string;
-          duration_days?: number;
-          price?: string;
-          price_value?: number;
-          image?: string;
-          hero_image?: string;
-          highlights?: string[];
-          tags?: string[];
-          available?: boolean;
-          includes?: string[];
-          excludes?: string[];
-          start_dates?: string[];
-          max_capacity?: number;
-          current_bookings?: number;
-          difficulty_level?: 'easy' | 'moderate' | 'challenging' | 'difficult';
-          min_age?: number;
-          accommodation_type?: string;
-          cancellation_policy?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      quote_requests: {
+          admin_id?: string | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_sessions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_users: {
         Row: {
-          id: string;
-          trip_id: string;
-          customer_name: string;
-          customer_email: string;
-          customer_phone: string | null;
-          customer_country: string | null;
-          travel_date: string | null;
-          adults: number;
-          children: number;
-          message: string | null;
-          status: 'pending' | 'contacted' | 'quoted' | 'confirmed' | 'cancelled';
-          assigned_agent: string | null;
-          internal_notes: string | null;
-          quoted_price: number | null;
-          utm_source: string | null;
-          utm_medium: string | null;
-          utm_campaign: string | null;
-          created_at: string;
-          updated_at: string;
-        };
+          created_at: string | null
+          email: string
+          id: string
+          last_login: string | null
+          name: string
+          password_hash: string
+          role: string | null
+          updated_at: string | null
+        }
         Insert: {
-          id?: string;
-          trip_id: string;
-          customer_name: string;
-          customer_email: string;
-          customer_phone?: string | null;
-          customer_country?: string | null;
-          travel_date?: string | null;
-          adults?: number;
-          children?: number;
-          message?: string | null;
-          status?: 'pending' | 'contacted' | 'quoted' | 'confirmed' | 'cancelled';
-          assigned_agent?: string | null;
-          internal_notes?: string | null;
-          quoted_price?: number | null;
-          utm_source?: string | null;
-          utm_medium?: string | null;
-          utm_campaign?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
+          created_at?: string | null
+          email: string
+          id?: string
+          last_login?: string | null
+          name: string
+          password_hash: string
+          role?: string | null
+          updated_at?: string | null
+        }
         Update: {
-          id?: string;
-          trip_id?: string;
-          customer_name?: string;
-          customer_email?: string;
-          customer_phone?: string | null;
-          customer_country?: string | null;
-          travel_date?: string | null;
-          adults?: number;
-          children?: number;
-          message?: string | null;
-          status?: 'pending' | 'contacted' | 'quoted' | 'confirmed' | 'cancelled';
-          assigned_agent?: string | null;
-          internal_notes?: string | null;
-          quoted_price?: number | null;
-          utm_source?: string | null;
-          utm_medium?: string | null;
-          utm_campaign?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      bookings: {
-        Row: {
-          id: string;
-          quote_request_id: string | null;
-          trip_id: string;
-          travel_date: string;
-          customer_name: string;
-          customer_email: string;
-          customer_phone: string;
-          customer_document_type: string | null;
-          customer_document_number: string | null;
-          customer_country: string | null;
-          adults: number;
-          children: number;
-          subtotal: number;
-          discount_code: string | null;
-          discount_amount: number;
-          total_price: number;
-          currency: string;
-          status: 'pending' | 'confirmed' | 'paid' | 'completed' | 'cancelled' | 'refunded';
-          payment_status: 'pending' | 'partial' | 'paid' | 'refunded';
-          special_requests: string | null;
-          internal_notes: string | null;
-          created_at: string;
-          updated_at: string;
-          confirmed_at: string | null;
-          cancelled_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          quote_request_id?: string | null;
-          trip_id: string;
-          travel_date: string;
-          customer_name: string;
-          customer_email: string;
-          customer_phone: string;
-          customer_document_type?: string | null;
-          customer_document_number?: string | null;
-          customer_country?: string | null;
-          adults?: number;
-          children?: number;
-          subtotal: number;
-          discount_code?: string | null;
-          discount_amount?: number;
-          total_price: number;
-          currency?: string;
-          status?: 'pending' | 'confirmed' | 'paid' | 'completed' | 'cancelled' | 'refunded';
-          payment_status?: 'pending' | 'partial' | 'paid' | 'refunded';
-          special_requests?: string | null;
-          internal_notes?: string | null;
-          created_at?: string;
-          updated_at?: string;
-          confirmed_at?: string | null;
-          cancelled_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          quote_request_id?: string | null;
-          trip_id?: string;
-          travel_date?: string;
-          customer_name?: string;
-          customer_email?: string;
-          customer_phone?: string;
-          customer_document_type?: string | null;
-          customer_document_number?: string | null;
-          customer_country?: string | null;
-          adults?: number;
-          children?: number;
-          subtotal?: number;
-          discount_code?: string | null;
-          discount_amount?: number;
-          total_price?: number;
-          currency?: string;
-          status?: 'pending' | 'confirmed' | 'paid' | 'completed' | 'cancelled' | 'refunded';
-          payment_status?: 'pending' | 'partial' | 'paid' | 'refunded';
-          special_requests?: string | null;
-          internal_notes?: string | null;
-          created_at?: string;
-          updated_at?: string;
-          confirmed_at?: string | null;
-          cancelled_at?: string | null;
-        };
-      };
+          created_at?: string | null
+          email?: string
+          id?: string
+          last_login?: string | null
+          name?: string
+          password_hash?: string
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       booking_passengers: {
         Row: {
-          id: string;
-          booking_id: string;
-          full_name: string;
-          document_type: string | null;
-          document_number: string | null;
-          nationality: string | null;
-          birth_date: string | null;
-          is_adult: boolean;
-          email: string | null;
-          phone: string | null;
-          dietary_restrictions: string | null;
-          medical_conditions: string | null;
-          emergency_contact_name: string | null;
-          emergency_contact_phone: string | null;
-          created_at: string;
-        };
+          birth_date: string | null
+          booking_id: string | null
+          created_at: string | null
+          document_number: string | null
+          document_type: string | null
+          full_name: string
+          id: string
+          is_adult: boolean | null
+          nationality: string | null
+        }
         Insert: {
-          id?: string;
-          booking_id: string;
-          full_name: string;
-          document_type?: string | null;
-          document_number?: string | null;
-          nationality?: string | null;
-          birth_date?: string | null;
-          is_adult?: boolean;
-          email?: string | null;
-          phone?: string | null;
-          dietary_restrictions?: string | null;
-          medical_conditions?: string | null;
-          emergency_contact_name?: string | null;
-          emergency_contact_phone?: string | null;
-          created_at?: string;
-        };
+          birth_date?: string | null
+          booking_id?: string | null
+          created_at?: string | null
+          document_number?: string | null
+          document_type?: string | null
+          full_name: string
+          id?: string
+          is_adult?: boolean | null
+          nationality?: string | null
+        }
         Update: {
-          id?: string;
-          booking_id?: string;
-          full_name?: string;
-          document_type?: string | null;
-          document_number?: string | null;
-          nationality?: string | null;
-          birth_date?: string | null;
-          is_adult?: boolean;
-          email?: string | null;
-          phone?: string | null;
-          dietary_restrictions?: string | null;
-          medical_conditions?: string | null;
-          emergency_contact_name?: string | null;
-          emergency_contact_phone?: string | null;
-          created_at?: string;
-        };
-      };
+          birth_date?: string | null
+          booking_id?: string | null
+          created_at?: string | null
+          document_number?: string | null
+          document_type?: string | null
+          full_name?: string
+          id?: string
+          is_adult?: boolean | null
+          nationality?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_passengers_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          adults: number | null
+          children: number | null
+          created_at: string | null
+          currency: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          internal_notes: string | null
+          payment_status: string | null
+          quote_request_id: string | null
+          special_requests: string | null
+          status: string | null
+          total_price: number | null
+          travel_date: string
+          trip_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          adults?: number | null
+          children?: number | null
+          created_at?: string | null
+          currency?: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          id?: string
+          internal_notes?: string | null
+          payment_status?: string | null
+          quote_request_id?: string | null
+          special_requests?: string | null
+          status?: string | null
+          total_price?: number | null
+          travel_date: string
+          trip_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          adults?: number | null
+          children?: number | null
+          created_at?: string | null
+          currency?: string | null
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          internal_notes?: string | null
+          payment_status?: string | null
+          quote_request_id?: string | null
+          special_requests?: string | null
+          status?: string | null
+          total_price?: number | null
+          travel_date?: string
+          trip_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
-          id: string;
-          name: string;
-          email: string;
-          phone: string | null;
-          message: string;
-          status: 'unread' | 'read' | 'replied' | 'archived';
-          created_at: string;
-          replied_at: string | null;
-        };
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          notes: string | null
+          phone: string | null
+          read: boolean | null
+          status: string | null
+          subject: string | null
+          updated_at: string | null
+        }
         Insert: {
-          id?: string;
-          name: string;
-          email: string;
-          phone?: string | null;
-          message: string;
-          status?: 'unread' | 'read' | 'replied' | 'archived';
-          created_at?: string;
-          replied_at?: string | null;
-        };
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          read?: boolean | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
         Update: {
-          id?: string;
-          name?: string;
-          email?: string;
-          phone?: string | null;
-          message?: string;
-          status?: 'unread' | 'read' | 'replied' | 'archived';
-          created_at?: string;
-          replied_at?: string | null;
-        };
-      };
-    };
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          read?: boolean | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      quote_requests: {
+        Row: {
+          adults: number | null
+          children: number | null
+          created_at: string | null
+          customer_country: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          message: string | null
+          notes: string | null
+          status: string | null
+          travel_date: string | null
+          trip_id: string | null
+          updated_at: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          adults?: number | null
+          children?: number | null
+          created_at?: string | null
+          customer_country?: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          id?: string
+          message?: string | null
+          notes?: string | null
+          status?: string | null
+          travel_date?: string | null
+          trip_id?: string | null
+          updated_at?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          adults?: number | null
+          children?: number | null
+          created_at?: string | null
+          customer_country?: string | null
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          message?: string | null
+          notes?: string | null
+          status?: string | null
+          travel_date?: string | null
+          trip_id?: string | null
+          updated_at?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_requests_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trips: {
+        Row: {
+          accommodation_type: string | null
+          available: boolean | null
+          booking_count: number | null
+          created_at: string | null
+          description: string | null
+          difficulty_level: string | null
+          duration: string
+          duration_days: number
+          excludes: string[] | null
+          featured: boolean | null
+          group_size_max: number | null
+          group_size_min: number | null
+          hero_image: string | null
+          highlights: string[] | null
+          id: string
+          image: string | null
+          includes: string[] | null
+          itinerary: Json | null
+          price: string
+          price_value: number
+          region: string
+          subtitle: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          accommodation_type?: string | null
+          available?: boolean | null
+          booking_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration: string
+          duration_days: number
+          excludes?: string[] | null
+          featured?: boolean | null
+          group_size_max?: number | null
+          group_size_min?: number | null
+          hero_image?: string | null
+          highlights?: string[] | null
+          id: string
+          image?: string | null
+          includes?: string[] | null
+          itinerary?: Json | null
+          price: string
+          price_value: number
+          region: string
+          subtitle?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          accommodation_type?: string | null
+          available?: boolean | null
+          booking_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration?: string
+          duration_days?: number
+          excludes?: string[] | null
+          featured?: boolean | null
+          group_size_max?: number | null
+          group_size_min?: number | null
+          hero_image?: string | null
+          highlights?: string[] | null
+          id?: string
+          image?: string | null
+          includes?: string[] | null
+          itinerary?: Json | null
+          price?: string
+          price_value?: number
+          region?: string
+          subtitle?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+    }
     Views: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     Functions: {
-      [_ in never]: never;
-    };
+      verify_admin_password: {
+        Args: { p_email: string; p_password: string }
+        Returns: {
+          email: string
+          id: string
+          name: string
+          role: string
+        }[]
+      }
+    }
     Enums: {
-      [_ in never]: never;
-    };
-  };
-};
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
 
-// Helper types for easier usage
-export type Trip = Database['public']['Tables']['trips']['Row'];
-export type TripInsert = Database['public']['Tables']['trips']['Insert'];
-export type TripUpdate = Database['public']['Tables']['trips']['Update'];
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-export type QuoteRequest = Database['public']['Tables']['quote_requests']['Row'];
-export type QuoteRequestInsert = Database['public']['Tables']['quote_requests']['Insert'];
-export type QuoteRequestUpdate = Database['public']['Tables']['quote_requests']['Update'];
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
-export type Booking = Database['public']['Tables']['bookings']['Row'];
-export type BookingInsert = Database['public']['Tables']['bookings']['Insert'];
-export type BookingUpdate = Database['public']['Tables']['bookings']['Update'];
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
-export type BookingPassenger = Database['public']['Tables']['booking_passengers']['Row'];
-export type BookingPassengerInsert = Database['public']['Tables']['booking_passengers']['Insert'];
-export type BookingPassengerUpdate = Database['public']['Tables']['booking_passengers']['Update'];
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
-export type ContactMessage = Database['public']['Tables']['contact_messages']['Row'];
-export type ContactMessageInsert = Database['public']['Tables']['contact_messages']['Insert'];
-export type ContactMessageUpdate = Database['public']['Tables']['contact_messages']['Update'];
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never

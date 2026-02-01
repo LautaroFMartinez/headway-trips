@@ -83,27 +83,42 @@ export function TripDetailClient({ trip }: TripDetailClientProps) {
               ))}
             </div>
 
-            {/* PDF Section */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="bg-secondary rounded-2xl p-5 sm:p-6 md:p-8">
-              <h3 className="font-serif text-xl font-semibold text-foreground mb-4">Itinerario Completo</h3>
-              <p className="text-muted-foreground mb-6">Descargá el PDF con toda la información detallada del viaje: itinerario día por día, servicios incluidos, condiciones y más.</p>
+            {/* PDF Section - Solo mostrar si hay PDF */}
+            {trip.pdfUrl && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="bg-secondary rounded-2xl p-5 sm:p-6 md:p-8">
+                <h3 className="font-serif text-xl font-semibold text-foreground mb-4">Itinerario Completo</h3>
+                <p className="text-muted-foreground mb-6">Consultá el itinerario detallado del viaje: día por día, servicios incluidos, condiciones y más.</p>
 
-              {/* PDF Preview */}
-              <div className="bg-card border border-border rounded-xl p-6 sm:p-8 mb-6 min-h-[250px] sm:min-h-[300px] flex flex-col items-center justify-center">
-                <motion.div whileHover={{ scale: 1.05 }} className="text-center">
-                  <div className="w-16 h-20 bg-primary/10 rounded-lg mx-auto mb-4 flex items-center justify-center border-2 border-dashed border-primary/30">
-                    <FileText className="w-8 h-8 text-primary" />
-                  </div>
-                  <p className="text-foreground font-medium mb-1">Itinerario_{trip.title.replace(/\s/g, '_')}.pdf</p>
-                  <p className="text-xs text-muted-foreground">Hacé click para descargar el documento</p>
-                </motion.div>
-              </div>
+                {/* PDF Viewer */}
+                <div className="bg-card border border-border rounded-xl overflow-hidden mb-6">
+                  <iframe
+                    src={`${trip.pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
+                    className="w-full h-[500px] sm:h-[600px] md:h-[700px]"
+                    title={`Itinerario de ${trip.title}`}
+                  />
+                </div>
 
-              <a href={`/pdfs/${trip.id}.pdf`} download className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all hover:scale-105">
-                <Download className="w-4 h-4" />
-                Descargar PDF
-              </a>
-            </motion.div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a
+                    href={trip.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all hover:scale-105"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Abrir en nueva pestaña
+                  </a>
+                  <a
+                    href={trip.pdfUrl}
+                    download
+                    className="inline-flex items-center justify-center gap-2 border border-border text-foreground px-6 py-3 rounded-full font-medium hover:bg-card transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Descargar PDF
+                  </a>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Sidebar */}

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Calendar, ArrowRight, Search, SlidersHorizontal, X, Clock, TrendingUp } from 'lucide-react';
+import { MapPin, Calendar, ArrowRight, Search, SlidersHorizontal, X, Clock, TrendingUp, Loader2 } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from '@/components/ui/sheet';
-import { trips, getRegions, type Trip } from '@/lib/trips-data';
+import { trips as staticTrips, getRegions, type Trip } from '@/lib/trips-data';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +41,29 @@ export function DestinationsGrid() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // Trips state - load from API
+  const [trips, setTrips] = useState<Trip[]>(staticTrips);
+  const [isLoadingTrips, setIsLoadingTrips] = useState(true);
+
+  // Load trips from API on mount
+  useEffect(() => {
+    async function loadTrips() {
+      try {
+        const response = await fetch('/api/trips?available=true');
+        const result = await response.json();
+        if (result.data && result.data.length > 0) {
+          setTrips(result.data);
+        }
+      } catch (error) {
+        // Keep static trips on error
+        console.error('Error loading trips:', error);
+      } finally {
+        setIsLoadingTrips(false);
+      }
+    }
+    loadTrips();
+  }, []);
+
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -53,14 +76,14 @@ export function DestinationsGrid() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   // Calculate min/max values from data
-  const priceMin = Math.min(...trips.map((t) => t.priceValue));
-  const priceMax = Math.max(...trips.map((t) => t.priceValue));
-  const durationMin = Math.min(...trips.map((t) => t.durationDays));
-  const durationMax = Math.max(...trips.map((t) => t.durationDays));
+  const priceMin = useMemo(() => Math.min(...trips.map((t) => t.priceValue)), [trips]);
+  const priceMax = useMemo(() => Math.max(...trips.map((t) => t.priceValue)), [trips]);
+  const durationMin = useMemo(() => Math.min(...trips.map((t) => t.durationDays)), [trips]);
+  const durationMax = useMemo(() => Math.max(...trips.map((t) => t.durationDays)), [trips]);
 
   // Get unique regions and tags
-  const allRegions = getRegions();
-  const allTags = Array.from(new Set(trips.flatMap((t) => t.tags))).sort();
+  const allRegions = useMemo(() => Array.from(new Set(trips.map((t) => t.region))).sort(), [trips]);
+  const allTags = useMemo(() => Array.from(new Set(trips.flatMap((t) => t.tags || []))).sort(), [trips]);
 
   // Initialize filters from URL params
   const getInitialFilters = useCallback((): TripFilters => {
@@ -80,6 +103,17 @@ export function DestinationsGrid() {
   }, [searchParams, priceMin, priceMax, durationMin, durationMax]);
 
   const [filters, setFilters] = useState<TripFilters>(getInitialFilters);
+
+  // Update filters when trips change (after API load)
+  useEffect(() => {
+    if (!isLoadingTrips) {
+      setFilters((prev) => ({
+        ...prev,
+        priceRange: [priceMin, priceMax],
+        durationRange: [durationMin, durationMax],
+      }));
+    }
+  }, [isLoadingTrips, priceMin, priceMax, durationMin, durationMax]);
 
   // Initialize search from URL
   useEffect(() => {
@@ -492,7 +526,12 @@ export function DestinationsGrid() {
         </div>
 
         {/* Results Grid */}
-        {filteredTrips.length === 0 ? (
+        {isLoadingTrips ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mr-3" />
+            <p className="text-muted-foreground">Cargando destinos...</p>
+          </div>
+        ) : filteredTrips.length === 0 ? (
           <div className="text-center py-16">
             <Search className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
             <p className="text-muted-foreground text-lg mb-2">No se encontraron destinos</p>
