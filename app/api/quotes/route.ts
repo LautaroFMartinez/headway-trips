@@ -22,23 +22,23 @@ const quoteRequestSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validar datos de entrada
     const validationResult = quoteRequestSchema.safeParse(body);
-    
+
     if (!validationResult.success) {
       return NextResponse.json(
-        { 
-          error: 'Validation error', 
+        {
+          error: 'Validation error',
           details: validationResult.error.errors.map((e) => ({
             field: e.path.join('.'),
             message: e.message,
-          }))
+          })),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     const data = validationResult.data;
 
     // Si Supabase no está configurado, simular respuesta exitosa
@@ -47,51 +47,38 @@ export async function POST(request: NextRequest) {
       if (!trip) {
         return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
       }
-      
+
       // En producción esto guardaría en Supabase
       // Por ahora retornamos éxito simulado para desarrollo
       return NextResponse.json(
-        { 
+        {
           success: true,
           message: 'Quote request received (demo mode - Supabase not configured)',
           data: {
             id: `demo-${Date.now()}`,
             tripTitle: trip.title,
-          }
+          },
         },
-        { status: 201 }
+        { status: 201 },
       );
     }
 
     const supabase = createServerClient();
     if (!supabase) {
-      return NextResponse.json(
-        { error: 'Database not configured' },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
     }
-    
+
     // Verificar que el viaje existe
-    const { data: trip, error: tripError } = await supabase
-      .from('trips')
-      .select('id, title, available')
-      .eq('id', data.tripId)
-      .single();
-    
+    const { data: trip, error: tripError } = await supabase.from('trips').select('id, title, available').eq('id', data.tripId).single();
+
     if (tripError || !trip) {
-      return NextResponse.json(
-        { error: 'Trip not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
     }
-    
+
     if (!trip.available) {
-      return NextResponse.json(
-        { error: 'This trip is not currently available' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'This trip is not currently available' }, { status: 400 });
     }
-    
+
     // Crear la solicitud de cotización
     const { data: quoteRequest, error: insertError } = await supabase
       .from('quote_requests')
@@ -112,41 +99,32 @@ export async function POST(request: NextRequest) {
       })
       .select()
       .single();
-    
+
     if (insertError) {
-      return NextResponse.json(
-        { error: 'Error creating quote request', details: insertError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Error creating quote request', details: insertError.message }, { status: 500 });
     }
-    
+
     // TODO: Enviar email de notificación al equipo
     // TODO: Enviar email de confirmación al cliente
-    
+
     return NextResponse.json(
-      { 
+      {
         success: true,
         message: 'Quote request created successfully',
         data: {
           id: quoteRequest.id,
           tripTitle: trip.title,
-        }
+        },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function GET(request: NextRequest) {
   // Este endpoint requiere autenticación (para el panel admin)
   // Por ahora retornamos 401
-  return NextResponse.json(
-    { error: 'Authentication required' },
-    { status: 401 }
-  );
+  return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 }

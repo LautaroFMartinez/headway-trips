@@ -72,14 +72,8 @@ export function DestinationsGrid() {
     const tagsParam = searchParams.get('tags');
 
     return {
-      priceRange: [
-        priceMinParam ? Number(priceMinParam) : priceMin,
-        priceMaxParam ? Number(priceMaxParam) : priceMax,
-      ],
-      durationRange: [
-        durationMinParam ? Number(durationMinParam) : durationMin,
-        durationMaxParam ? Number(durationMaxParam) : durationMax,
-      ],
+      priceRange: [priceMinParam ? Number(priceMinParam) : priceMin, priceMaxParam ? Number(priceMaxParam) : priceMax],
+      durationRange: [durationMinParam ? Number(durationMinParam) : durationMin, durationMaxParam ? Number(durationMaxParam) : durationMax],
       regions: regionsParam ? regionsParam.split(',') : [],
       tags: tagsParam ? tagsParam.split(',') : [],
     };
@@ -247,11 +241,7 @@ export function DestinationsGrid() {
   };
 
   // Count active filters
-  const activeFiltersCount =
-    (filters.priceRange[0] !== priceMin || filters.priceRange[1] !== priceMax ? 1 : 0) +
-    (filters.durationRange[0] !== durationMin || filters.durationRange[1] !== durationMax ? 1 : 0) +
-    filters.regions.length +
-    filters.tags.length;
+  const activeFiltersCount = (filters.priceRange[0] !== priceMin || filters.priceRange[1] !== priceMax ? 1 : 0) + (filters.durationRange[0] !== durationMin || filters.durationRange[1] !== durationMax ? 1 : 0) + filters.regions.length + filters.tags.length;
 
   const resetFilters = () => {
     setFilters({

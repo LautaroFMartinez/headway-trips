@@ -31,9 +31,7 @@ export const supabase = createSupabaseClient();
  */
 export function getSupabaseClient(): SupabaseClient<Database> {
   if (!supabase) {
-    throw new Error(
-      'Supabase not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.'
-    );
+    throw new Error('Supabase not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
   }
   return supabase;
 }
@@ -47,12 +45,12 @@ export function createServerClient(): SupabaseClient<Database> | null {
   }
 
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  
+
   if (!serviceRoleKey) {
     // Fallback al cliente anónimo si no hay service role key
     return supabase;
   }
-  
+
   return createClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,

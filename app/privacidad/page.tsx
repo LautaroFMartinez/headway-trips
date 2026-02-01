@@ -25,9 +25,7 @@ export default function PrivacyPolicyPage() {
             <p className="text-muted-foreground leading-relaxed">
               En Headway Trips (&quot;nosotros&quot;, &quot;nuestro&quot; o &quot;la Empresa&quot;), nos comprometemos a proteger la privacidad de nuestros usuarios y clientes. Esta Política de Privacidad describe cómo recopilamos, utilizamos, almacenamos y protegemos su información personal cuando utiliza nuestro sitio web y servicios de viajes.
             </p>
-            <p className="text-muted-foreground leading-relaxed">
-              Al utilizar nuestros servicios, usted acepta las prácticas descritas en esta política. Le recomendamos leer este documento detenidamente.
-            </p>
+            <p className="text-muted-foreground leading-relaxed">Al utilizar nuestros servicios, usted acepta las prácticas descritas en esta política. Le recomendamos leer este documento detenidamente.</p>
           </section>
 
           <section>
@@ -67,48 +65,44 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-2xl font-bold mb-4">4. Compartición de Datos</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Podemos compartir su información con:
-            </p>
+            <p className="text-muted-foreground leading-relaxed mb-4">Podemos compartir su información con:</p>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li><strong>Proveedores de servicios de viaje:</strong> Aerolíneas, hoteles, operadores turísticos y empresas de transporte necesarios para completar su reserva</li>
-              <li><strong>Procesadores de pago:</strong> Para gestionar transacciones de forma segura</li>
-              <li><strong>Proveedores de servicios:</strong> Que nos ayudan a operar nuestro negocio (hosting, email, analytics)</li>
-              <li><strong>Autoridades gubernamentales:</strong> Cuando sea requerido por ley o para cumplir con regulaciones de viaje</li>
+              <li>
+                <strong>Proveedores de servicios de viaje:</strong> Aerolíneas, hoteles, operadores turísticos y empresas de transporte necesarios para completar su reserva
+              </li>
+              <li>
+                <strong>Procesadores de pago:</strong> Para gestionar transacciones de forma segura
+              </li>
+              <li>
+                <strong>Proveedores de servicios:</strong> Que nos ayudan a operar nuestro negocio (hosting, email, analytics)
+              </li>
+              <li>
+                <strong>Autoridades gubernamentales:</strong> Cuando sea requerido por ley o para cumplir con regulaciones de viaje
+              </li>
             </ul>
-            <p className="text-muted-foreground leading-relaxed mt-4">
-              No vendemos ni alquilamos su información personal a terceros con fines de marketing.
-            </p>
+            <p className="text-muted-foreground leading-relaxed mt-4">No vendemos ni alquilamos su información personal a terceros con fines de marketing.</p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold mb-4">5. Transferencias Internacionales</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Debido a la naturaleza internacional de nuestros servicios de viajes, su información puede ser transferida y procesada en países distintos al suyo. Nos aseguramos de que dichas transferencias cumplan con las leyes de protección de datos aplicables y que se implementen salvaguardas apropiadas para proteger su información.
-            </p>
+            <p className="text-muted-foreground leading-relaxed">Debido a la naturaleza internacional de nuestros servicios de viajes, su información puede ser transferida y procesada en países distintos al suyo. Nos aseguramos de que dichas transferencias cumplan con las leyes de protección de datos aplicables y que se implementen salvaguardas apropiadas para proteger su información.</p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold mb-4">6. Cookies y Tecnologías de Seguimiento</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Utilizamos cookies y tecnologías similares para:
-            </p>
+            <p className="text-muted-foreground leading-relaxed mb-4">Utilizamos cookies y tecnologías similares para:</p>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
               <li>Mantener su sesión activa y preferencias</li>
               <li>Analizar el uso del sitio web y mejorar su funcionamiento</li>
               <li>Personalizar contenido y recomendaciones</li>
               <li>Medir la efectividad de nuestras campañas</li>
             </ul>
-            <p className="text-muted-foreground leading-relaxed mt-4">
-              Puede configurar su navegador para rechazar cookies, aunque esto puede afectar la funcionalidad del sitio.
-            </p>
+            <p className="text-muted-foreground leading-relaxed mt-4">Puede configurar su navegador para rechazar cookies, aunque esto puede afectar la funcionalidad del sitio.</p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold mb-4">7. Seguridad de los Datos</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Implementamos medidas técnicas y organizativas apropiadas para proteger su información personal contra acceso no autorizado, pérdida, alteración o divulgación. Esto incluye encriptación de datos, acceso restringido y auditorías de seguridad regulares. Sin embargo, ningún método de transmisión por Internet es 100% seguro.
-            </p>
+            <p className="text-muted-foreground leading-relaxed">Implementamos medidas técnicas y organizativas apropiadas para proteger su información personal contra acceso no autorizado, pérdida, alteración o divulgación. Esto incluye encriptación de datos, acceso restringido y auditorías de seguridad regulares. Sin embargo, ningún método de transmisión por Internet es 100% seguro.</p>
           </section>
 
           <section>
@@ -120,43 +114,47 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-2xl font-bold mb-4">9. Sus Derechos</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Dependiendo de su ubicación, puede tener los siguientes derechos:
-            </p>
+            <p className="text-muted-foreground leading-relaxed mb-4">Dependiendo de su ubicación, puede tener los siguientes derechos:</p>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li><strong>Acceso:</strong> Solicitar una copia de sus datos personales</li>
-              <li><strong>Rectificación:</strong> Corregir datos inexactos o incompletos</li>
-              <li><strong>Eliminación:</strong> Solicitar la eliminación de sus datos en ciertos casos</li>
-              <li><strong>Oposición:</strong> Oponerse al procesamiento de sus datos</li>
-              <li><strong>Portabilidad:</strong> Recibir sus datos en formato estructurado</li>
-              <li><strong>Retiro del consentimiento:</strong> Retirar su consentimiento en cualquier momento</li>
+              <li>
+                <strong>Acceso:</strong> Solicitar una copia de sus datos personales
+              </li>
+              <li>
+                <strong>Rectificación:</strong> Corregir datos inexactos o incompletos
+              </li>
+              <li>
+                <strong>Eliminación:</strong> Solicitar la eliminación de sus datos en ciertos casos
+              </li>
+              <li>
+                <strong>Oposición:</strong> Oponerse al procesamiento de sus datos
+              </li>
+              <li>
+                <strong>Portabilidad:</strong> Recibir sus datos en formato estructurado
+              </li>
+              <li>
+                <strong>Retiro del consentimiento:</strong> Retirar su consentimiento en cualquier momento
+              </li>
             </ul>
-            <p className="text-muted-foreground leading-relaxed mt-4">
-              Para ejercer estos derechos, contáctenos a través de los medios indicados al final de esta política.
-            </p>
+            <p className="text-muted-foreground leading-relaxed mt-4">Para ejercer estos derechos, contáctenos a través de los medios indicados al final de esta política.</p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold mb-4">10. Menores de Edad</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Nuestros servicios no están dirigidos a menores de 18 años. No recopilamos intencionalmente información de menores sin el consentimiento de sus padres o tutores legales. Si descubrimos que hemos recopilado información de un menor sin el consentimiento apropiado, tomaremos medidas para eliminarla.
-            </p>
+            <p className="text-muted-foreground leading-relaxed">Nuestros servicios no están dirigidos a menores de 18 años. No recopilamos intencionalmente información de menores sin el consentimiento de sus padres o tutores legales. Si descubrimos que hemos recopilado información de un menor sin el consentimiento apropiado, tomaremos medidas para eliminarla.</p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold mb-4">11. Cambios a esta Política</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Podemos actualizar esta Política de Privacidad periódicamente. Le notificaremos sobre cambios significativos publicando la nueva política en nuestro sitio web y, cuando sea apropiado, enviándole una notificación directa. Le recomendamos revisar esta página regularmente.
-            </p>
+            <p className="text-muted-foreground leading-relaxed">Podemos actualizar esta Política de Privacidad periódicamente. Le notificaremos sobre cambios significativos publicando la nueva política en nuestro sitio web y, cuando sea apropiado, enviándole una notificación directa. Le recomendamos revisar esta página regularmente.</p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold mb-4">12. Contacto</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Si tiene preguntas sobre esta Política de Privacidad o desea ejercer sus derechos, puede contactarnos:
-            </p>
+            <p className="text-muted-foreground leading-relaxed mb-4">Si tiene preguntas sobre esta Política de Privacidad o desea ejercer sus derechos, puede contactarnos:</p>
             <div className="bg-secondary/50 p-6 rounded-lg space-y-2">
-              <p className="text-foreground"><strong>Headway Trips</strong></p>
+              <p className="text-foreground">
+                <strong>Headway Trips</strong>
+              </p>
               <p className="text-muted-foreground">Email: privacy@headwaytrips.com</p>
               <p className="text-muted-foreground">Email general: info@headwaytrips.com</p>
               <p className="text-muted-foreground">Teléfono: +54 11 1234-5678</p>
