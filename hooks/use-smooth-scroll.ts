@@ -13,7 +13,7 @@ function smoothScrollTo(targetY: number, duration: number = 600): void {
 
   // Check if user prefers reduced motion
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  
+
   if (prefersReducedMotion || Math.abs(difference) < 1) {
     window.scrollTo(0, targetY);
     return;
@@ -21,16 +21,14 @@ function smoothScrollTo(targetY: number, duration: number = 600): void {
 
   // Easing function: easeInOutCubic
   function easeInOutCubic(t: number): number {
-    return t < 0.5 
-      ? 4 * t * t * t 
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
   function animateScroll(currentTime: number): void {
     const elapsed = currentTime - startTime;
     const progress = Math.min(elapsed / duration, 1);
     const easedProgress = easeInOutCubic(progress);
-    
+
     window.scrollTo(0, startY + difference * easedProgress);
 
     if (progress < 1) {
@@ -47,28 +45,31 @@ function smoothScrollTo(targetY: number, duration: number = 600): void {
  * Usage: const handleAnchorClick = useSmoothScroll(80) // 80px offset for header
  */
 export function useSmoothScroll(offset: number = 80) {
-  const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    const href = e.currentTarget.getAttribute('href');
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      const href = e.currentTarget.getAttribute('href');
 
-    // Only handle anchor links
-    if (href?.startsWith('#')) {
-      e.preventDefault();
+      // Only handle anchor links
+      if (href?.startsWith('#')) {
+        e.preventDefault();
 
-      const targetId = href.substring(1);
-      const targetElement = document.getElementById(targetId);
+        const targetId = href.substring(1);
+        const targetElement = document.getElementById(targetId);
 
-      if (targetElement) {
-        const elementPosition = targetElement.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.scrollY - offset;
+        if (targetElement) {
+          const elementPosition = targetElement.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - offset;
 
-        // Use our custom smooth scroll implementation
-        smoothScrollTo(offsetPosition, 600);
+          // Use our custom smooth scroll implementation
+          smoothScrollTo(offsetPosition, 600);
 
-        // Update URL without jumping
-        window.history.pushState(null, '', href);
+          // Update URL without jumping
+          window.history.pushState(null, '', href);
+        }
       }
-    }
-  }, [offset]);
+    },
+    [offset],
+  );
 
   return handleClick;
 }
@@ -91,7 +92,7 @@ export function useScrollSpy(sectionIds: string[], offset: number = 100) {
       },
       {
         rootMargin: `-${offset}px 0px -50% 0px`,
-      }
+      },
     );
 
     sectionIds.forEach((id) => {
