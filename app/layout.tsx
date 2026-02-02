@@ -8,14 +8,14 @@ import { WhatsAppButton } from '@/components/whatsapp-button';
 import { GoogleAnalytics } from '@/components/google-analytics';
 import './globals.css';
 
-const dmSans = DM_Sans({ 
+const dmSans = DM_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-sans',
   display: 'swap',
 });
-const playfair = Playfair_Display({ 
-  subsets: ['latin'], 
+const playfair = Playfair_Display({
+  subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-serif',
   display: 'swap',

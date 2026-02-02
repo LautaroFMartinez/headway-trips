@@ -5,6 +5,9 @@ import { useCallback, useState, useEffect } from 'react';
 /**
  * Cross-browser smooth scroll implementation using requestAnimationFrame
  * This works reliably on all browsers including Windows Chrome/Brave
+ * 
+ * FIX: Desactiva temporalmente scroll-behavior: smooth durante la animación
+ * para evitar conflictos entre CSS y JavaScript scroll (ver GitHub issue vercel/next.js#45187)
  */
 function smoothScrollTo(targetY: number, duration: number = 600): void {
   const startY = window.scrollY;
@@ -18,6 +21,11 @@ function smoothScrollTo(targetY: number, duration: number = 600): void {
     window.scrollTo(0, targetY);
     return;
   }
+
+  // Desactivar scroll-behavior: smooth temporalmente para evitar conflictos
+  const html = document.documentElement;
+  const originalScrollBehavior = html.style.scrollBehavior;
+  html.style.scrollBehavior = 'auto';
 
   // Easing function: easeInOutCubic
   function easeInOutCubic(t: number): number {
@@ -33,6 +41,9 @@ function smoothScrollTo(targetY: number, duration: number = 600): void {
 
     if (progress < 1) {
       requestAnimationFrame(animateScroll);
+    } else {
+      // Restaurar scroll-behavior original cuando termine la animación
+      html.style.scrollBehavior = originalScrollBehavior;
     }
   }
 
