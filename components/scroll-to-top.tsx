@@ -5,6 +5,43 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+/**
+ * Cross-browser smooth scroll to top using requestAnimationFrame
+ */
+function smoothScrollToTop(duration: number = 600): void {
+  const startY = window.scrollY;
+  const startTime = performance.now();
+
+  // Check if user prefers reduced motion
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
+  if (prefersReducedMotion || startY < 1) {
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  // Easing function: easeInOutCubic
+  function easeInOutCubic(t: number): number {
+    return t < 0.5 
+      ? 4 * t * t * t 
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function animateScroll(currentTime: number): void {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easedProgress = easeInOutCubic(progress);
+    
+    window.scrollTo(0, startY * (1 - easedProgress));
+
+    if (progress < 1) {
+      requestAnimationFrame(animateScroll);
+    }
+  }
+
+  requestAnimationFrame(animateScroll);
+}
+
 export function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -14,11 +51,8 @@ export function ScrollToTop() {
       setIsVisible(window.scrollY > 400);
     };
 
-    // Add scroll event listener
-    window.addEventListener('scroll', toggleVisibility);
-
-    // Enable smooth scroll behavior
-    document.documentElement.style.scrollBehavior = 'smooth';
+    // Add scroll event listener with passive for better performance
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
 
     return () => {
       window.removeEventListener('scroll', toggleVisibility);
@@ -26,10 +60,7 @@ export function ScrollToTop() {
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
+    smoothScrollToTop(600);
   };
 
   return (

@@ -4,10 +4,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useSmoothScroll } from '@/hooks/use-smooth-scroll';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const handleSmoothScroll = useSmoothScroll(80);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,6 +52,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={link.href.startsWith('#') ? handleSmoothScroll : undefined}
                 className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50"
               >
                 {link.label}
@@ -59,7 +62,8 @@ export function Header() {
 
           <div className="flex items-center gap-3">
             <Link 
-              href="#destinos" 
+              href="#destinos"
+              onClick={handleSmoothScroll}
               className="hidden md:inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-primary/90 transition-all"
             >
               Explorar destinos
@@ -95,15 +99,23 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 className="px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  if (link.href.startsWith('#')) {
+                    handleSmoothScroll(e);
+                  }
+                  setIsMenuOpen(false);
+                }}
               >
                 {link.label}
               </Link>
             ))}
             <Link 
-              href="#destinos" 
+              href="#destinos"
               className="mt-2 bg-primary text-primary-foreground px-5 py-3 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors text-center"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={(e) => {
+                handleSmoothScroll(e);
+                setIsMenuOpen(false);
+              }}
             >
               Explorar destinos
             </Link>
