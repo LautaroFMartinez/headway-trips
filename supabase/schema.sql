@@ -22,6 +22,12 @@ CREATE TABLE IF NOT EXISTS public.trips (
   highlights TEXT[] DEFAULT '{}',
   tags TEXT[] DEFAULT '{}',
   
+  -- Galería de imágenes y PDF
+  gallery TEXT[] DEFAULT '{}',
+  pdf_url TEXT,
+  itinerary JSONB DEFAULT '[]',
+  featured BOOLEAN DEFAULT FALSE,
+  
   -- Campos extendidos para sistema de reservas
   available BOOLEAN DEFAULT TRUE,
   includes TEXT[] DEFAULT '{}',
@@ -43,6 +49,7 @@ CREATE TABLE IF NOT EXISTS public.trips (
 CREATE INDEX IF NOT EXISTS idx_trips_region ON public.trips(region);
 CREATE INDEX IF NOT EXISTS idx_trips_price ON public.trips(price_value);
 CREATE INDEX IF NOT EXISTS idx_trips_available ON public.trips(available);
+CREATE INDEX IF NOT EXISTS idx_trips_featured ON public.trips(featured);
 CREATE INDEX IF NOT EXISTS idx_trips_tags ON public.trips USING GIN(tags);
 
 -- =============================================

@@ -39,6 +39,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Parse itinerary: si es string, convertir a array de días
+    let itineraryData: unknown[] = [];
+    if (body.itinerary) {
+      if (typeof body.itinerary === 'string') {
+        const lines = body.itinerary.split('\n').filter((line: string) => line.trim());
+        itineraryData = lines.map((line: string, index: number) => ({
+          day: index + 1,
+          description: line.trim(),
+        }));
+      } else if (Array.isArray(body.itinerary)) {
+        itineraryData = body.itinerary;
+      }
+    }
+
     const { data: trip, error } = await supabase
       .from('trips')
       .update({
@@ -52,8 +66,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         price_value: body.price,
         image: body.image_url,
         hero_image: body.image_url,
+        gallery: body.gallery || [],
         includes: body.includes || [],
         excludes: body.excludes || [],
+        itinerary: itineraryData,
         pdf_url: body.pdf_url || null,
         available: body.is_active ?? true,
         featured: body.is_featured || false,

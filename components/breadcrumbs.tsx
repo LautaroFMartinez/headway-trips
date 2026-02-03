@@ -14,6 +14,8 @@ interface BreadcrumbsProps {
   className?: string;
 }
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://headwaytrips.com';
+
 export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
   // Generate JSON-LD Schema for breadcrumbs
   const breadcrumbSchema = {
@@ -24,14 +26,14 @@ export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
         '@type': 'ListItem',
         position: 1,
         name: 'Inicio',
-        item: typeof window !== 'undefined' ? window.location.origin : 'https://headwaytrips.com',
+        item: BASE_URL,
       },
       ...items.map((item, index) => ({
         '@type': 'ListItem',
         position: index + 2,
         name: item.label,
         ...(item.href && {
-          item: typeof window !== 'undefined' ? `${window.location.origin}${item.href}` : `https://headwaytrips.com${item.href}`,
+          item: `${BASE_URL}${item.href}`,
         }),
       })),
     ],

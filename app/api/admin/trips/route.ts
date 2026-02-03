@@ -131,6 +131,7 @@ export async function POST(request: NextRequest) {
         price_value: body.price,
         image: body.image_url,
         hero_image: body.image_url,
+        gallery: body.gallery || [],
         highlights: [],
         tags: [],
         includes: body.includes || [],
@@ -139,11 +140,8 @@ export async function POST(request: NextRequest) {
         pdf_url: body.pdf_url || null,
         difficulty_level: 'moderate',
         accommodation_type: 'Hotel 4 estrellas',
-        group_size_min: 2,
-        group_size_max: 15,
         available: body.is_active ?? true,
         featured: body.is_featured || false,
-        booking_count: 0,
       })
       .select()
       .single();
