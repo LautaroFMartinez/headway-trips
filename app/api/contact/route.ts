@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
         phone: data.phone || null,
         message: data.message,
         status: 'unread',
+        read: false,
       })
       .select()
       .single();

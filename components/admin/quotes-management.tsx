@@ -1,20 +1,28 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Search, Eye, MoreHorizontal, ChevronLeft, ChevronRight, Mail, Phone, Calendar, MapPin, Users, Filter, CheckCircle, Clock, XCircle, MessageSquare } from 'lucide-react';
+import {
+  Search, Eye, MoreHorizontal, ChevronLeft, ChevronRight, Mail, Phone, Calendar,
+  MapPin, Users, Filter, CheckCircle, Clock, XCircle, MessageSquare, Globe,
+  StickyNote, DollarSign, Trash2, ExternalLink,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { useDebounce } from '@/hooks/use-debounce';
 
 interface Quote {
@@ -23,16 +31,23 @@ interface Quote {
   name: string;
   email: string;
   phone: string;
+  country?: string;
   travel_date: string;
+  adults: number;
+  children: number;
   travelers: number;
   message?: string;
   status: 'pending' | 'contacted' | 'quoted' | 'confirmed' | 'cancelled';
   notes?: string;
+  quoted_price?: number;
+  assigned_agent?: string;
   created_at: string;
+  updated_at?: string;
   trips?: {
     title: string;
     destination: string;
     price: number;
+    image?: string;
   };
 }
 
@@ -55,6 +70,11 @@ export function QuotesManagement() {
   const [totalQuotes, setTotalQuotes] = useState(0);
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [editNotes, setEditNotes] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [quoteToDelete, setQuoteToDelete] = useState<Quote | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -76,6 +96,7 @@ export function QuotesManagement() {
       }
     } catch (error) {
       console.error('Error loading quotes:', error);
+      toast.error('Error al cargar las cotizaciones');
     } finally {
       setIsLoading(false);
     }
@@ -86,26 +107,86 @@ export function QuotesManagement() {
   }, [loadQuotes]);
 
   const handleStatusChange = async (quoteId: string, newStatus: string) => {
+    const statusLabel = STATUS_CONFIG[newStatus as keyof typeof STATUS_CONFIG]?.label || newStatus;
     try {
-      await fetch(`/api/admin/quotes/${quoteId}`, {
+      const res = await fetch(`/api/admin/quotes/${quoteId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
+      if (!res.ok) throw new Error();
+      toast.success(`Estado actualizado a "${statusLabel}"`);
       loadQuotes();
-    } catch (error) {
-      console.error('Error updating status:', error);
+      // Update selected quote if open
+      if (selectedQuote?.id === quoteId) {
+        setSelectedQuote({ ...selectedQuote, status: newStatus as Quote['status'] });
+      }
+    } catch {
+      toast.error('Error al actualizar el estado');
+    }
+  };
+
+  const handleSaveNotes = async () => {
+    if (!selectedQuote) return;
+    setIsSavingNotes(true);
+    try {
+      const res = await fetch(`/api/admin/quotes/${selectedQuote.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: editNotes }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success('Notas guardadas');
+      setSelectedQuote({ ...selectedQuote, notes: editNotes });
+      loadQuotes();
+    } catch {
+      toast.error('Error al guardar las notas');
+    } finally {
+      setIsSavingNotes(false);
     }
   };
 
   const handleViewDetail = (quote: Quote) => {
     setSelectedQuote(quote);
+    setEditNotes(quote.notes || '');
     setIsDetailOpen(true);
   };
 
-  const totalPages = Math.ceil(totalQuotes / ITEMS_PER_PAGE);
+  const handleDeleteClick = (quote: Quote) => {
+    setQuoteToDelete(quote);
+    setDeleteDialogOpen(true);
+  };
 
-  // Calculate stats
+  const handleConfirmDelete = async () => {
+    if (!quoteToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/quotes/${quoteToDelete.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      toast.success('Cotización eliminada');
+      loadQuotes();
+      if (selectedQuote?.id === quoteToDelete.id) {
+        setIsDetailOpen(false);
+      }
+    } catch {
+      toast.error('Error al eliminar la cotización');
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setQuoteToDelete(null);
+    }
+  };
+
+  const getWhatsAppUrl = (quote: Quote) => {
+    const phone = quote.phone?.replace(/\D/g, '') || '';
+    const tripName = quote.trips?.title || 'tu viaje';
+    const message = encodeURIComponent(
+      `Hola ${quote.name}! Te escribimos desde Headway Trips respecto a tu consulta sobre "${tripName}". `
+    );
+    return `https://wa.me/${phone}?text=${message}`;
+  };
+
+  const totalPages = Math.ceil(totalQuotes / ITEMS_PER_PAGE);
   const pendingCount = quotes.filter((q) => q.status === 'pending').length;
 
   return (
@@ -117,7 +198,7 @@ export function QuotesManagement() {
           <p className="text-slate-500">
             {totalQuotes} cotizaciones en total
             {pendingCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="ml-2 bg-amber-100 text-amber-700">
                 {pendingCount} pendientes
               </Badge>
             )}
@@ -165,28 +246,13 @@ export function QuotesManagement() {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-40 mt-1" />
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <Skeleton className="h-4 w-40" />
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <Skeleton className="h-4 w-12" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-6 w-20 rounded-full" />
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-8 w-8 rounded" />
-                  </TableCell>
+                  <TableCell><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-40 mt-1" /></TableCell>
+                  <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-40" /></TableCell>
+                  <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-12" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                  <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
                 </TableRow>
               ))
             ) : quotes.length === 0 ? (
@@ -202,7 +268,7 @@ export function QuotesManagement() {
               quotes.map((quote) => {
                 const StatusIcon = STATUS_CONFIG[quote.status]?.icon || Clock;
                 return (
-                  <TableRow key={quote.id}>
+                  <TableRow key={quote.id} className="cursor-pointer hover:bg-slate-50" onClick={() => handleViewDetail(quote)}>
                     <TableCell>
                       <div className="font-medium text-slate-900">{quote.name}</div>
                       <div className="text-sm text-slate-500 flex items-center gap-1">
@@ -240,39 +306,41 @@ export function QuotesManagement() {
                     <TableCell className="hidden md:table-cell text-slate-500 text-sm">{format(new Date(quote.created_at), 'dd/MM/yy HH:mm')}</TableCell>
                     <TableCell>
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                           <Button variant="ghost" size="icon">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewDetail(quote)}>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleViewDetail(quote); }}>
                             <Eye className="h-4 w-4 mr-2" />
                             Ver detalle
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => window.open(`mailto:${quote.email}`)}>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(`mailto:${quote.email}`); }}>
                             <Mail className="h-4 w-4 mr-2" />
                             Enviar email
                           </DropdownMenuItem>
                           {quote.phone && (
-                            <DropdownMenuItem onClick={() => window.open(`tel:${quote.phone}`)}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(getWhatsAppUrl(quote), '_blank'); }}>
                               <Phone className="h-4 w-4 mr-2" />
-                              Llamar
+                              WhatsApp
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleStatusChange(quote.id, 'contacted')} disabled={quote.status === 'contacted'}>
-                            Marcar como contactado
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleStatusChange(quote.id, 'quoted')} disabled={quote.status === 'quoted'}>
-                            Marcar como cotizado
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleStatusChange(quote.id, 'confirmed')} disabled={quote.status === 'confirmed'}>
-                            Marcar como confirmado
-                          </DropdownMenuItem>
+                          {Object.entries(STATUS_CONFIG).map(([value, config]) => (
+                            <DropdownMenuItem
+                              key={value}
+                              onClick={(e) => { e.stopPropagation(); handleStatusChange(quote.id, value); }}
+                              disabled={quote.status === value}
+                              className={value === 'cancelled' ? 'text-red-600' : ''}
+                            >
+                              {config.label}
+                            </DropdownMenuItem>
+                          ))}
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleStatusChange(quote.id, 'cancelled')} className="text-red-600">
-                            Cancelar cotización
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(quote); }} className="text-red-600">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Eliminar
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -296,7 +364,7 @@ export function QuotesManagement() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-sm text-slate-600">
-              Página {currentPage} de {totalPages}
+              Pag. {currentPage} de {totalPages}
             </span>
             <Button variant="outline" size="icon" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
               <ChevronRight className="h-4 w-4" />
@@ -307,107 +375,235 @@ export function QuotesManagement() {
 
       {/* Quote Detail Dialog */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Detalle de cotización</DialogTitle>
+            <DialogTitle className="flex items-center gap-3">
+              Detalle de cotización
+              {selectedQuote && (
+                <Badge variant="secondary" className={STATUS_CONFIG[selectedQuote.status]?.color || ''}>
+                  {STATUS_CONFIG[selectedQuote.status]?.label}
+                </Badge>
+              )}
+            </DialogTitle>
             <DialogDescription>
               Recibida el{' '}
-              {selectedQuote &&
-                format(new Date(selectedQuote.created_at), "d 'de' MMMM 'a las' HH:mm", {
-                  locale: es,
-                })}
+              {selectedQuote && format(new Date(selectedQuote.created_at), "d 'de' MMMM yyyy 'a las' HH:mm", { locale: es })}
             </DialogDescription>
           </DialogHeader>
 
           {selectedQuote && (
             <div className="space-y-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Información del cliente</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Nombre</span>
-                    <span className="font-medium">{selectedQuote.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Email</span>
-                    <a href={`mailto:${selectedQuote.email}`} className="font-medium text-indigo-600 hover:underline">
-                      {selectedQuote.email}
-                    </a>
-                  </div>
-                  {selectedQuote.phone && (
+              {/* Status change */}
+              <div className="flex items-center gap-3">
+                <Label className="text-sm font-medium text-slate-700 whitespace-nowrap">Cambiar estado:</Label>
+                <Select
+                  value={selectedQuote.status}
+                  onValueChange={(value) => handleStatusChange(selectedQuote.id, value)}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(STATUS_CONFIG).map(([value, config]) => (
+                      <SelectItem key={value} value={value}>
+                        {config.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Client info */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Users className="h-4 w-4 text-slate-500" />
+                      Información del cliente
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Teléfono</span>
-                      <a href={`tel:${selectedQuote.phone}`} className="font-medium text-indigo-600 hover:underline">
-                        {selectedQuote.phone}
+                      <span className="text-slate-500">Nombre</span>
+                      <span className="font-medium">{selectedQuote.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Email</span>
+                      <a href={`mailto:${selectedQuote.email}`} className="font-medium text-indigo-600 hover:underline">
+                        {selectedQuote.email}
                       </a>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                    {selectedQuote.phone && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Teléfono</span>
+                        <a href={`tel:${selectedQuote.phone}`} className="font-medium text-indigo-600 hover:underline">
+                          {selectedQuote.phone}
+                        </a>
+                      </div>
+                    )}
+                    {selectedQuote.country && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">País</span>
+                        <span className="font-medium flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          {selectedQuote.country}
+                        </span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Detalles del viaje</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Viaje</span>
-                    <span className="font-medium">{selectedQuote.trips?.title || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Fecha de viaje</span>
-                    <span className="font-medium">
-                      {selectedQuote.travel_date
-                        ? format(new Date(selectedQuote.travel_date), 'dd MMM yyyy', {
-                            locale: es,
-                          })
-                        : 'No especificada'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Viajeros</span>
-                    <span className="font-medium">{selectedQuote.travelers} personas</span>
-                  </div>
-                  {selectedQuote.trips?.price && (
+                {/* Trip info */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-slate-500" />
+                      Detalles del viaje
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Precio por persona</span>
-                      <span className="font-medium">${selectedQuote.trips.price.toLocaleString()}</span>
+                      <span className="text-slate-500">Viaje</span>
+                      <span className="font-medium text-right max-w-[60%]">{selectedQuote.trips?.title || 'N/A'}</span>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                    {selectedQuote.trips?.destination && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Región</span>
+                        <span className="font-medium">{selectedQuote.trips.destination}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Fecha de viaje</span>
+                      <span className="font-medium">
+                        {selectedQuote.travel_date
+                          ? format(new Date(selectedQuote.travel_date), 'dd MMM yyyy', { locale: es })
+                          : 'No especificada'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Adultos</span>
+                      <span className="font-medium">{selectedQuote.adults}</span>
+                    </div>
+                    {selectedQuote.children > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Menores</span>
+                        <span className="font-medium">{selectedQuote.children}</span>
+                      </div>
+                    )}
+                    {selectedQuote.trips?.price && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Precio base p/p</span>
+                        <span className="font-medium text-green-700">
+                          USD ${selectedQuote.trips.price.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {selectedQuote.trip_id && (
+                      <a
+                        href={`/viajes/${selectedQuote.trip_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Ver viaje en el sitio
+                      </a>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
 
+              {/* Customer message */}
               {selectedQuote.message && (
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Mensaje</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-slate-500" />
+                      Mensaje del cliente
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-slate-600 whitespace-pre-wrap">{selectedQuote.message}</p>
+                    <p className="text-sm text-slate-600 whitespace-pre-wrap bg-slate-50 p-3 rounded-lg">
+                      {selectedQuote.message}
+                    </p>
                   </CardContent>
                 </Card>
               )}
 
+              {/* Internal notes */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <StickyNote className="h-4 w-4 text-slate-500" />
+                    Notas internas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Textarea
+                    placeholder="Agrega notas internas sobre esta cotización... (ej: cliente contactado por teléfono, prefiere hotel 5 estrellas)"
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    rows={3}
+                    className="resize-none"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSaveNotes}
+                    disabled={isSavingNotes || editNotes === (selectedQuote.notes || '')}
+                  >
+                    {isSavingNotes ? 'Guardando...' : 'Guardar notas'}
+                  </Button>
+                </CardContent>
+              </Card>
+
               <Separator />
 
-              <div className="flex gap-2">
-                <Button className="flex-1" onClick={() => window.open(`mailto:${selectedQuote.email}`)}>
+              {/* Action buttons */}
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => window.open(`mailto:${selectedQuote.email}?subject=Cotización Headway Trips - ${selectedQuote.trips?.title || ''}`)}>
                   <Mail className="h-4 w-4 mr-2" />
-                  Enviar email
+                  Email
                 </Button>
                 {selectedQuote.phone && (
-                  <Button variant="outline" className="flex-1" onClick={() => window.open(`https://wa.me/${selectedQuote.phone.replace(/\D/g, '')}`)}>
+                  <Button variant="outline" onClick={() => window.open(getWhatsAppUrl(selectedQuote), '_blank')} className="text-green-700 border-green-300 hover:bg-green-50">
                     <Phone className="h-4 w-4 mr-2" />
                     WhatsApp
                   </Button>
                 )}
+                {selectedQuote.phone && (
+                  <Button variant="outline" onClick={() => window.open(`tel:${selectedQuote.phone}`)}>
+                    <Phone className="h-4 w-4 mr-2" />
+                    Llamar
+                  </Button>
+                )}
+                <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 ml-auto" onClick={() => handleDeleteClick(selectedQuote)}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar
+                </Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar cotización</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. La cotización de &ldquo;{quoteToDelete?.name}&rdquo;
+              {quoteToDelete?.trips?.title && ` para "${quoteToDelete.trips.title}"`} será eliminada permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} disabled={isDeleting} className="bg-red-600 hover:bg-red-700">
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

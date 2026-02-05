@@ -40,7 +40,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
     if (body.status) updates.status = body.status;
-    if (body.notes !== undefined) updates.notes = body.notes;
+    if (body.notes !== undefined) {
+      updates.notes = body.notes;
+    }
+    if (body.quoted_price !== undefined) updates.quoted_price = body.quoted_price;
+    if (body.assigned_agent !== undefined) updates.assigned_agent = body.assigned_agent;
 
     const { data: quote, error } = await supabase.from('quote_requests').update(updates).eq('id', id).select().single();
 

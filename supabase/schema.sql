@@ -76,15 +76,13 @@ CREATE TABLE IF NOT EXISTS public.quote_requests (
   -- Estado de la solicitud
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'contacted', 'quoted', 'confirmed', 'cancelled')),
   
-  -- Información del agente (para seguimiento interno)
-  assigned_agent TEXT,
-  internal_notes TEXT,
-  quoted_price NUMERIC(10, 2),
-  
+  -- Notas internas del agente
+  notes TEXT,
+
   -- Metadatos
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   -- Marketing
   utm_source TEXT,
   utm_medium TEXT,
@@ -187,17 +185,20 @@ CREATE INDEX IF NOT EXISTS idx_passengers_booking ON public.booking_passengers(b
 -- =============================================
 CREATE TABLE IF NOT EXISTS public.contact_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
+
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT,
+  subject TEXT DEFAULT '',
   message TEXT NOT NULL,
-  
+
   -- Estado
   status TEXT DEFAULT 'unread' CHECK (status IN ('unread', 'read', 'replied', 'archived')),
-  
+  read BOOLEAN DEFAULT FALSE,
+
   -- Metadatos
   created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
   replied_at TIMESTAMPTZ
 );
 
@@ -231,6 +232,11 @@ CREATE TRIGGER trigger_quotes_updated_at
 
 CREATE TRIGGER trigger_bookings_updated_at
   BEFORE UPDATE ON public.bookings
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trigger_contact_messages_updated_at
+  BEFORE UPDATE ON public.contact_messages
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
 
@@ -324,8 +330,20 @@ CREATE POLICY "Anyone can create contact messages"
   ON public.contact_messages FOR INSERT 
   WITH CHECK (true);
 
-CREATE POLICY "Contact messages viewable by authenticated users" 
-  ON public.contact_messages FOR SELECT 
+CREATE POLICY "Contact messages viewable by authenticated users"
+  ON public.contact_messages FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Contact messages updatable by authenticated users"
+  ON public.contact_messages FOR UPDATE
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Contact messages deletable by authenticated users"
+  ON public.contact_messages FOR DELETE
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Quote requests deletable by authenticated users"
+  ON public.quote_requests FOR DELETE
   USING (auth.role() = 'authenticated');
 
 -- =============================================

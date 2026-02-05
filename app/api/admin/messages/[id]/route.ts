@@ -33,7 +33,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
-    if (body.read !== undefined) updates.read = body.read;
+    if (body.read !== undefined) {
+      updates.read = body.read;
+      updates.status = body.read ? 'read' : 'unread';
+    }
 
     const { data: message, error } = await supabase.from('contact_messages').update(updates).eq('id', id).select().single();
 

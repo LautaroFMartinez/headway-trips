@@ -6,6 +6,7 @@ import { ServiceWorkerRegister } from '@/components/service-worker-register';
 import { ScrollToTop } from '@/components/scroll-to-top';
 import { WhatsAppButton } from '@/components/whatsapp-button';
 import { GoogleAnalytics } from '@/components/google-analytics';
+import { CookieConsent } from '@/components/cookie-consent';
 import './globals.css';
 
 const dmSans = DM_Sans({
@@ -121,6 +122,7 @@ export default function RootLayout({
         <WhatsAppButton />
         <Analytics />
         <GoogleAnalytics />
+        <CookieConsent />
         <ServiceWorkerRegister />
       </body>
     </html>

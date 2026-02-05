@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Build query - using quote_requests table with correct column names
-    let query = supabase.from('quote_requests').select('*, trips(title, region, price_value)', { count: 'exact' });
+    let query = supabase.from('quote_requests').select('*, trips(title, region, price_value, image)', { count: 'exact' });
 
     // Apply filters
     if (search) {
@@ -43,17 +43,24 @@ export async function GET(request: NextRequest) {
       name: q.customer_name,
       email: q.customer_email,
       phone: q.customer_phone,
+      country: q.customer_country,
       travel_date: q.travel_date,
+      adults: q.adults || 1,
+      children: q.children || 0,
       travelers: (q.adults || 0) + (q.children || 0),
       message: q.message,
       status: q.status || 'pending',
-      notes: q.notes,
+      notes: q.notes || '',
+      quoted_price: q.quoted_price,
+      assigned_agent: q.assigned_agent,
       created_at: q.created_at,
+      updated_at: q.updated_at,
       trips: q.trips
         ? {
             title: q.trips.title,
             destination: q.trips.region,
             price: q.trips.price_value,
+            image: q.trips.image,
           }
         : null,
     }));

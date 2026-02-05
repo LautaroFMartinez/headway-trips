@@ -91,9 +91,10 @@ export async function GET(request: NextRequest) {
       .not('trip_id', 'is', null);
 
     const regionCounts: Record<string, number> = {};
-    (quotesWithTrips || []).forEach((q: { trip_id: string; trips: { region: string }[] }) => {
-      const region = q.trips?.[0]?.region || 'Sin especificar';
-      regionCounts[region] = (regionCounts[region] || 0) + 1;
+    (quotesWithTrips || []).forEach((q: Record<string, unknown>) => {
+      const trips = q.trips as { region: string } | { region: string }[] | null;
+      const region = Array.isArray(trips) ? trips[0]?.region : trips?.region;
+      regionCounts[region || 'Sin especificar'] = (regionCounts[region || 'Sin especificar'] || 0) + 1;
     });
 
     const quotesByRegion = Object.entries(regionCounts)
@@ -142,37 +143,66 @@ export async function GET(request: NextRequest) {
       label: statusLabels[status] || status,
     }));
 
-    // Actividad reciente
-    const recentQuotes = quotes
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 3);
+    // Actividad reciente - con nombres reales
+    const { data: recentQuotesData } = await supabase
+      .from('quote_requests')
+      .select('id, customer_name, status, created_at, trips(title)')
+      .order('created_at', { ascending: false })
+      .limit(5);
 
-    const recentMessages = messages
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 2);
+    const { data: recentMessagesData } = await supabase
+      .from('contact_messages')
+      .select('id, name, created_at')
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    const statusMessages: Record<string, string> = {
+      pending: 'Nueva cotización',
+      contacted: 'Cotización contactada',
+      quoted: 'Cotización enviada',
+      confirmed: 'Venta confirmada',
+      cancelled: 'Cotización cancelada',
+    };
 
     const recentActivity = [
-      ...recentQuotes.map((q) => ({
-        type: 'quote',
-        message: 'Nueva cotización recibida',
-        time: formatTimeAgo(new Date(q.created_at)),
-      })),
-      ...recentMessages.map((m) => ({
+      ...(recentQuotesData || []).map((q: Record<string, unknown>) => {
+        const trips = q.trips as { title: string } | { title: string }[] | null;
+        const tripTitle = Array.isArray(trips) ? trips[0]?.title : trips?.title;
+        return {
+          type: 'quote',
+          status: q.status as string,
+          message: `${statusMessages[q.status as string] || 'Cotización'}: ${tripTitle || 'Viaje'} - ${q.customer_name}`,
+          time: formatTimeAgo(new Date(q.created_at as string)),
+          id: q.id as string,
+        };
+      }),
+      ...(recentMessagesData || []).map((m) => ({
         type: 'message',
-        message: 'Nuevo mensaje de contacto',
+        status: 'new',
+        message: `Mensaje de contacto de ${m.name}`,
         time: formatTimeAgo(new Date(m.created_at)),
+        id: m.id,
       })),
-    ].slice(0, 5);
+    ]
+      .sort((a, b) => {
+        // Sort by time description (approximate)
+        const timeOrder = (t: string) => {
+          if (t.includes('minuto')) return 1;
+          if (t.includes('hora')) return 2;
+          if (t === 'Ayer') return 3;
+          return 4;
+        };
+        return timeOrder(a.time) - timeOrder(b.time);
+      })
+      .slice(0, 6);
 
-    // Si no hay actividad real, usar demo
-    const finalRecentActivity =
-      recentActivity.length > 0
-        ? recentActivity
-        : [
-            { type: 'quote', message: 'Nueva cotización para Bariloche', time: 'Hace 2 horas' },
-            { type: 'message', message: 'Nuevo mensaje de contacto', time: 'Hace 4 horas' },
-            { type: 'quote', message: 'Cotización confirmada - Cusco', time: 'Hace 6 horas' },
-          ];
+    const finalRecentActivity = recentActivity.length > 0 ? recentActivity : [];
+
+    // Tasa de conversión
+    const totalQuotesCount = quotes.length;
+    const conversionRate = totalQuotesCount > 0
+      ? Math.round((confirmedSales / totalQuotesCount) * 100)
+      : 0;
 
     return NextResponse.json({
       stats: {
@@ -184,6 +214,7 @@ export async function GET(request: NextRequest) {
         quotesThisWeek,
         confirmedSales,
         contactedNotClosed,
+        conversionRate,
       },
       quotesByWeek,
       quotesByRegion: finalQuotesByRegion,

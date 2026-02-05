@@ -1,12 +1,27 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { GoogleAnalytics as GA } from '@next/third-parties/google';
+import { hasAnalyticsConsent } from '@/components/cookie-consent';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export function GoogleAnalytics() {
-  // No renderizar si no hay GA_ID configurado
-  if (!GA_ID) {
+  const [consented, setConsented] = useState(false);
+
+  useEffect(() => {
+    setConsented(hasAnalyticsConsent());
+
+    const handleConsentChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setConsented(detail === 'all');
+    };
+
+    window.addEventListener('cookie-consent-change', handleConsentChange);
+    return () => window.removeEventListener('cookie-consent-change', handleConsentChange);
+  }, []);
+
+  if (!GA_ID || !consented) {
     return null;
   }
 

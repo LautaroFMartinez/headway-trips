@@ -33,6 +33,7 @@ export function Header() {
               { href: '/', label: 'Inicio' },
               { href: '#destinos', label: 'Destinos' },
               { href: '/comparador', label: 'Comparador' },
+              { href: '/nosotros', label: 'Nosotros' },
               { href: '#contacto', label: 'Contacto' },
             ].map((link) => (
               <Link key={link.href} href={link.href} onClick={link.href.startsWith('#') ? handleSmoothScroll : undefined} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50">
@@ -61,6 +62,7 @@ export function Header() {
               { href: '/', label: 'Inicio' },
               { href: '#destinos', label: 'Destinos' },
               { href: '/comparador', label: 'Comparador' },
+              { href: '/nosotros', label: 'Nosotros' },
               { href: '#contacto', label: 'Contacto' },
             ].map((link) => (
               <Link

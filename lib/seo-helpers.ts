@@ -156,3 +156,126 @@ export function generateWebPageSchema({ title, description, url }: { title: stri
     },
   };
 }
+
+export function generateFAQSchema(faqs: { question: string; answer: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
+export function generateBlogPostingSchema(post: {
+  title: string;
+  description: string;
+  url: string;
+  image?: string;
+  datePublished: string;
+  dateModified?: string;
+  author?: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    image: post.image || 'https://headwaytrips.com/og-image.jpg',
+    url: `https://headwaytrips.com${post.url}`,
+    datePublished: post.datePublished,
+    dateModified: post.dateModified || post.datePublished,
+    author: {
+      '@type': 'Organization',
+      name: post.author || 'Headway Trips',
+      url: 'https://headwaytrips.com',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Headway Trips',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://headwaytrips.com/icono.png',
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://headwaytrips.com${post.url}`,
+    },
+  };
+}
+
+export function generateAggregateRatingSchema(rating: {
+  ratingValue: number;
+  reviewCount: number;
+  bestRating?: number;
+  worstRating?: number;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'TravelAgency',
+    name: 'Headway Trips',
+    url: 'https://headwaytrips.com',
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: rating.ratingValue,
+      reviewCount: rating.reviewCount,
+      bestRating: rating.bestRating || 5,
+      worstRating: rating.worstRating || 1,
+    },
+  };
+}
+
+export function generateLocalBusinessSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'TravelAgency',
+    '@id': 'https://headwaytrips.com/#organization',
+    name: 'Headway Trips',
+    url: 'https://headwaytrips.com',
+    logo: 'https://headwaytrips.com/icono.png',
+    image: 'https://headwaytrips.com/og-image.jpg',
+    description: 'Tu agencia de viajes de confianza en Argentina. Creamos experiencias de viaje inolvidables.',
+    telephone: '+54 11 1234-5678',
+    email: 'info@headwaytrips.com',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Buenos Aires',
+      addressLocality: 'Buenos Aires',
+      addressRegion: 'CABA',
+      postalCode: '1000',
+      addressCountry: 'AR',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: -34.6037,
+      longitude: -58.3816,
+    },
+    openingHoursSpecification: [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        opens: '09:00',
+        closes: '18:00',
+      },
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: 'Saturday',
+        opens: '10:00',
+        closes: '14:00',
+      },
+    ],
+    sameAs: [
+      'https://facebook.com/headwaytrips',
+      'https://instagram.com/headwaytrips',
+      'https://twitter.com/headwaytrips',
+    ],
+    priceRange: '$$',
+  };
+}
+

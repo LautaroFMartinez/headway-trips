@@ -9,7 +9,8 @@ const footerLinks = {
     { href: '/blog', label: 'Blog' },
   ],
   empresa: [
-    { href: '/#nosotros', label: 'Nosotros' },
+    { href: '/nosotros', label: 'Sobre nosotros' },
+    { href: '/faq', label: 'Preguntas frecuentes' },
     { href: '/#contacto', label: 'Contacto' },
   ],
   legal: [

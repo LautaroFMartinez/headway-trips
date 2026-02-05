@@ -99,7 +99,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     title: `${trip.title} - ${trip.subtitle}`,
     description: trip.description,
     url: `/viaje/${trip.id}`,
-    image: trip.heroImage,
+    image: `/api/og?title=${encodeURIComponent(trip.title)}&subtitle=${encodeURIComponent(trip.subtitle)}&destination=${encodeURIComponent(trip.title)}`,
     keywords: ['viaje', 'turismo', trip.title],
     type: 'article',
   });

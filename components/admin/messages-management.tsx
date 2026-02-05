@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Search, Mail, Phone, Trash2, MoreHorizontal, CheckCircle, Circle, MessageSquare, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,14 +77,16 @@ export function MessagesManagement() {
 
   const handleToggleRead = async (message: Message) => {
     try {
-      await fetch(`/api/admin/messages/${message.id}`, {
+      const res = await fetch(`/api/admin/messages/${message.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ read: !message.read }),
       });
+      if (!res.ok) throw new Error();
+      toast.success(message.read ? 'Marcado como no leído' : 'Marcado como leído');
       loadMessages();
-    } catch (error) {
-      console.error('Error updating message:', error);
+    } catch {
+      toast.error('Error al actualizar el mensaje');
     }
   };
 
@@ -97,12 +100,14 @@ export function MessagesManagement() {
 
     setIsDeleting(true);
     try {
-      await fetch(`/api/admin/messages/${messageToDelete.id}`, {
+      const res = await fetch(`/api/admin/messages/${messageToDelete.id}`, {
         method: 'DELETE',
       });
+      if (!res.ok) throw new Error();
+      toast.success('Mensaje eliminado');
       loadMessages();
-    } catch (error) {
-      console.error('Error deleting message:', error);
+    } catch {
+      toast.error('Error al eliminar el mensaje');
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
