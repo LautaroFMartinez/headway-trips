@@ -56,7 +56,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <nav className="container mx-auto px-6 py-4 bg-background/95 backdrop-blur-md border-t border-border">
+        <nav className="container mx-auto px-6 py-4 bg-background/95 backdrop-blur-md border-t border-border" aria-label="Menú móvil">
           <div className="flex flex-col gap-1">
             {[
               { href: '/', label: 'Inicio' },

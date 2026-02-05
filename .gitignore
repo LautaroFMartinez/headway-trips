@@ -33,3 +33,5 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/tests/visual-regression.spec.ts-snapshots/
+

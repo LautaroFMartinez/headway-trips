@@ -169,9 +169,9 @@ test.describe('Scroll Animations', () => {
     await page.keyboard.press('End');
     await page.waitForTimeout(500);
     
-    // Click scroll-to-top
+    // Click scroll-to-top (use force to bypass WhatsApp button and cookie banner)
     const scrollButton = page.getByRole('button', { name: /volver arriba/i });
-    await scrollButton.click();
+    await scrollButton.click({ force: true });
     await page.waitForTimeout(600);
     
     // Should be near top
@@ -306,8 +306,8 @@ test.describe('Animation Performance', () => {
     const scrollButton = page.getByRole('button', { name: /volver arriba/i });
     await expect(scrollButton).toBeVisible({ timeout: 2000 });
     
-    // Click should work
-    await scrollButton.click();
+    // Click should work (use force to bypass WhatsApp button and cookie banner)
+    await scrollButton.click({ force: true });
     await page.waitForTimeout(500);
     
     const scrollY = await page.evaluate(() => window.scrollY);
