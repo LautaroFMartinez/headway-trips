@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { trips } from '@/lib/trips-data';
 import { blogPosts } from '@/lib/blog-data';
+import { segments } from '@/lib/segments-data';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://headwaytrips.com';
@@ -92,5 +93,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  return [...staticRoutes, ...additionalStaticRoutes, ...tripRoutes, ...regionRoutes, ...blogRoutes];
+  // Segment landing pages
+  const segmentRoutes = [
+    {
+      url: `${baseUrl}/segmento`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    },
+    ...segments.map((segment) => ({
+      url: `${baseUrl}/segmento/${segment.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
+  ];
+
+  return [...staticRoutes, ...additionalStaticRoutes, ...tripRoutes, ...regionRoutes, ...blogRoutes, ...segmentRoutes];
 }

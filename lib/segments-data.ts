@@ -13,6 +13,7 @@ export interface Segment {
     tips: string[];
   };
   heroImage: string;
+  faqs?: Array<{ question: string; answer: string }>;
 }
 
 export const segments: Segment[] = [

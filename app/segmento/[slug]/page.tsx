@@ -6,7 +6,7 @@ import { ArrowRight, Check, Lightbulb, MapPin } from 'lucide-react';
 
 import { getSegmentBySlug, getRelatedSegments, segments } from '@/lib/segments-data';
 import { trips } from '@/lib/trips-data';
-import { generateSEOMetadata, generateBreadcrumbSchema, generateWebPageSchema } from '@/lib/seo-helpers';
+import { generateSEOMetadata, generateBreadcrumbSchema, generateWebPageSchema, generateFAQSchema } from '@/lib/seo-helpers';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { TripGrid } from '@/components/trip-grid';
 import { Button } from '@/components/ui/button';

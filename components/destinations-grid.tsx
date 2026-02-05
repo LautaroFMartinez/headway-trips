@@ -41,9 +41,15 @@ export function DestinationsGrid() {
   const [isLoadingTrips, setIsLoadingTrips] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const debouncedQuery = useDebounce(searchQuery, 300);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Prevent hydration mismatch with Radix Sheet
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Load trips from API
   useEffect(() => {
@@ -186,18 +192,19 @@ export function DestinationsGrid() {
               )}
             </div>
 
-            <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="h-12 px-5 relative gap-2">
-                  <SlidersHorizontal className="w-4 h-4" />
-                  <span className="hidden sm:inline">Filtros</span>
-                  {activeFiltersCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center font-medium">
-                      {activeFiltersCount}
-                    </span>
-                  )}
-                </Button>
-              </SheetTrigger>
+            {isMounted && (
+              <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="h-12 px-5 relative gap-2">
+                    <SlidersHorizontal className="w-4 h-4" />
+                    <span className="hidden sm:inline">Filtros</span>
+                    {activeFiltersCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center font-medium">
+                        {activeFiltersCount}
+                      </span>
+                    )}
+                  </Button>
+                </SheetTrigger>
               <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle>Filtrar Viajes</SheetTitle>
@@ -274,6 +281,7 @@ export function DestinationsGrid() {
                 </SheetFooter>
               </SheetContent>
             </Sheet>
+            )}
           </div>
 
           {/* Quick Region Pills */}
