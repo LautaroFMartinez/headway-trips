@@ -12,12 +12,12 @@ Font.register({
   ],
 });
 
-// Brand colors
+// Brand colors - Premium palette
 const colors = {
   primary: '#0f766e',
   primaryLight: '#14b8a6',
   primaryDark: '#0d6560',
-  secondary: '#7c3aed',
+  accent: '#7c3aed',
   text: '#18181b',
   textMuted: '#71717a',
   textLight: '#a1a1aa',
@@ -26,17 +26,13 @@ const colors = {
   backgroundLight: '#fafafa',
   white: '#ffffff',
   success: '#22c55e',
-  warning: '#eab308',
+  warning: '#f59e0b',
   error: '#ef4444',
+  gold: '#d4a853',
 };
 
-// Site URL for absolute paths
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://headwaytrips.com';
 
-/**
- * Converts relative URLs to absolute URLs for PDF rendering.
- * React-PDF requires absolute URLs for remote images.
- */
 function toAbsoluteUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -45,19 +41,12 @@ function toAbsoluteUrl(url: string | null | undefined): string | null {
 }
 
 const styles = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 10,
-    color: colors.text,
-    backgroundColor: colors.white,
-  },
-  // Hero section with image
-  heroContainer: {
+  // === COVER PAGE ===
+  coverPage: {
     position: 'relative',
-    height: 220,
     backgroundColor: colors.primaryDark,
   },
-  heroImage: {
+  coverImage: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -65,181 +54,280 @@ const styles = StyleSheet.create({
     bottom: 0,
     objectFit: 'cover',
   },
-  heroOverlay: {
+  coverOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
   },
-  heroContent: {
+  coverContent: {
     position: 'absolute',
-    bottom: 24,
-    left: 40,
-    right: 40,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    padding: 50,
   },
-  heroTitle: {
-    fontSize: 28,
+  coverHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  coverLogo: {
+    width: 48,
+    height: 48,
+  },
+  coverBrand: {
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.white,
-    marginBottom: 4,
+    letterSpacing: 1,
   },
-  heroSubtitle: {
-    fontSize: 14,
+  coverTagline: {
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
+  },
+  coverCenter: {
+    flex: 1,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  coverTitle: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: colors.white,
+    textAlign: 'center',
+    marginBottom: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  },
+  coverSubtitle: {
+    fontSize: 18,
     color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    marginBottom: 24,
   },
-  // Header with logo
+  coverMeta: {
+    flexDirection: 'row',
+    gap: 24,
+    justifyContent: 'center',
+  },
+  coverMetaItem: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+  },
+  coverMetaText: {
+    fontSize: 12,
+    color: colors.white,
+    fontWeight: 'bold',
+  },
+  coverFooter: {
+    alignItems: 'center',
+  },
+  coverDivider: {
+    width: 60,
+    height: 2,
+    backgroundColor: colors.gold,
+    marginBottom: 16,
+  },
+  coverProposal: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.7)',
+    textTransform: 'uppercase',
+    letterSpacing: 3,
+    marginBottom: 6,
+  },
+  coverDate: {
+    fontSize: 12,
+    color: colors.white,
+  },
+
+  // === CONTENT PAGES ===
+  page: {
+    fontFamily: 'Helvetica',
+    fontSize: 10,
+    color: colors.text,
+    backgroundColor: colors.white,
+    paddingBottom: 60,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '16 40',
     backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
   },
-  logoContainer: {
+  headerLogo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  logoImage: {
-    width: 32,
-    height: 32,
-    objectFit: 'contain',
+  headerLogoImage: {
+    width: 28,
+    height: 28,
   },
-  logoText: {
-    fontSize: 16,
+  headerBrand: {
+    fontSize: 14,
     fontWeight: 'bold',
     color: colors.primary,
   },
-  logoSubtext: {
-    fontSize: 8,
+  headerTitle: {
+    fontSize: 11,
     color: colors.textMuted,
-    marginTop: 1,
-  },
-  headerRight: {
     textAlign: 'right',
   },
-  headerDate: {
-    fontSize: 9,
-    color: colors.textMuted,
-  },
-  // Content area
   content: {
     padding: '24 40',
   },
-  // Info boxes row
-  infoRow: {
+
+  // === ESSENCE SECTION ===
+  essenceSection: {
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  essenceQuote: {
+    fontSize: 18,
+    fontStyle: 'italic',
+    color: colors.primary,
+    textAlign: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 40,
+    lineHeight: 1.6,
+  },
+  essenceStats: {
     flexDirection: 'row',
-    gap: 12,
+    justifyContent: 'center',
+    gap: 24,
     marginBottom: 24,
   },
-  infoBox: {
-    flex: 1,
+  essenceStat: {
+    alignItems: 'center',
     backgroundColor: colors.background,
-    padding: 14,
+    padding: 16,
     borderRadius: 8,
+    width: 100,
   },
-  infoBoxPrimary: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    padding: 14,
-    borderRadius: 8,
+  essenceStatIcon: {
+    fontSize: 20,
+    marginBottom: 6,
   },
-  infoLabel: {
+  essenceStatValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 2,
+  },
+  essenceStatLabel: {
     fontSize: 8,
     color: colors.textMuted,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 4,
   },
-  infoLabelLight: {
-    fontSize: 8,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  infoValueLight: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.white,
-  },
-  // Gallery section
-  galleryContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 24,
-  },
-  galleryImage: {
-    flex: 1,
-    height: 100,
-    borderRadius: 6,
-    objectFit: 'cover',
-  },
-  // Description
-  description: {
+  essenceDescription: {
     fontSize: 11,
     lineHeight: 1.7,
     color: colors.text,
-    marginBottom: 24,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
-  // Section
+
+  // === HIGHLIGHTS ===
+  highlightsSection: {
+    marginBottom: 28,
+  },
+  highlightsTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  highlightsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  highlightItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primaryLight,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    gap: 6,
+  },
+  highlightText: {
+    fontSize: 10,
+    color: colors.white,
+    fontWeight: 'bold',
+  },
+
+  // === SECTION ===
   section: {
     marginBottom: 24,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
-    paddingBottom: 8,
-    borderBottomWidth: 2,
+    marginBottom: 16,
+    paddingBottom: 10,
+    borderBottomWidth: 3,
     borderBottomColor: colors.primary,
   },
+  sectionIcon: {
+    fontSize: 16,
+    marginRight: 10,
+    color: colors.primary,
+  },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.text,
   },
-  // Itinerary
+
+  // === ITINERARY ===
   dayCard: {
-    marginBottom: 12,
-    padding: 14,
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
+    marginBottom: 16,
+    borderRadius: 10,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   dayHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  dayBadge: {
     backgroundColor: colors.primary,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 4,
+    padding: 12,
   },
-  dayBadgeText: {
-    fontSize: 9,
+  dayNumber: {
+    backgroundColor: colors.white,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 4,
+    marginRight: 12,
+  },
+  dayNumberText: {
+    fontSize: 10,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.primary,
   },
   dayTitle: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: colors.text,
+    color: colors.white,
     flex: 1,
-    marginLeft: 10,
   },
   dayMeals: {
     flexDirection: 'row',
@@ -247,50 +335,49 @@ const styles = StyleSheet.create({
   },
   mealBadge: {
     fontSize: 7,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: 'rgba(255,255,255,0.25)',
     color: colors.white,
-    paddingVertical: 2,
+    paddingVertical: 3,
     paddingHorizontal: 6,
     borderRadius: 3,
   },
+  dayContent: {
+    padding: 14,
+    backgroundColor: colors.backgroundLight,
+  },
   dayDescription: {
     fontSize: 10,
-    lineHeight: 1.5,
+    lineHeight: 1.6,
     color: colors.text,
   },
-  // Services
-  servicesRow: {
+
+  // === SERVICES ===
+  servicesContainer: {
     flexDirection: 'row',
-    gap: 24,
+    gap: 20,
   },
   servicesColumn: {
     flex: 1,
   },
   servicesSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 10,
-    paddingBottom: 6,
+    marginBottom: 12,
+    paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   serviceItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 6,
+    marginBottom: 8,
+    paddingLeft: 4,
   },
   serviceIcon: {
-    fontSize: 10,
-    marginRight: 8,
+    fontSize: 12,
+    width: 18,
     marginTop: 1,
-    width: 12,
-  },
-  serviceText: {
-    fontSize: 10,
-    color: colors.text,
-    flex: 1,
-    lineHeight: 1.4,
   },
   includeIcon: {
     color: colors.success,
@@ -298,14 +385,47 @@ const styles = StyleSheet.create({
   excludeIcon: {
     color: colors.error,
   },
-  // Accommodation
+  serviceText: {
+    fontSize: 10,
+    color: colors.text,
+    flex: 1,
+    lineHeight: 1.5,
+  },
+
+  // === PRICE BOX ===
+  priceBox: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: 24,
+    marginVertical: 24,
+    alignItems: 'center',
+  },
+  priceLabel: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.8)',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginBottom: 8,
+  },
+  priceValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: colors.white,
+    marginBottom: 6,
+  },
+  priceNote: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.7)',
+  },
+
+  // === ACCOMMODATION ===
   accommodationCard: {
     padding: 14,
     backgroundColor: colors.backgroundLight,
     borderRadius: 8,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.gold,
   },
   accommodationHeader: {
     flexDirection: 'row',
@@ -325,14 +445,17 @@ const styles = StyleSheet.create({
   accommodationDetails: {
     fontSize: 9,
     color: colors.textMuted,
-    marginTop: 2,
+    marginTop: 3,
   },
-  // Activity
+
+  // === ACTIVITY ===
   activityCard: {
     padding: 14,
     backgroundColor: colors.backgroundLight,
     borderRadius: 8,
     marginBottom: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primaryLight,
   },
   activityName: {
     fontSize: 11,
@@ -343,13 +466,13 @@ const styles = StyleSheet.create({
   activityDescription: {
     fontSize: 9,
     color: colors.text,
-    lineHeight: 1.4,
+    lineHeight: 1.5,
   },
   activityMeta: {
     flexDirection: 'row',
     gap: 16,
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: 10,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
@@ -357,13 +480,93 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: colors.textMuted,
   },
-  // Footer
+
+  // === CTA PAGE ===
+  ctaPage: {
+    backgroundColor: colors.primary,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 50,
+  },
+  ctaTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.white,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  ctaSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.9)',
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  ctaQrContainer: {
+    backgroundColor: colors.white,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  ctaQr: {
+    width: 140,
+    height: 140,
+  },
+  ctaQrLabel: {
+    fontSize: 10,
+    color: colors.white,
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  ctaContact: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  ctaContactItem: {
+    fontSize: 12,
+    color: colors.white,
+    marginBottom: 8,
+  },
+  ctaContactLink: {
+    fontSize: 14,
+    color: colors.white,
+    fontWeight: 'bold',
+    textDecoration: 'none',
+  },
+  ctaDivider: {
+    width: 80,
+    height: 2,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    marginBottom: 30,
+  },
+  ctaQuote: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: 'rgba(255,255,255,0.9)',
+    textAlign: 'center',
+    marginBottom: 30,
+    paddingHorizontal: 40,
+  },
+  ctaBrand: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.white,
+    letterSpacing: 2,
+  },
+  ctaTagline: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 4,
+  },
+
+  // === FOOTER ===
   footer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: '14 40',
+    padding: '12 40',
     backgroundColor: colors.background,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -377,8 +580,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   footerLogo: {
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
   },
   footerText: {
     fontSize: 8,
@@ -395,7 +598,7 @@ const styles = StyleSheet.create({
   },
 });
 
-interface TripData {
+export interface TripData {
   id: string;
   title: string;
   subtitle?: string;
@@ -411,12 +614,13 @@ interface TripData {
   content_blocks?: ContentBlock[];
   heroImage?: string | null;
   gallery?: string[];
+  tagline?: string;
+  highlights?: string[];
 }
-
-export type { TripData };
 
 interface TripPdfDocumentProps {
   trip: TripData;
+  qrCodeDataUrl?: string;
 }
 
 function stripHtml(html: string): string {
@@ -431,7 +635,18 @@ function getMealBadges(meals: { breakfast: boolean; lunch: boolean; dinner: bool
   return badges;
 }
 
-export function TripPdfDocument({ trip }: TripPdfDocumentProps) {
+function getEssenceQuote(region?: string): string {
+  const quotes: Record<string, string> = {
+    sudamerica: '"Donde la naturaleza habla y el alma escucha"',
+    patagonia: '"Donde los glaciares tocan el cielo y cada amanecer cuenta una historia"',
+    caribe: '"Donde el mar azul se funde con tus sueños"',
+    europa: '"Donde la historia cobra vida en cada esquina"',
+    asia: '"Donde lo ancestral y lo moderno se encuentran"',
+  };
+  return quotes[region?.toLowerCase() || ''] || '"Tu próxima aventura comienza aquí"';
+}
+
+export function TripPdfDocument({ trip, qrCodeDataUrl }: TripPdfDocumentProps) {
   const today = new Date().toLocaleDateString('es-AR', {
     year: 'numeric',
     month: 'long',
@@ -448,138 +663,222 @@ export function TripPdfDocument({ trip }: TripPdfDocumentProps) {
   const flightBlocks = contentBlocks.filter((b): b is FlightBlock => b.type === 'flight');
   const transportBlocks = contentBlocks.filter((b): b is TransportBlock => b.type === 'transport');
 
-  // Use content_blocks data or fallback to legacy fields
   const includes = servicesBlock?.data.includes || trip.includes || [];
   const excludes = servicesBlock?.data.excludes || trip.excludes || [];
   const itineraryDays = itineraryBlock?.data.days || [];
   const legacyItinerary = trip.itinerary || [];
+  const highlights = trip.highlights || includes.slice(0, 5);
 
-  // Prepare images
   const heroImageUrl = toAbsoluteUrl(trip.heroImage);
   const logoUrl = toAbsoluteUrl('/icono.png');
-  const galleryImages = (trip.gallery || []).slice(0, 3).map(img => toAbsoluteUrl(img)).filter(Boolean) as string[];
 
-  // Price display
   const displayPrice = priceBlock 
     ? `${priceBlock.data.currency} $${priceBlock.data.basePrice.toLocaleString()}`
     : trip.price || 'Consultar';
 
+  const essenceQuote = trip.tagline || getEssenceQuote(trip.region);
+
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        {/* Hero Section with Image */}
-        <View style={styles.heroContainer}>
-          {heroImageUrl && (
-            <Image src={heroImageUrl} style={styles.heroImage} />
-          )}
-          <View style={styles.heroOverlay} />
-          <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>{trip.title}</Text>
-            {trip.subtitle && <Text style={styles.heroSubtitle}>{trip.subtitle}</Text>}
-          </View>
-        </View>
-
-        {/* Header with Logo */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            {logoUrl && <Image src={logoUrl} style={styles.logoImage} />}
+      {/* === COVER PAGE === */}
+      <Page size="A4" style={styles.coverPage}>
+        {heroImageUrl && <Image src={heroImageUrl} style={styles.coverImage} />}
+        <View style={styles.coverOverlay} />
+        <View style={styles.coverContent}>
+          {/* Header */}
+          <View style={styles.coverHeader}>
+            {logoUrl && <Image src={logoUrl} style={styles.coverLogo} />}
             <View>
-              <Text style={styles.logoText}>Headway Trips</Text>
-              <Text style={styles.logoSubtext}>Viajes personalizados a medida</Text>
+              <Text style={styles.coverBrand}>HEADWAY TRIPS</Text>
+              <Text style={styles.coverTagline}>Viajes personalizados a medida</Text>
             </View>
           </View>
-          <View style={styles.headerRight}>
-            <Text style={styles.headerDate}>Propuesta generada el</Text>
-            <Text style={styles.headerDate}>{today}</Text>
+
+          {/* Center Content */}
+          <View style={styles.coverCenter}>
+            <Text style={styles.coverTitle}>{trip.title}</Text>
+            {trip.subtitle && <Text style={styles.coverSubtitle}>{trip.subtitle}</Text>}
+            <View style={styles.coverMeta}>
+              <View style={styles.coverMetaItem}>
+                <Text style={styles.coverMetaText}>{trip.duration || `${trip.durationDays || 7} días`}</Text>
+              </View>
+              <View style={styles.coverMetaItem}>
+                <Text style={styles.coverMetaText}>{displayPrice}</Text>
+              </View>
+              <View style={styles.coverMetaItem}>
+                <Text style={styles.coverMetaText}>{trip.region || 'Sudamérica'}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Footer */}
+          <View style={styles.coverFooter}>
+            <View style={styles.coverDivider} />
+            <Text style={styles.coverProposal}>Propuesta de Viaje</Text>
+            <Text style={styles.coverDate}>Generado el {today}</Text>
+          </View>
+        </View>
+      </Page>
+
+      {/* === ESSENCE + CONTENT PAGE === */}
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLogo}>
+            {logoUrl && <Image src={logoUrl} style={styles.headerLogoImage} />}
+            <Text style={styles.headerBrand}>Headway Trips</Text>
+          </View>
+          <Text style={styles.headerTitle}>{trip.title}</Text>
+        </View>
+
+        <View style={styles.content}>
+          {/* Essence Section */}
+          <View style={styles.essenceSection}>
+            <Text style={styles.essenceQuote}>{essenceQuote}</Text>
+            
+            <View style={styles.essenceStats}>
+              <View style={styles.essenceStat}>
+                <Text style={styles.essenceStatValue}>{trip.region || 'Sudamérica'}</Text>
+                <Text style={styles.essenceStatLabel}>DESTINO</Text>
+              </View>
+              <View style={styles.essenceStat}>
+                <Text style={styles.essenceStatValue}>{trip.durationDays || 7}</Text>
+                <Text style={styles.essenceStatLabel}>DÍAS</Text>
+              </View>
+              <View style={styles.essenceStat}>
+                <Text style={styles.essenceStatValue}>4.9</Text>
+                <Text style={styles.essenceStatLabel}>RATING</Text>
+              </View>
+            </View>
+
+            {trip.description && (
+              <Text style={styles.essenceDescription}>{stripHtml(trip.description)}</Text>
+            )}
+          </View>
+
+          {/* Highlights */}
+          {highlights.length > 0 && (
+            <View style={styles.highlightsSection}>
+              <Text style={styles.highlightsTitle}>¿Por qué este viaje?</Text>
+              <View style={styles.highlightsGrid}>
+                {highlights.slice(0, 6).map((highlight, index) => (
+                  <View key={index} style={styles.highlightItem}>
+                    <Text style={styles.highlightText}>✓ {highlight}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Price Box */}
+          <View style={styles.priceBox}>
+            <Text style={styles.priceLabel}>Tu inversión</Text>
+            <Text style={styles.priceValue}>{displayPrice}</Text>
+            <Text style={styles.priceNote}>por persona en base doble</Text>
           </View>
         </View>
 
-        {/* Content */}
-        <View style={styles.content}>
-          {/* Info Boxes */}
-          <View style={styles.infoRow}>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoLabel}>Duración</Text>
-              <Text style={styles.infoValue}>{trip.duration || `${trip.durationDays || 1} días`}</Text>
-            </View>
-            <View style={styles.infoBoxPrimary}>
-              <Text style={styles.infoLabelLight}>Precio desde</Text>
-              <Text style={styles.infoValueLight}>{displayPrice}</Text>
-            </View>
-            <View style={styles.infoBox}>
-              <Text style={styles.infoLabel}>Destino</Text>
-              <Text style={styles.infoValue}>{trip.region || 'Sudamérica'}</Text>
+        {/* Footer */}
+        <View style={styles.footer} fixed>
+          <View style={styles.footerLeft}>
+            {logoUrl && <Image src={logoUrl} style={styles.footerLogo} />}
+            <View>
+              <Text style={styles.footerText}>Headway Trips</Text>
+              <Link src="https://headwaytrips.com" style={styles.footerLink}>www.headwaytrips.com</Link>
             </View>
           </View>
+          <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
+        </View>
+      </Page>
 
-          {/* Gallery (if available) */}
-          {galleryImages.length > 0 && (
-            <View style={styles.galleryContainer}>
-              {galleryImages.map((imgUrl, index) => (
-                <Image key={index} src={imgUrl} style={styles.galleryImage} />
-              ))}
+      {/* === ITINERARY PAGE === */}
+      {(itineraryDays.length > 0 || legacyItinerary.length > 0) && (
+        <Page size="A4" style={styles.page}>
+          <View style={styles.header}>
+            <View style={styles.headerLogo}>
+              {logoUrl && <Image src={logoUrl} style={styles.headerLogoImage} />}
+              <Text style={styles.headerBrand}>Headway Trips</Text>
             </View>
-          )}
+            <Text style={styles.headerTitle}>{trip.title}</Text>
+          </View>
 
-          {/* Description */}
-          {trip.description && (
-            <Text style={styles.description}>{stripHtml(trip.description)}</Text>
-          )}
-
-          {/* Itinerary from content_blocks */}
-          {itineraryDays.length > 0 && (
+          <View style={styles.content}>
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Itinerario Día por Día</Text>
               </View>
-              {itineraryDays.map((day) => (
-                <View key={day.id} style={styles.dayCard} wrap={false}>
-                  <View style={styles.dayHeader}>
-                    <View style={styles.dayBadge}>
-                      <Text style={styles.dayBadgeText}>DÍA {day.dayNumber}</Text>
+
+              {itineraryDays.length > 0 ? (
+                itineraryDays.map((day) => (
+                  <View key={day.id} style={styles.dayCard} wrap={false}>
+                    <View style={styles.dayHeader}>
+                      <View style={styles.dayNumber}>
+                        <Text style={styles.dayNumberText}>DÍA {day.dayNumber}</Text>
+                      </View>
+                      <Text style={styles.dayTitle}>{day.title}</Text>
+                      <View style={styles.dayMeals}>
+                        {getMealBadges(day.meals).map((badge, i) => (
+                          <Text key={i} style={styles.mealBadge}>{badge}</Text>
+                        ))}
+                      </View>
                     </View>
-                    <Text style={styles.dayTitle}>{day.title}</Text>
-                    <View style={styles.dayMeals}>
-                      {getMealBadges(day.meals).map((badge, i) => (
-                        <Text key={i} style={styles.mealBadge}>{badge}</Text>
-                      ))}
+                    <View style={styles.dayContent}>
+                      <Text style={styles.dayDescription}>{stripHtml(day.description)}</Text>
                     </View>
                   </View>
-                  <Text style={styles.dayDescription}>{stripHtml(day.description)}</Text>
-                </View>
-              ))}
+                ))
+              ) : (
+                legacyItinerary.map((item, index) => (
+                  <View key={index} style={styles.dayCard} wrap={false}>
+                    <View style={styles.dayHeader}>
+                      <View style={styles.dayNumber}>
+                        <Text style={styles.dayNumberText}>DÍA {item.day || index + 1}</Text>
+                      </View>
+                      <Text style={styles.dayTitle}>Día de exploración</Text>
+                    </View>
+                    <View style={styles.dayContent}>
+                      <Text style={styles.dayDescription}>{item.description}</Text>
+                    </View>
+                  </View>
+                ))
+              )}
             </View>
-          )}
+          </View>
 
-          {/* Legacy Itinerary */}
-          {itineraryDays.length === 0 && legacyItinerary.length > 0 && (
+          <View style={styles.footer} fixed>
+            <View style={styles.footerLeft}>
+              {logoUrl && <Image src={logoUrl} style={styles.footerLogo} />}
+              <View>
+                <Text style={styles.footerText}>Headway Trips</Text>
+                <Link src="https://headwaytrips.com" style={styles.footerLink}>www.headwaytrips.com</Link>
+              </View>
+            </View>
+            <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
+          </View>
+        </Page>
+      )}
+
+      {/* === SERVICES PAGE === */}
+      {(includes.length > 0 || excludes.length > 0) && (
+        <Page size="A4" style={styles.page}>
+          <View style={styles.header}>
+            <View style={styles.headerLogo}>
+              {logoUrl && <Image src={logoUrl} style={styles.headerLogoImage} />}
+              <Text style={styles.headerBrand}>Headway Trips</Text>
+            </View>
+            <Text style={styles.headerTitle}>{trip.title}</Text>
+          </View>
+
+          <View style={styles.content}>
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Itinerario</Text>
+                <Text style={styles.sectionTitle}>Servicios Incluidos</Text>
               </View>
-              {legacyItinerary.map((item, index) => (
-                <View key={index} style={styles.dayCard} wrap={false}>
-                  <View style={styles.dayHeader}>
-                    <View style={styles.dayBadge}>
-                      <Text style={styles.dayBadgeText}>DÍA {item.day || index + 1}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.dayDescription}>{item.description}</Text>
-                </View>
-              ))}
-            </View>
-          )}
 
-          {/* Services */}
-          {(includes.length > 0 || excludes.length > 0) && (
-            <View style={styles.section} wrap={false}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Servicios</Text>
-              </View>
-              <View style={styles.servicesRow}>
+              <View style={styles.servicesContainer}>
                 {includes.length > 0 && (
                   <View style={styles.servicesColumn}>
-                    <Text style={styles.servicesSubtitle}>Incluye</Text>
+                    <Text style={styles.servicesSubtitle}>✓ El viaje incluye</Text>
                     {includes.map((item, index) => (
                       <View key={index} style={styles.serviceItem}>
                         <Text style={[styles.serviceIcon, styles.includeIcon]}>✓</Text>
@@ -590,7 +889,7 @@ export function TripPdfDocument({ trip }: TripPdfDocumentProps) {
                 )}
                 {excludes.length > 0 && (
                   <View style={styles.servicesColumn}>
-                    <Text style={styles.servicesSubtitle}>No Incluye</Text>
+                    <Text style={styles.servicesSubtitle}>✗ No incluye</Text>
                     {excludes.map((item, index) => (
                       <View key={index} style={styles.serviceItem}>
                         <Text style={[styles.serviceIcon, styles.excludeIcon]}>✗</Text>
@@ -601,42 +900,7 @@ export function TripPdfDocument({ trip }: TripPdfDocumentProps) {
                 )}
               </View>
             </View>
-          )}
-        </View>
 
-        {/* Footer */}
-        <View style={styles.footer} fixed>
-          <View style={styles.footerLeft}>
-            {logoUrl && <Image src={logoUrl} style={styles.footerLogo} />}
-            <View>
-              <Text style={styles.footerText}>Headway Trips - Viajes personalizados a medida</Text>
-              <Link src="https://headwaytrips.com" style={styles.footerLink}>
-                www.headwaytrips.com
-              </Link>
-            </View>
-          </View>
-          <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
-        </View>
-      </Page>
-
-      {/* Second page for accommodations, activities, flights and transports */}
-      {(accommodationBlocks.length > 0 || activityBlocks.length > 0 || flightBlocks.length > 0 || transportBlocks.length > 0) && (
-        <Page size="A4" style={styles.page}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              {logoUrl && <Image src={logoUrl} style={styles.logoImage} />}
-              <View>
-                <Text style={styles.logoText}>Headway Trips</Text>
-                <Text style={styles.logoSubtext}>Viajes personalizados a medida</Text>
-              </View>
-            </View>
-            <View style={styles.headerRight}>
-              <Text style={styles.headerDate}>{trip.title}</Text>
-            </View>
-          </View>
-
-          <View style={styles.content}>
             {/* Accommodations */}
             {accommodationBlocks.length > 0 && (
               <View style={styles.section}>
@@ -681,81 +945,52 @@ export function TripPdfDocument({ trip }: TripPdfDocumentProps) {
                 ))}
               </View>
             )}
-
-            {/* Flights */}
-            {flightBlocks.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Vuelos</Text>
-                </View>
-                {flightBlocks.map((block) => (
-                  <View key={block.id}>
-                    {block.data.segments.map((segment) => (
-                      <View key={segment.id} style={styles.accommodationCard} wrap={false}>
-                        <View style={styles.accommodationHeader}>
-                          <Text style={styles.accommodationName}>
-                            {segment.airline} - {segment.flightNumber}
-                          </Text>
-                        </View>
-                        <Text style={styles.accommodationDetails}>
-                          {segment.origin} ({segment.originCode}) → {segment.destination} ({segment.destinationCode})
-                        </Text>
-                        <Text style={styles.accommodationDetails}>
-                          Salida: {segment.departureDate} {segment.departureTime} • Llegada: {segment.arrivalDate} {segment.arrivalTime}
-                        </Text>
-                        <Text style={styles.accommodationDetails}>
-                          Clase: {segment.class === 'economy' ? 'Económica' : segment.class === 'business' ? 'Ejecutiva' : segment.class}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* Transports */}
-            {transportBlocks.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Traslados</Text>
-                </View>
-                {transportBlocks.map((block) => (
-                  <View key={block.id} style={styles.accommodationCard} wrap={false}>
-                    <View style={styles.accommodationHeader}>
-                      <Text style={styles.accommodationName}>
-                        {block.data.origin} → {block.data.destination}
-                      </Text>
-                    </View>
-                    <Text style={styles.accommodationDetails}>
-                      Tipo: {block.data.type} {block.data.company && `• ${block.data.company}`}
-                    </Text>
-                    {block.data.duration && (
-                      <Text style={styles.accommodationDetails}>Duración: {block.data.duration}</Text>
-                    )}
-                    {block.data.included && (
-                      <Text style={styles.accommodationDetails}>✓ Incluido en el paquete</Text>
-                    )}
-                  </View>
-                ))}
-              </View>
-            )}
           </View>
 
-          {/* Footer */}
           <View style={styles.footer} fixed>
             <View style={styles.footerLeft}>
               {logoUrl && <Image src={logoUrl} style={styles.footerLogo} />}
               <View>
-                <Text style={styles.footerText}>Headway Trips - Viajes personalizados a medida</Text>
-                <Link src="https://headwaytrips.com" style={styles.footerLink}>
-                  www.headwaytrips.com
-                </Link>
+                <Text style={styles.footerText}>Headway Trips</Text>
+                <Link src="https://headwaytrips.com" style={styles.footerLink}>www.headwaytrips.com</Link>
               </View>
             </View>
             <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
           </View>
         </Page>
       )}
+
+      {/* === CTA PAGE === */}
+      <Page size="A4" style={styles.ctaPage}>
+        <Text style={styles.ctaTitle}>¿Listo para vivir</Text>
+        <Text style={styles.ctaSubtitle}>esta experiencia?</Text>
+
+        {qrCodeDataUrl && (
+          <>
+            <View style={styles.ctaQrContainer}>
+              <Image src={qrCodeDataUrl} style={styles.ctaQr} />
+            </View>
+            <Text style={styles.ctaQrLabel}>Escaneá para ver todos los detalles</Text>
+          </>
+        )}
+
+        <View style={styles.ctaContact}>
+          <Text style={styles.ctaContactItem}>Tel: +54 11 XXXX-XXXX</Text>
+          <Text style={styles.ctaContactItem}>Email: viajes@headwaytrips.com</Text>
+          <Link src="https://headwaytrips.com" style={styles.ctaContactLink}>
+            Web: headwaytrips.com
+          </Link>
+        </View>
+
+        <View style={styles.ctaDivider} />
+
+        <Text style={styles.ctaQuote}>
+          "Los viajes son la única inversión que te hace más rico"
+        </Text>
+
+        <Text style={styles.ctaBrand}>HEADWAY TRIPS</Text>
+        <Text style={styles.ctaTagline}>Viajes personalizados a medida</Text>
+      </Page>
     </Document>
   );
 }

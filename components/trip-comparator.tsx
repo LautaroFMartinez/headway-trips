@@ -7,12 +7,30 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, ArrowRight, Check, Clock, MapPin, Sparkles, TrendingDown, Calendar, Star, Shield, CreditCard, Plane, Share2, CheckCircle2, DollarSign, AlertCircle } from 'lucide-react';
 
-import { trips, type Trip } from '@/lib/trips-data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+
+// Interfaz para los datos del viaje que vienen de la base de datos
+export interface TripData {
+  id: string;
+  title: string;
+  subtitle: string;
+  region: string;
+  description: string;
+  duration: string;
+  durationDays: number;
+  price: string;
+  priceValue: number;
+  image: string;
+  heroImage: string;
+  highlights: string[];
+  tags: string[];
+  includes: string[];
+  excludes: string[];
+}
 
 const MAX_COMPARISON_ITEMS = 3;
 
@@ -38,22 +56,31 @@ function calculatePricePerDay(priceValue: number, durationDays: number): number 
 }
 
 /**
- * Simula datos de "incluye" basándose en los highlights del viaje
+ * Valores por defecto para "incluye" si no hay datos en la DB
  */
-function getIncludes(trip: Trip): string[] {
-  const baseIncludes = ['Alojamiento', 'Desayuno incluido', 'Traslados aeropuerto-hotel', 'Asistencia 24/7'];
-  return [...baseIncludes, ...trip.highlights.slice(0, 2)];
+const DEFAULT_INCLUDES = ['Alojamiento', 'Desayuno incluido', 'Traslados aeropuerto-hotel', 'Asistencia 24/7'];
+
+/**
+ * Valores por defecto para "no incluye" si no hay datos en la DB
+ */
+const DEFAULT_EXCLUDES = ['Vuelos internacionales', 'Seguro de viaje', 'Comidas no especificadas', 'Gastos personales'];
+
+/**
+ * Obtiene los datos de "incluye" del viaje (usa defaults si está vacío)
+ */
+function getIncludes(trip: TripData): string[] {
+  return trip.includes.length > 0 ? trip.includes : DEFAULT_INCLUDES;
 }
 
 /**
- * Simula datos de "no incluye" comunes
+ * Obtiene los datos de "no incluye" del viaje (usa defaults si está vacío)
  */
-function getExcludes(): string[] {
-  return ['Vuelos internacionales', 'Seguro de viaje', 'Comidas no especificadas', 'Gastos personales'];
+function getExcludes(trip: TripData): string[] {
+  return trip.excludes.length > 0 ? trip.excludes : DEFAULT_EXCLUDES;
 }
 
 interface TripCardProps {
-  trip: Trip;
+  trip: TripData;
   isLowestPrice: boolean;
   isBestPricePerDay: boolean;
   onRemove: (id: string) => void;
@@ -146,8 +173,8 @@ function EmptyComparisonSlot({ index }: EmptySlotProps) {
 interface ComparisonRowProps {
   label: string;
   icon: React.ReactNode;
-  selectedTrips: Trip[];
-  renderCell: (trip: Trip) => React.ReactNode;
+  selectedTrips: TripData[];
+  renderCell: (trip: TripData) => React.ReactNode;
 }
 
 function ComparisonRow({ label, icon, selectedTrips, renderCell }: ComparisonRowProps) {
@@ -286,8 +313,8 @@ function ShareButton({ selectedTripIds }: ShareButtonProps) {
 }
 
 interface SelectorSectionProps {
-  selectedTrips: Trip[];
-  availableTrips: Trip[];
+  selectedTrips: TripData[];
+  availableTrips: TripData[];
   dropdownOpen: boolean;
   setDropdownOpen: (open: boolean) => void;
   onAddTrip: (tripId: string) => void;
@@ -363,7 +390,7 @@ function EmptyState() {
 }
 
 interface ComparisonGridProps {
-  selectedTrips: Trip[];
+  selectedTrips: TripData[];
   onRemoveTrip: (id: string) => void;
 }
 
@@ -495,7 +522,7 @@ function ComparisonGrid({ selectedTrips, onRemoveTrip }: ComparisonGridProps) {
                 selectedTrips={selectedTrips}
                 renderCell={(trip) => (
                   <ul className="space-y-1.5">
-                    {getExcludes().map((item, idx) => (
+                    {getExcludes(trip).map((item, idx) => (
                       <li key={`${trip.id}-exclude-${idx}`} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <X className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
                         <span>{item}</span>
@@ -569,10 +596,14 @@ function CallToAction() {
   );
 }
 
-export function TripComparator() {
+interface TripComparatorProps {
+  allTrips: TripData[];
+}
+
+export function TripComparator({ allTrips }: TripComparatorProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedTrips, setSelectedTrips] = useState<Trip[]>([]);
+  const [selectedTrips, setSelectedTrips] = useState<TripData[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -584,8 +615,8 @@ export function TripComparator() {
     if (tripsParam) {
       const tripIds = tripsParam.split(',').filter(Boolean);
       const initialTrips = tripIds
-        .map((id) => trips.find((t) => t.id === id))
-        .filter((t): t is Trip => t !== undefined)
+        .map((id) => allTrips.find((t) => t.id === id))
+        .filter((t): t is TripData => t !== undefined)
         .slice(0, MAX_COMPARISON_ITEMS);
 
       if (initialTrips.length > 0) {
@@ -593,7 +624,7 @@ export function TripComparator() {
       }
     }
     setIsInitialized(true);
-  }, [searchParams, isInitialized]);
+  }, [searchParams, isInitialized, allTrips]);
 
   // Actualizar URL cuando cambian los viajes seleccionados
   useEffect(() => {
@@ -611,11 +642,11 @@ export function TripComparator() {
 
   const availableTrips = useMemo(() => {
     const selectedIds = new Set(selectedTrips.map((t) => t.id));
-    return trips.filter((t) => !selectedIds.has(t.id));
-  }, [selectedTrips]);
+    return allTrips.filter((t) => !selectedIds.has(t.id));
+  }, [selectedTrips, allTrips]);
 
   const handleAddTrip = useCallback((tripId: string) => {
-    const trip = trips.find((t) => t.id === tripId);
+    const trip = allTrips.find((t) => t.id === tripId);
     if (!trip) return;
 
     setSelectedTrips((prev) => {
@@ -624,7 +655,7 @@ export function TripComparator() {
     });
 
     setDropdownOpen(false);
-  }, []);
+  }, [allTrips]);
 
   const handleRemoveTrip = useCallback((tripId: string) => {
     setSelectedTrips((prev) => prev.filter((t) => t.id !== tripId));

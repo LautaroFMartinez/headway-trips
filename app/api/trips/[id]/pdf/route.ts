@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
+import QRCode from 'qrcode';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase';
 import { trips } from '@/lib/trips-data';
 import { TripPdfDocument, type TripData } from '@/lib/pdf/trip-pdf-document';
@@ -98,8 +99,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
     }
 
-    // Generate PDF buffer
-    const pdfBuffer = await renderToBuffer(TripPdfDocument({ trip: tripData }));
+    // Generate QR code with trip URL
+    const tripUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://headwaytrips.com'}/viaje/${id}`;
+    const qrCodeDataUrl = await QRCode.toDataURL(tripUrl, {
+      width: 200,
+      margin: 1,
+      color: { dark: '#0f766e', light: '#ffffff' },
+    });
+
+    // Generate PDF buffer with QR code
+    const pdfBuffer = await renderToBuffer(TripPdfDocument({ trip: tripData, qrCodeDataUrl }));
 
     // Create filename from trip title
     const sanitizedTitle = tripData.title
