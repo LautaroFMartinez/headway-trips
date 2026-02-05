@@ -12,11 +12,11 @@ interface Section {
 
 interface ProposalSidebarProps {
   sections: Section[];
-  pdfUrl?: string;
+  tripId: string;
   contact: ProposalContact;
 }
 
-export function ProposalSidebar({ sections, pdfUrl, contact }: ProposalSidebarProps) {
+export function ProposalSidebar({ sections, tripId, contact }: ProposalSidebarProps) {
   const [activeSection, setActiveSection] = useState<string>('');
   const [contactExpanded, setContactExpanded] = useState(true);
 
@@ -56,16 +56,14 @@ export function ProposalSidebar({ sections, pdfUrl, contact }: ProposalSidebarPr
   return (
     <div className="sticky top-24 space-y-6">
       {/* Botón Descargar PDF */}
-      {pdfUrl && (
-        <a
-          href={pdfUrl}
-          download
-          className="flex items-center justify-center gap-2 w-full bg-primary text-white py-3 px-4 rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-md"
-        >
-          <Download className="w-5 h-5" />
-          Descargar PDF
-        </a>
-      )}
+      <a
+        href={`/api/trips/${tripId}/pdf`}
+        download
+        className="flex items-center justify-center gap-2 w-full bg-primary text-white py-3 px-4 rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-md"
+      >
+        <Download className="w-5 h-5" />
+        Descargar PDF
+      </a>
 
       {/* Navegación por secciones */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

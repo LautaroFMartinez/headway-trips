@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase';
 import { trips } from '@/lib/trips-data';
+import { resend, isResendConfigured, ADMIN_EMAIL, FROM_EMAIL } from '@/lib/resend';
+import {
+  quoteAdminNotificationHtml,
+  quoteAdminNotificationText,
+  quoteCustomerConfirmationHtml,
+  quoteCustomerConfirmationText,
+} from '@/lib/email-templates';
+import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from '@/lib/rate-limit';
 
 // Schema de validación para la cotización
 const quoteRequestSchema = z.object({
@@ -21,6 +29,28 @@ const quoteRequestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit(`quotes:${clientId}`, RATE_LIMITS.quotes);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests',
+          message: 'Has enviado demasiadas solicitudes. Por favor espera unos minutos.',
+          retryAfter: rateLimit.resetIn,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.resetIn),
+            'X-RateLimit-Limit': String(RATE_LIMITS.quotes.limit),
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
 
     // Validar datos de entrada
@@ -104,8 +134,65 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Error creating quote request', details: insertError.message }, { status: 500 });
     }
 
-    // TODO: Enviar email de notificación al equipo
-    // TODO: Enviar email de confirmación al cliente
+    // Enviar emails si Resend está configurado
+    if (isResendConfigured() && resend) {
+      const emailPromises: Promise<unknown>[] = [];
+
+      // Email de notificación al admin
+      emailPromises.push(
+        resend.emails.send({
+          from: FROM_EMAIL,
+          to: ADMIN_EMAIL,
+          subject: `Nueva cotización: ${trip.title} - ${data.customerName}`,
+          html: quoteAdminNotificationHtml({
+            customerName: data.customerName,
+            customerEmail: data.customerEmail,
+            customerPhone: data.customerPhone,
+            customerCountry: data.customerCountry,
+            tripTitle: trip.title,
+            tripId: data.tripId,
+            travelDate: data.travelDate,
+            adults: data.adults,
+            children: data.children,
+            message: data.message,
+            quoteId: quoteRequest.id,
+          }),
+          text: quoteAdminNotificationText({
+            customerName: data.customerName,
+            customerEmail: data.customerEmail,
+            customerPhone: data.customerPhone,
+            customerCountry: data.customerCountry,
+            tripTitle: trip.title,
+            tripId: data.tripId,
+            travelDate: data.travelDate,
+            adults: data.adults,
+            children: data.children,
+            message: data.message,
+            quoteId: quoteRequest.id,
+          }),
+        })
+      );
+
+      // Email de confirmación al cliente
+      emailPromises.push(
+        resend.emails.send({
+          from: FROM_EMAIL,
+          to: data.customerEmail,
+          subject: `Recibimos tu solicitud para ${trip.title} - Headway Trips`,
+          html: quoteCustomerConfirmationHtml({
+            customerName: data.customerName,
+            tripTitle: trip.title,
+          }),
+          text: quoteCustomerConfirmationText({
+            customerName: data.customerName,
+            tripTitle: trip.title,
+          }),
+        })
+      );
+
+      // Enviar emails en paralelo (no bloquear la respuesta si fallan)
+      Promise.allSettled(emailPromises).catch(console.error);
+    }
 
     return NextResponse.json(
       {

@@ -168,7 +168,7 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
           <div className="hidden lg:block">
             <ProposalSidebar
               sections={SECTIONS}
-              pdfUrl={trip.pdfUrl}
+              tripId={trip.id}
               contact={displayContact}
             />
           </div>
@@ -177,16 +177,14 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
 
       {/* Mobile Floating Actions */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex gap-3 z-40">
-        {trip.pdfUrl && (
-          <a
-            href={trip.pdfUrl}
-            download
-            className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary/90 transition-colors"
-          >
-            <Download className="w-5 h-5" />
-            Descargar PDF
-          </a>
-        )}
+        <a
+          href={`/api/trips/${trip.id}/pdf`}
+          download
+          className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+        >
+          <Download className="w-5 h-5" />
+          Descargar PDF
+        </a>
         <a
           href={`https://wa.me/${displayContact.phone.replace(/\D/g, '')}?text=Hola! Me interesa el viaje ${trip.title}`}
           target="_blank"
