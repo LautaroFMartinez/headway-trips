@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { trips } from '@/lib/trips-data';
+import { blogPosts } from '@/lib/blog-data';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://headwaytrips.com';
@@ -55,5 +56,41 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...tripRoutes, ...regionRoutes];
+  // Blog post routes
+  const blogRoutes = blogPosts.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: new Date(post.publishedAt),
+    changeFrequency: 'weekly' as const,
+    priority: 0.6,
+  }));
+
+  // Static pages not yet included
+  const additionalStaticRoutes = [
+    {
+      url: `${baseUrl}/nosotros`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/faq`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/privacidad`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/terminos`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.3,
+    },
+  ];
+
+  return [...staticRoutes, ...additionalStaticRoutes, ...tripRoutes, ...regionRoutes, ...blogRoutes];
 }

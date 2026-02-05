@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 /**
  * Cross-browser smooth scroll implementation using requestAnimationFrame
@@ -56,30 +57,40 @@ function smoothScrollTo(targetY: number, duration: number = 600): void {
  * Usage: const handleAnchorClick = useSmoothScroll(80) // 80px offset for header
  */
 export function useSmoothScroll(offset: number = 80) {
+  const pathname = usePathname();
+
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       const href = e.currentTarget.getAttribute('href');
+      if (!href) return;
 
-      // Only handle anchor links
-      if (href?.startsWith('#')) {
+      // Handle both "#anchor" and "/#anchor" formats
+      let targetId: string | null = null;
+
+      if (href.startsWith('#')) {
+        targetId = href.substring(1);
+      } else if (href.startsWith('/#')) {
+        targetId = href.substring(2);
+      }
+
+      if (!targetId) return;
+
+      // If we're not on the homepage, let Next.js navigate normally to /#anchor
+      if (pathname !== '/') return;
+
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
         e.preventDefault();
 
-        const targetId = href.substring(1);
-        const targetElement = document.getElementById(targetId);
+        const elementPosition = targetElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - offset;
 
-        if (targetElement) {
-          const elementPosition = targetElement.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.scrollY - offset;
+        smoothScrollTo(offsetPosition, 600);
 
-          // Use our custom smooth scroll implementation
-          smoothScrollTo(offsetPosition, 600);
-
-          // Update URL without jumping
-          window.history.pushState(null, '', href);
-        }
+        window.history.pushState(null, '', `#${targetId}`);
       }
     },
-    [offset],
+    [offset, pathname],
   );
 
   return handleClick;
