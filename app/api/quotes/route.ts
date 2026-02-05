@@ -136,62 +136,55 @@ export async function POST(request: NextRequest) {
 
     // Enviar emails si Resend está configurado
     if (isResendConfigured() && resend) {
-      const emailPromises: Promise<unknown>[] = [];
+      const resendClient = resend;
+      
+      // Render email templates in parallel
+      const adminEmailProps = {
+        customerName: data.customerName,
+        customerEmail: data.customerEmail,
+        customerPhone: data.customerPhone,
+        customerCountry: data.customerCountry,
+        tripTitle: trip.title,
+        tripId: data.tripId,
+        travelDate: data.travelDate,
+        adults: data.adults,
+        children: data.children,
+        message: data.message,
+        quoteId: quoteRequest.id,
+      };
 
-      // Email de notificación al admin
-      emailPromises.push(
-        resend.emails.send({
-          from: FROM_EMAIL,
-          to: ADMIN_EMAIL,
-          subject: `Nueva cotización: ${trip.title} - ${data.customerName}`,
-          html: quoteAdminNotificationHtml({
-            customerName: data.customerName,
-            customerEmail: data.customerEmail,
-            customerPhone: data.customerPhone,
-            customerCountry: data.customerCountry,
-            tripTitle: trip.title,
-            tripId: data.tripId,
-            travelDate: data.travelDate,
-            adults: data.adults,
-            children: data.children,
-            message: data.message,
-            quoteId: quoteRequest.id,
-          }),
-          text: quoteAdminNotificationText({
-            customerName: data.customerName,
-            customerEmail: data.customerEmail,
-            customerPhone: data.customerPhone,
-            customerCountry: data.customerCountry,
-            tripTitle: trip.title,
-            tripId: data.tripId,
-            travelDate: data.travelDate,
-            adults: data.adults,
-            children: data.children,
-            message: data.message,
-            quoteId: quoteRequest.id,
-          }),
+      const customerEmailProps = {
+        customerName: data.customerName,
+        tripTitle: trip.title,
+      };
+
+      // Render templates first, then send emails (fire-and-forget)
+      Promise.all([
+        quoteAdminNotificationHtml(adminEmailProps),
+        quoteAdminNotificationText(adminEmailProps),
+        quoteCustomerConfirmationHtml(customerEmailProps),
+        quoteCustomerConfirmationText(customerEmailProps),
+      ])
+        .then(([adminHtml, adminText, customerHtml, customerText]) => {
+          const emailPromises = [
+            resendClient.emails.send({
+              from: FROM_EMAIL,
+              to: ADMIN_EMAIL,
+              subject: `Nueva cotización: ${trip.title} - ${data.customerName}`,
+              html: adminHtml,
+              text: adminText,
+            }),
+            resendClient.emails.send({
+              from: FROM_EMAIL,
+              to: data.customerEmail,
+              subject: `Recibimos tu solicitud para ${trip.title} - Headway Trips`,
+              html: customerHtml,
+              text: customerText,
+            }),
+          ];
+          return Promise.allSettled(emailPromises);
         })
-      );
-
-      // Email de confirmación al cliente
-      emailPromises.push(
-        resend.emails.send({
-          from: FROM_EMAIL,
-          to: data.customerEmail,
-          subject: `Recibimos tu solicitud para ${trip.title} - Headway Trips`,
-          html: quoteCustomerConfirmationHtml({
-            customerName: data.customerName,
-            tripTitle: trip.title,
-          }),
-          text: quoteCustomerConfirmationText({
-            customerName: data.customerName,
-            tripTitle: trip.title,
-          }),
-        })
-      );
-
-      // Enviar emails en paralelo (no bloquear la respuesta si fallan)
-      Promise.allSettled(emailPromises).catch(console.error);
+        .catch(console.error);
     }
 
     return NextResponse.json(

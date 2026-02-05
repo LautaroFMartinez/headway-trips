@@ -100,48 +100,45 @@ export async function POST(request: NextRequest) {
 
     // Enviar emails si Resend está configurado
     if (isResendConfigured() && resend) {
-      const emailPromises: Promise<unknown>[] = [];
+      const resendClient = resend;
+      
+      const emailProps = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        message: data.message,
+        messageId: contactMessage.id,
+      };
 
-      // Email de notificación al admin
-      emailPromises.push(
-        resend.emails.send({
-          from: FROM_EMAIL,
-          to: ADMIN_EMAIL,
-          subject: `Nuevo mensaje de contacto de ${data.name}`,
-          html: contactAdminNotificationHtml({
-            name: data.name,
-            email: data.email,
-            phone: data.phone,
-            message: data.message,
-            messageId: contactMessage.id,
-          }),
-          text: contactAdminNotificationText({
-            name: data.name,
-            email: data.email,
-            phone: data.phone,
-            message: data.message,
-            messageId: contactMessage.id,
-          }),
+      const customerEmailProps = { name: data.name };
+
+      // Render templates first, then send emails (fire-and-forget)
+      Promise.all([
+        contactAdminNotificationHtml(emailProps),
+        contactAdminNotificationText(emailProps),
+        contactCustomerConfirmationHtml(customerEmailProps),
+        contactCustomerConfirmationText(customerEmailProps),
+      ])
+        .then(([adminHtml, adminText, customerHtml, customerText]) => {
+          const emailPromises = [
+            resendClient.emails.send({
+              from: FROM_EMAIL,
+              to: ADMIN_EMAIL,
+              subject: `Nuevo mensaje de contacto de ${data.name}`,
+              html: adminHtml,
+              text: adminText,
+            }),
+            resendClient.emails.send({
+              from: FROM_EMAIL,
+              to: data.email,
+              subject: 'Recibimos tu mensaje - Headway Trips',
+              html: customerHtml,
+              text: customerText,
+            }),
+          ];
+          return Promise.allSettled(emailPromises);
         })
-      );
-
-      // Email de confirmación al cliente
-      emailPromises.push(
-        resend.emails.send({
-          from: FROM_EMAIL,
-          to: data.email,
-          subject: 'Recibimos tu mensaje - Headway Trips',
-          html: contactCustomerConfirmationHtml({
-            name: data.name,
-          }),
-          text: contactCustomerConfirmationText({
-            name: data.name,
-          }),
-        })
-      );
-
-      // Enviar emails en paralelo (no bloquear la respuesta si fallan)
-      Promise.allSettled(emailPromises).catch(console.error);
+        .catch(console.error);
     }
 
     return NextResponse.json(

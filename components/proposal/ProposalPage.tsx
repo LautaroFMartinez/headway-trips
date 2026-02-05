@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Download, Phone, Mail, Building2 } from 'lucide-react';
-import type { ContentBlock } from '@/types/blocks';
+import type { ContentBlock, TextBlock, AccommodationBlock } from '@/types/blocks';
 import { Header } from '@/components/header';
 import { ProposalHero } from './ProposalHero';
 import { ProposalSidebar } from './ProposalSidebar';
@@ -63,10 +63,10 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
 
   // Extraer datos de los bloques de contenido
   const servicesBlock = trip.contentBlocks?.find(b => b.type === 'services' && b.isVisible);
-  const accommodationBlocks = trip.contentBlocks?.filter(b => b.type === 'accommodation' && b.isVisible) || [];
+  const accommodationBlocks = (trip.contentBlocks?.filter(b => b.type === 'accommodation' && b.isVisible) || []) as AccommodationBlock[];
   const itineraryBlock = trip.contentBlocks?.find(b => b.type === 'itinerary' && b.isVisible);
   const priceBlock = trip.contentBlocks?.find(b => b.type === 'price' && b.isVisible);
-  const textBlocks = trip.contentBlocks?.filter(b => b.type === 'text' && b.isVisible) || [];
+  const textBlocks = (trip.contentBlocks?.filter(b => b.type === 'text' && b.isVisible) || []) as TextBlock[];
 
   // Datos de servicios (del bloque o de los datos del trip)
   const includes = servicesBlock?.type === 'services' ? servicesBlock.data.includes : trip.includes || [];

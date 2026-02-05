@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { FileText, MessageSquare, Plane, TrendingUp, Calendar, Users, Eye } from 'lucide-react';
-import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { FileText, MessageSquare, Plane, TrendingUp, CheckCircle2, PhoneCall } from 'lucide-react';
+import { format, subDays, eachWeekOfInterval, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,13 +17,17 @@ interface DashboardStats {
   pendingQuotes: number;
   unreadMessages: number;
   quotesThisWeek: number;
+  confirmedSales: number;
+  contactedNotClosed: number;
 }
 
-interface QuotesByDay {
-  date: string;
-  day: string;
+interface QuotesByWeek {
+  weekStart: string;
+  label: string;
   cotizaciones: number;
   mensajes: number;
+  confirmadas: number;
+  contactadas: number;
 }
 
 interface QuotesByRegion {
@@ -49,7 +53,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function DashboardContent() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [quotesByDay, setQuotesByDay] = useState<QuotesByDay[]>([]);
+  const [quotesByWeek, setQuotesByWeek] = useState<QuotesByWeek[]>([]);
   const [quotesByRegion, setQuotesByRegion] = useState<QuotesByRegion[]>([]);
   const [quotesByStatus, setQuotesByStatus] = useState<QuotesByStatus[]>([]);
   const [recentActivity, setRecentActivity] = useState<Array<{ type: string; message: string; time: string }>>([]);
@@ -66,7 +70,7 @@ export function DashboardContent() {
       if (response.ok) {
         const data = await response.json();
         setStats(data.stats);
-        setQuotesByDay(data.quotesByDay);
+        setQuotesByWeek(data.quotesByWeek || []);
         setQuotesByRegion(data.quotesByRegion);
         setQuotesByStatus(data.quotesByStatus);
         setRecentActivity(data.recentActivity);
@@ -81,6 +85,8 @@ export function DashboardContent() {
         pendingQuotes: 8,
         unreadMessages: 3,
         quotesThisWeek: 12,
+        confirmedSales: 7,
+        contactedNotClosed: 12,
       });
       generateDemoData();
     } finally {
@@ -89,19 +95,20 @@ export function DashboardContent() {
   };
 
   const generateDemoData = () => {
-    // Datos de demo para los últimos 7 días
-    const days = eachDayOfInterval({
-      start: subDays(new Date(), 6),
-      end: new Date(),
-    });
+    // Datos de demo para las últimas 4 semanas
+    const now = new Date();
+    const fourWeeksAgo = subDays(now, 27);
+    const weeks = eachWeekOfInterval({ start: fourWeeksAgo, end: now }, { locale: es });
 
-    setQuotesByDay(
-      days.map((day) => ({
-        date: format(day, 'yyyy-MM-dd'),
-        day: format(day, 'EEE', { locale: es }),
-        cotizaciones: Math.floor(Math.random() * 8) + 1,
-        mensajes: Math.floor(Math.random() * 4),
-      })),
+    setQuotesByWeek(
+      weeks.map((weekStart) => ({
+        weekStart: format(weekStart, 'yyyy-MM-dd'),
+        label: format(weekStart, 'd MMM', { locale: es }),
+        cotizaciones: Math.floor(Math.random() * 15) + 5,
+        mensajes: Math.floor(Math.random() * 8) + 2,
+        confirmadas: Math.floor(Math.random() * 4),
+        contactadas: Math.floor(Math.random() * 6) + 1,
+      }))
     );
 
     setQuotesByRegion([
@@ -141,26 +148,59 @@ export function DashboardContent() {
         <p className="text-slate-500">Resumen de actividad · {format(new Date(), "EEEE d 'de' MMMM", { locale: es })}</p>
       </div>
 
-      {/* Stats cards */}
+      {/* Stats cards - Main metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Viajes activos" value={stats?.totalTrips || 0} icon={Plane} color="blue" />
         <StatCard title="Cotizaciones totales" value={stats?.totalQuotes || 0} icon={FileText} color="indigo" badge={stats?.pendingQuotes ? `${stats.pendingQuotes} pendientes` : undefined} />
-        <StatCard title="Mensajes" value={stats?.totalMessages || 0} icon={MessageSquare} color="green" badge={stats?.unreadMessages ? `${stats.unreadMessages} sin leer` : undefined} />
+        <StatCard title="Mensajes" value={stats?.totalMessages || 0} icon={MessageSquare} color="purple" badge={stats?.unreadMessages ? `${stats.unreadMessages} sin leer` : undefined} />
         <StatCard title="Esta semana" value={stats?.quotesThisWeek || 0} icon={TrendingUp} color="amber" description="cotizaciones" />
+      </div>
+
+      {/* KPI Cards - Sales metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-700">Ventas cerradas</p>
+                <p className="text-4xl font-bold text-green-900 mt-1">{stats?.confirmedSales || 0}</p>
+                <p className="text-sm text-green-600 mt-2">Cotizaciones confirmadas</p>
+              </div>
+              <div className="p-3 rounded-xl bg-green-100">
+                <CheckCircle2 className="h-7 w-7 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-50 to-sky-50 border-blue-200">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-700">Contactadas sin cierre</p>
+                <p className="text-4xl font-bold text-blue-900 mt-1">{stats?.contactedNotClosed || 0}</p>
+                <p className="text-sm text-blue-600 mt-2">Clientes en seguimiento</p>
+              </div>
+              <div className="p-3 rounded-xl bg-blue-100">
+                <PhoneCall className="h-7 w-7 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Activity chart */}
+        {/* Weekly activity chart - 28 days */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Actividad de los últimos 7 días</CardTitle>
-            <CardDescription>Cotizaciones y mensajes recibidos por día</CardDescription>
+            <CardTitle className="text-lg">Actividad últimas 4 semanas</CardTitle>
+            <CardDescription>Cotizaciones y mensajes por semana</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={quotesByDay}>
+                <AreaChart data={quotesByWeek}>
                   <defs>
                     <linearGradient id="colorCotizaciones" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
@@ -172,7 +212,7 @@ export function DashboardContent() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} />
+                  <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
                   <YAxis stroke="#94a3b8" fontSize={12} />
                   <Tooltip
                     contentStyle={{
@@ -216,6 +256,44 @@ export function DashboardContent() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Conversion funnel chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Conversión semanal</CardTitle>
+          <CardDescription>Confirmadas vs Contactadas por semana (últimos 28 días)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={quotesByWeek}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
+                <YAxis stroke="#94a3b8" fontSize={12} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Bar dataKey="confirmadas" fill="#22c55e" radius={[4, 4, 0, 0]} name="Confirmadas" />
+                <Bar dataKey="contactadas" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Contactadas" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex justify-center gap-6 mt-4">
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-3 h-3 rounded-full bg-green-500" />
+              <span className="text-slate-600">Confirmadas (ventas)</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-3 h-3 rounded-full bg-blue-500" />
+              <span className="text-slate-600">Contactadas (sin cierre)</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Bottom row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -266,7 +344,13 @@ export function DashboardContent() {
             <div className="space-y-4">
               {recentActivity.map((activity, index) => (
                 <div key={index} className="flex items-start gap-3">
-                  <div className={`p-2 rounded-lg ${activity.type === 'quote' ? 'bg-indigo-100' : 'bg-green-100'}`}>{activity.type === 'quote' ? <FileText className={`h-4 w-4 ${activity.type === 'quote' ? 'text-indigo-600' : 'text-green-600'}`} /> : <MessageSquare className="h-4 w-4 text-green-600" />}</div>
+                  <div className={`p-2 rounded-lg ${activity.type === 'quote' ? 'bg-indigo-100' : 'bg-green-100'}`}>
+                    {activity.type === 'quote' ? (
+                      <FileText className="h-4 w-4 text-indigo-600" />
+                    ) : (
+                      <MessageSquare className="h-4 w-4 text-green-600" />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-slate-900">{activity.message}</p>
                     <p className="text-xs text-slate-500">{activity.time}</p>
@@ -285,7 +369,7 @@ interface StatCardProps {
   title: string;
   value: number;
   icon: React.ComponentType<{ className?: string }>;
-  color: 'blue' | 'indigo' | 'green' | 'amber';
+  color: 'blue' | 'indigo' | 'green' | 'amber' | 'purple';
   badge?: string;
   description?: string;
 }
@@ -296,6 +380,7 @@ function StatCard({ title, value, icon: Icon, color, badge, description }: StatC
     indigo: 'bg-indigo-100 text-indigo-600',
     green: 'bg-green-100 text-green-600',
     amber: 'bg-amber-100 text-amber-600',
+    purple: 'bg-purple-100 text-purple-600',
   };
 
   return (
@@ -334,6 +419,16 @@ function DashboardSkeleton() {
             <CardContent className="p-6">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-8 w-16 mt-2" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {[1, 2].map((i) => (
+          <Card key={i}>
+            <CardContent className="p-6">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-20 mt-2" />
             </CardContent>
           </Card>
         ))}

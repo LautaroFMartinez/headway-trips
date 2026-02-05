@@ -312,6 +312,7 @@ export type Database = {
           accommodation_type: string | null
           available: boolean | null
           booking_count: number | null
+          content_blocks: Json | null
           created_at: string | null
           description: string | null
           difficulty_level: string | null
@@ -319,6 +320,7 @@ export type Database = {
           duration_days: number
           excludes: string[] | null
           featured: boolean | null
+          gallery: string[] | null
           group_size_max: number | null
           group_size_min: number | null
           hero_image: string | null
@@ -327,6 +329,7 @@ export type Database = {
           image: string | null
           includes: string[] | null
           itinerary: Json | null
+          pdf_url: string | null
           price: string
           price_value: number
           region: string
@@ -339,6 +342,7 @@ export type Database = {
           accommodation_type?: string | null
           available?: boolean | null
           booking_count?: number | null
+          content_blocks?: Json | null
           created_at?: string | null
           description?: string | null
           difficulty_level?: string | null
@@ -346,6 +350,7 @@ export type Database = {
           duration_days: number
           excludes?: string[] | null
           featured?: boolean | null
+          gallery?: string[] | null
           group_size_max?: number | null
           group_size_min?: number | null
           hero_image?: string | null
@@ -354,6 +359,7 @@ export type Database = {
           image?: string | null
           includes?: string[] | null
           itinerary?: Json | null
+          pdf_url?: string | null
           price: string
           price_value: number
           region: string
@@ -366,6 +372,7 @@ export type Database = {
           accommodation_type?: string | null
           available?: boolean | null
           booking_count?: number | null
+          content_blocks?: Json | null
           created_at?: string | null
           description?: string | null
           difficulty_level?: string | null
@@ -373,6 +380,7 @@ export type Database = {
           duration_days?: number
           excludes?: string[] | null
           featured?: boolean | null
+          gallery?: string[] | null
           group_size_max?: number | null
           group_size_min?: number | null
           hero_image?: string | null
@@ -381,6 +389,7 @@ export type Database = {
           image?: string | null
           includes?: string[] | null
           itinerary?: Json | null
+          pdf_url?: string | null
           price?: string
           price_value?: number
           region?: string

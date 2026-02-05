@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase';
 import { trips } from '@/lib/trips-data';
-import { TripPdfDocument } from '@/lib/pdf/trip-pdf-document';
+import { TripPdfDocument, type TripData } from '@/lib/pdf/trip-pdf-document';
 import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from '@/lib/rate-limit';
+import type { ContentBlock } from '@/types/blocks';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    let tripData = null;
+    let tripData: TripData | null = null;
 
     // Try to fetch from Supabase first
     if (isSupabaseConfigured()) {
@@ -47,20 +48,23 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           .single();
 
         if (!error && data) {
+          const dbData = data as Record<string, unknown>;
           tripData = {
-            id: data.id,
-            title: data.title,
-            subtitle: data.subtitle,
-            description: data.description,
-            duration: data.duration,
-            durationDays: data.duration_days,
-            price: data.price,
-            priceValue: data.price_value,
-            region: data.region,
-            includes: data.includes,
-            excludes: data.excludes,
-            itinerary: data.itinerary,
-            content_blocks: data.content_blocks,
+            id: dbData.id as string,
+            title: dbData.title as string,
+            subtitle: (dbData.subtitle as string) || undefined,
+            description: (dbData.description as string) || undefined,
+            duration: (dbData.duration as string) || undefined,
+            durationDays: (dbData.duration_days as number) || undefined,
+            price: (dbData.price as string) || undefined,
+            priceValue: (dbData.price_value as number) || undefined,
+            region: (dbData.region as string) || undefined,
+            includes: (dbData.includes as string[]) || [],
+            excludes: (dbData.excludes as string[]) || [],
+            itinerary: (dbData.itinerary as Array<{ day: number; description: string }>) || [],
+            content_blocks: (dbData.content_blocks as ContentBlock[]) || [],
+            heroImage: (dbData.hero_image as string) || (dbData.image as string) || null,
+            gallery: (dbData.gallery as string[]) || [],
           };
         }
       }
@@ -80,10 +84,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           price: staticTrip.price,
           priceValue: staticTrip.priceValue,
           region: staticTrip.region,
-          includes: staticTrip.includes,
-          excludes: staticTrip.excludes,
+          includes: staticTrip.highlights || [],
+          excludes: [],
           itinerary: [],
-          content_blocks: [],
+          content_blocks: staticTrip.contentBlocks || [],
+          heroImage: staticTrip.heroImage || null,
+          gallery: [],
         };
       }
     }
@@ -92,7 +98,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
     }
 
-    // Generate PDF
+    // Generate PDF buffer
     const pdfBuffer = await renderToBuffer(TripPdfDocument({ trip: tripData }));
 
     // Create filename from trip title
@@ -102,8 +108,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .replace(/^-|-$/g, '');
     const filename = `${sanitizedTitle}-headway-trips.pdf`;
 
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    const uint8Array = new Uint8Array(pdfBuffer);
+
     // Return PDF as response
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(uint8Array, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

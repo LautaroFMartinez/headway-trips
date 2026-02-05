@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { format, subDays, eachDayOfInterval, startOfWeek, endOfWeek } from 'date-fns';
+import { format, subDays, startOfWeek, endOfWeek, eachWeekOfInterval, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -14,7 +14,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Obtener estadísticas generales usando las tablas correctas
-    const [tripsResult, quotesResult, messagesResult] = await Promise.all([supabase.from('trips').select('id', { count: 'exact', head: true }), supabase.from('quote_requests').select('id, status, created_at', { count: 'exact' }), supabase.from('contact_messages').select('id, read, created_at', { count: 'exact' })]);
+    const [tripsResult, quotesResult, messagesResult] = await Promise.all([
+      supabase.from('trips').select('id', { count: 'exact', head: true }),
+      supabase.from('quote_requests').select('id, status, created_at', { count: 'exact' }),
+      supabase.from('contact_messages').select('id, read, created_at', { count: 'exact' }),
+    ]);
 
     const totalTrips = tripsResult.count || 0;
     const quotes = quotesResult.data || [];
@@ -32,27 +36,59 @@ export async function GET(request: NextRequest) {
       return date >= startWeek && date <= endWeek;
     }).length;
 
-    // Datos para gráfico de actividad (últimos 7 días)
-    const days = eachDayOfInterval({
-      start: subDays(new Date(), 6),
-      end: new Date(),
-    });
+    // KPIs: Ventas cerradas (confirmed) y Contactados sin cierre (contacted)
+    const confirmedSales = quotes.filter((q) => q.status === 'confirmed').length;
+    const contactedNotClosed = quotes.filter((q) => q.status === 'contacted').length;
 
-    const quotesByDay = days.map((day) => {
-      const dayStr = format(day, 'yyyy-MM-dd');
-      const dayQuotes = quotes.filter((q) => format(new Date(q.created_at), 'yyyy-MM-dd') === dayStr).length;
-      const dayMessages = messages.filter((m) => format(new Date(m.created_at), 'yyyy-MM-dd') === dayStr).length;
+    // Datos para gráfico de actividad (últimos 28 días con buckets semanales)
+    const now = new Date();
+    const fourWeeksAgo = subDays(now, 27);
+    
+    const weeks = eachWeekOfInterval(
+      { start: fourWeeksAgo, end: now },
+      { locale: es }
+    );
+
+    const quotesByWeek = weeks.map((weekStart) => {
+      const weekEnd = addDays(weekStart, 6);
+      const weekLabel = `${format(weekStart, 'd MMM', { locale: es })}`;
+      
+      const weekQuotes = quotes.filter((q) => {
+        const date = new Date(q.created_at);
+        return date >= weekStart && date <= weekEnd;
+      }).length;
+      
+      const weekMessages = messages.filter((m) => {
+        const date = new Date(m.created_at);
+        return date >= weekStart && date <= weekEnd;
+      }).length;
+
+      // Count confirmed and contacted for this week
+      const weekConfirmed = quotes.filter((q) => {
+        const date = new Date(q.created_at);
+        return date >= weekStart && date <= weekEnd && q.status === 'confirmed';
+      }).length;
+
+      const weekContacted = quotes.filter((q) => {
+        const date = new Date(q.created_at);
+        return date >= weekStart && date <= weekEnd && q.status === 'contacted';
+      }).length;
 
       return {
-        date: dayStr,
-        day: format(day, 'EEE', { locale: es }),
-        cotizaciones: dayQuotes,
-        mensajes: dayMessages,
+        weekStart: format(weekStart, 'yyyy-MM-dd'),
+        label: weekLabel,
+        cotizaciones: weekQuotes,
+        mensajes: weekMessages,
+        confirmadas: weekConfirmed,
+        contactadas: weekContacted,
       };
     });
 
     // Cotizaciones por región (basado en viajes)
-    const { data: quotesWithTrips } = await supabase.from('quote_requests').select('trip_id, trips(region)').not('trip_id', 'is', null);
+    const { data: quotesWithTrips } = await supabase
+      .from('quote_requests')
+      .select('trip_id, trips(region)')
+      .not('trip_id', 'is', null);
 
     const regionCounts: Record<string, number> = {};
     (quotesWithTrips || []).forEach((q: { trip_id: string; trips: { region: string }[] }) => {
@@ -107,9 +143,13 @@ export async function GET(request: NextRequest) {
     }));
 
     // Actividad reciente
-    const recentQuotes = quotes.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 3);
+    const recentQuotes = quotes
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 3);
 
-    const recentMessages = messages.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 2);
+    const recentMessages = messages
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 2);
 
     const recentActivity = [
       ...recentQuotes.map((q) => ({
@@ -122,12 +162,7 @@ export async function GET(request: NextRequest) {
         message: 'Nuevo mensaje de contacto',
         time: formatTimeAgo(new Date(m.created_at)),
       })),
-    ]
-      .sort((a, b) => {
-        // Ordenar por tiempo (más reciente primero)
-        return 0; // Ya están ordenados aproximadamente
-      })
-      .slice(0, 5);
+    ].slice(0, 5);
 
     // Si no hay actividad real, usar demo
     const finalRecentActivity =
@@ -147,8 +182,10 @@ export async function GET(request: NextRequest) {
         pendingQuotes,
         unreadMessages,
         quotesThisWeek,
+        confirmedSales,
+        contactedNotClosed,
       },
-      quotesByDay,
+      quotesByWeek,
       quotesByRegion: finalQuotesByRegion,
       quotesByStatus,
       recentActivity: finalRecentActivity,

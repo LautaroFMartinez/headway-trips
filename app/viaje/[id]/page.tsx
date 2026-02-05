@@ -47,7 +47,7 @@ async function getTrip(id: string): Promise<ProposalTrip | null> {
           priceValue: data.price_value || 0,
           includes: data.includes || [],
           excludes: data.excludes || [],
-          contentBlocks: (data.content_blocks as ContentBlock[]) || [],
+          contentBlocks: (data.content_blocks as unknown as ContentBlock[]) || [],
           pdfUrl: data.pdf_url || undefined,
         };
       }
