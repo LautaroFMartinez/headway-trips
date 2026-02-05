@@ -53,28 +53,36 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Build update object, only including content_blocks if provided
+    const updateData: Record<string, unknown> = {
+      title: body.title,
+      subtitle: body.short_description || '',
+      description: body.description || '',
+      region: body.region,
+      duration: `${body.duration_days} días / ${body.duration_nights || body.duration_days - 1} noches`,
+      duration_days: body.duration_days,
+      price: `$${body.price.toLocaleString()} USD`,
+      price_value: body.price,
+      image: body.image_url,
+      hero_image: body.image_url,
+      gallery: body.gallery || [],
+      includes: body.includes || [],
+      excludes: body.excludes || [],
+      itinerary: itineraryData,
+      pdf_url: body.pdf_url || null,
+      available: body.is_active ?? true,
+      featured: body.is_featured || false,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only include content_blocks if explicitly provided
+    if (body.content_blocks !== undefined) {
+      updateData.content_blocks = body.content_blocks;
+    }
+
     const { data: trip, error } = await supabase
       .from('trips')
-      .update({
-        title: body.title,
-        subtitle: body.short_description || '',
-        description: body.description || '',
-        region: body.region,
-        duration: `${body.duration_days} días / ${body.duration_nights || body.duration_days - 1} noches`,
-        duration_days: body.duration_days,
-        price: `$${body.price.toLocaleString()} USD`,
-        price_value: body.price,
-        image: body.image_url,
-        hero_image: body.image_url,
-        gallery: body.gallery || [],
-        includes: body.includes || [],
-        excludes: body.excludes || [],
-        itinerary: itineraryData,
-        pdf_url: body.pdf_url || null,
-        available: body.is_active ?? true,
-        featured: body.is_featured || false,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
@@ -106,6 +114,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       updates.price_value = body.price;
       updates.price = `$${body.price.toLocaleString()} USD`;
     }
+    if (body.content_blocks !== undefined) updates.content_blocks = body.content_blocks;
 
     const { data: trip, error } = await supabase.from('trips').update(updates).eq('id', id).select().single();
 

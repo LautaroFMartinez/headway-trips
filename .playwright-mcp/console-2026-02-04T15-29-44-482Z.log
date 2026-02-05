@@ -1,0 +1,6 @@
+[    1403ms] [WARNING] WARNING: The Autoblocker script tag must be the first to load for auto-blocking to work correctly. JSHandle@node @ https://web.cmp.usercentrics.eu/modules/autoblocker.js:0
+[    1481ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://js.hs-scripts.com/48328043.js:0
+[    1482ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://connect.facebook.net/en_US/fbevents.js:0
+[    2164ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://uct.service.usercentrics.eu/uct?v=2&sid=Py8hKlrOQXBIdO&t=24&abv=&r=https%3A%2F%2Fwww.moguplatform.com%2F&cb=1770218986642:0
+[    7393ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://v2.app.moguplatform.com/trips/numerous-cat-25812:0
+[    8816ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://www.googletagmanager.com/gtm.js?id=GTM-KMLPHG47&gtm_auth=&gtm_preview=&gtm_cookies_win=x:0

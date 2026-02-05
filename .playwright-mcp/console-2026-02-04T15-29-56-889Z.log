@@ -1,0 +1,75 @@
+[     681ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://www.googletagmanager.com/gtm.js?id=GTM-KMLPHG47&gtm_auth=&gtm_preview=&gtm_cookies_win=x:0
+[    3107ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://bookings.api.moguplatform.com/trips/609/me:0
+[    3180ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://trips.api.moguplatform.com/trips/609/role:0
+[    7260ms] [WARNING] Cannot update block coordinates: block not found in state {blockId: a4e682f4-2dad-485a-bf63-eb06f30f6bcb, blockType: accomodation} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[    7266ms] [WARNING] Cannot update block coordinates: block not found in state {blockId: 03fd349d-568d-4792-b8a8-67bed0779ee7, blockType: accomodation} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[    7271ms] [WARNING] Cannot update block coordinates: block not found in state {blockId: 78dc0848-e7d4-469e-9188-597d0c8b2908, blockType: accomodation} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[    7272ms] [WARNING] Cannot update block coordinates: block not found in state {blockId: 2a0d11bc-98c6-4fdf-a27c-229283ef6949, blockType: accomodation} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[    7320ms] [ERROR] Failed to load resource: the server responded with a status of 429 () @ https://o4508614554877952.ingest.us.sentry.io/api/4508614672121856/envelope/?sentry_version=7&sentry_key=10775c68a76173da81c0df836b88e629&sentry_client=sentry.javascript.nextjs%2F8.55.0:0
+[    9136ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://v2.app.moguplatform.com/trips/numerous-cat-25812:0
+[    9411ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://www.googletagmanager.com/gtm.js?id=GTM-KMLPHG47&gtm_auth=&gtm_preview=&gtm_cookies_win=x:0
+[   10737ms] [WARNING] WARNING: The Autoblocker script tag must be the first to load for auto-blocking to work correctly. JSHandle@node @ https://web.cmp.usercentrics.eu/modules/autoblocker.js:0
+[   10807ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://js.hs-scripts.com/48328043.js:0
+[   10807ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://connect.facebook.net/en_US/fbevents.js:0
+[   11059ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://uct.service.usercentrics.eu/uct?v=2&sid=Py8hKlrOQXBIdO&t=24&abv=&r=https%3A%2F%2Fwww.moguplatform.com%2F&cb=1770219007941:0
+[   15463ms] [WARNING] The resource https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=609cfc904cc5d81e0407aa0a was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://www.moguplatform.com/:0
+[   15463ms] [WARNING] The resource https://js.hs-scripts.com/48328043.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://www.moguplatform.com/:0
+[   15464ms] [WARNING] The resource https://cdn.prod.website-files.com/609cfc904cc5d81e0407aa0a/js/webflow.schunk.715727695ef737a7.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://www.moguplatform.com/:0
+[   15464ms] [WARNING] The resource https://js-na1.hs-scripts.com/48328043.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://www.moguplatform.com/:0
+[   15464ms] [WARNING] The resource https://cdn.prod.website-files.com/609cfc904cc5d81e0407aa0a/js/webflow.schunk.36b8fb49256177c8.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://www.moguplatform.com/:0
+[   15464ms] [WARNING] The resource https://cdn.weglot.com/weglot.min.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://www.moguplatform.com/:0
+[   15464ms] [WARNING] The resource https://cdn.prod.website-files.com/609cfc904cc5d81e0407aa0a/js/webflow.c7c09e29.364fb8e9c9ab71a3.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://www.moguplatform.com/:0
+[   18093ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://www.googletagmanager.com/gtm.js?id=GTM-KMLPHG47&gtm_auth=&gtm_preview=&gtm_cookies_win=x:0
+[   20007ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://accounts.api.moguplatform.com/pending_redirects/findByEmail?email=rmartinez%40headwaytrips.com:0
+[   21692ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://www.googletagmanager.com/gtm.js?id=GTM-KMLPHG47&gtm_auth=&gtm_preview=&gtm_cookies_win=x:0
+[   21693ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://widget.intercom.io/widget/jknl2b9w:0
+[   21699ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/diagnostic/672cfa2c77f79607624bc48b:0
+[   21708ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/diagnostic/672cfa2c77f79607624bc48b:0
+[   22703ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://api.eu.amplitude.com/2/httpapi:0
+[   22712ms] [ERROR] Amplitude Logger [Error]: Failed to fetch @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   22713ms] [WARNING] Amplitude Logger [Warn]: {code: 0, error: "Status 'failed' provided for 6 events"} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   23662ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/bulk/672cfa2c77f79607624bc48b:0
+[   23663ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/bulk/672cfa2c77f79607624bc48b:0
+[   23722ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://api.eu.amplitude.com/2/httpapi:0
+[   23722ms] [ERROR] Amplitude Logger [Error]: Failed to fetch @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   23729ms] [WARNING] Amplitude Logger [Warn]: {code: 0, error: "Status 'failed' provided for 10 events"} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   24730ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://api.eu.amplitude.com/2/httpapi:0
+[   24736ms] [ERROR] Amplitude Logger [Error]: Failed to fetch @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   24738ms] [WARNING] Amplitude Logger [Warn]: {code: 0, error: "Status 'failed' provided for 4 events"} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   25985ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://api.eu.amplitude.com/2/httpapi:0
+[   25988ms] [ERROR] Amplitude Logger [Error]: Failed to fetch @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   25989ms] [WARNING] Amplitude Logger [Warn]: {code: 0, error: "Status 'failed' provided for 6 events"} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   27014ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://api.eu.amplitude.com/2/httpapi:0
+[   27015ms] [ERROR] Amplitude Logger [Error]: Failed to fetch @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   27019ms] [WARNING] Amplitude Logger [Warn]: {code: 0, error: "Status 'failed' provided for 10 events"} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   27664ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/bulk/672cfa2c77f79607624bc48b:0
+[   27664ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/bulk/672cfa2c77f79607624bc48b:0
+[   28047ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://api.eu.amplitude.com/2/httpapi:0
+[   28048ms] [ERROR] Amplitude Logger [Error]: Failed to fetch @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   28051ms] [WARNING] Amplitude Logger [Warn]: {code: 0, error: "Status 'failed' provided for 4 events"} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   29053ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://api.eu.amplitude.com/2/httpapi:0
+[   29054ms] [ERROR] Amplitude Logger [Error]: Failed to fetch @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   29057ms] [WARNING] Amplitude Logger [Warn]: {code: 0, error: "Status 'failed' provided for 7 events"} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   29058ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   29059ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   29059ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   29060ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   29064ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   29065ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   29669ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/bulk/672cfa2c77f79607624bc48b:0
+[   29671ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/bulk/672cfa2c77f79607624bc48b:0
+[   30187ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://api.eu.amplitude.com/2/httpapi:0
+[   30189ms] [ERROR] Amplitude Logger [Error]: Failed to fetch @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   30190ms] [WARNING] Amplitude Logger [Warn]: {code: 0, error: "Status 'failed' provided for 5 events"} @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   30191ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   30192ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   30193ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   30194ms] [ERROR] Amplitude Logger [Error]: Event rejected due to exceeded retry count @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   31671ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/bulk/672cfa2c77f79607624bc48b:0
+[   31672ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://events.launchdarkly.com/events/bulk/672cfa2c77f79607624bc48b:0
+[   31798ms] [WARNING] [LaunchDarkly] Error on stream connection: {"isTrusted":true}, will continue retrying after 795 milliseconds. @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7
+[   32016ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://www.googletagmanager.com/gtm.js?id=GTM-KMLPHG47&gtm_auth=&gtm_preview=&gtm_cookies_win=x:0
+[   34116ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://bookings.api.moguplatform.com/trips/532718/me:0
+[   35138ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://accounts.api.moguplatform.com/accounts/11474/legal_texts:0
+[   36361ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://www.googletagmanager.com/gtm.js?id=GTM-KMLPHG47&gtm_auth=&gtm_preview=&gtm_cookies_win=x:0
+[   36532ms] [WARNING] As of February 21st, 2024, google.maps.Marker is deprecated. Please use google.maps.marker.AdvancedMarkerElement instead. At this time, google.maps.Marker is not scheduled to be discontinued, but google.maps.marker.AdvancedMarkerElement is recommended over google.maps.Marker. While google.maps.Marker will continue to receive bug fixes for any major regressions, existing bugs in google.maps.Marker will not be addressed. At least 12 months notice will be given before support is discontinued. Please see https://developers.google.com/maps/deprecations for additional details and https://developers.google.com/maps/documentation/javascript/advanced-markers/migration for the migration guide. @ https://v2.app.moguplatform.com/_next/static/chunks/7326-26a51ac077104db5.js:7

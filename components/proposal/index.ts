@@ -1,0 +1,10 @@
+export { ProposalPage } from './ProposalPage';
+export type { ProposalTrip, ProposalContact } from './ProposalPage';
+export { ProposalHero } from './ProposalHero';
+export { ProposalSidebar } from './ProposalSidebar';
+export { ProposalAbout } from './sections/ProposalAbout';
+export { ProposalServices } from './sections/ProposalServices';
+export { ProposalAccommodation } from './sections/ProposalAccommodation';
+export { ProposalItinerary } from './sections/ProposalItinerary';
+export { ProposalPricing } from './sections/ProposalPricing';
+export { ProposalGallery } from './sections/ProposalGallery';

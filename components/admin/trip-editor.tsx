@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
-import { X, Upload, ImageIcon, FileText, Trash2, GripVertical, Loader2, Save, Eye } from 'lucide-react';
+import { X, Upload, ImageIcon, FileText, Trash2, Loader2, Save, Eye, ExternalLink } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,10 +12,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { ContentBlock } from '@/types/blocks';
+import { BlockEditor } from './block-editor';
 
 interface Trip {
   id: string;
@@ -35,6 +35,7 @@ interface Trip {
   includes?: string[];
   excludes?: string[];
   pdf_url?: string;
+  content_blocks?: ContentBlock[];
   is_featured: boolean;
   is_active: boolean;
 }
@@ -66,68 +67,66 @@ const REGIONS = [
 export function TripEditor({ trip, open, onClose }: TripEditorProps) {
   const isEditing = !!trip;
 
-  // Form state
-  const [formData, setFormData] = useState<Partial<Trip>>(() => getInitialFormData(trip));
-  const [isSaving, setIsSaving] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // Form state - solo campos esenciales
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [destination, setDestination] = useState('');
+  const [region, setRegion] = useState('');
+  const [price, setPrice] = useState<number>(0);
+  const [durationDays, setDurationDays] = useState<number>(1);
+  const [isActive, setIsActive] = useState(true);
+  const [isFeatured, setIsFeatured] = useState(false);
 
   // Files state
   const [mainImage, setMainImage] = useState<UploadedFile | null>(null);
   const [galleryImages, setGalleryImages] = useState<UploadedFile[]>([]);
   const [pdfFile, setPdfFile] = useState<UploadedFile | null>(null);
 
+  // Content blocks state
+  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
+
+  // UI state
+  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [activeSection, setActiveSection] = useState<'info' | 'content'>('content');
+
   // Reset form when trip or open changes
   useEffect(() => {
     if (open) {
-      setFormData(getInitialFormData(trip));
-      setMainImage(trip?.image_url ? { id: '1', url: trip.image_url, name: 'Imagen principal', type: 'image' } : null);
-      setGalleryImages(trip?.gallery?.map((url, i) => ({ id: `g-${i}`, url, name: `Galería ${i + 1}`, type: 'image' })) || []);
-      setPdfFile(trip?.pdf_url ? { id: 'pdf', url: trip.pdf_url, name: 'Itinerario PDF', type: 'pdf' } : null);
+      if (trip) {
+        setTitle(trip.title || '');
+        setDescription(trip.description || '');
+        setDestination(trip.destination || '');
+        setRegion(trip.region || '');
+        setPrice(trip.price || 0);
+        setDurationDays(trip.duration_days || 1);
+        setIsActive(trip.is_active ?? true);
+        setIsFeatured(trip.is_featured ?? false);
+        setMainImage(trip.image_url ? { id: '1', url: trip.image_url, name: 'Imagen principal', type: 'image' } : null);
+        setGalleryImages(trip.gallery?.map((url, i) => ({ id: `g-${i}`, url, name: `Galería ${i + 1}`, type: 'image' })) || []);
+        setPdfFile(trip.pdf_url ? { id: 'pdf', url: trip.pdf_url, name: 'Itinerario PDF', type: 'pdf' } : null);
+        setContentBlocks(trip.content_blocks || []);
+      } else {
+        // Reset para nuevo viaje
+        setTitle('');
+        setDescription('');
+        setDestination('');
+        setRegion('');
+        setPrice(0);
+        setDurationDays(1);
+        setIsActive(true);
+        setIsFeatured(false);
+        setMainImage(null);
+        setGalleryImages([]);
+        setPdfFile(null);
+        setContentBlocks([]);
+      }
       setErrors({});
+      setActiveSection('content');
     }
   }, [open, trip]);
 
-  // Main image dropzone
-  const onDropMainImage = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length === 0) return;
-    const file = acceptedFiles[0];
-    await uploadFile(file, 'main');
-  }, []);
-
-  const mainImageDropzone = useDropzone({
-    onDrop: onDropMainImage,
-    accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] },
-    maxFiles: 1,
-    maxSize: 5 * 1024 * 1024, // 5MB
-  });
-
-  // Gallery dropzone
-  const onDropGallery = useCallback(async (acceptedFiles: File[]) => {
-    for (const file of acceptedFiles) {
-      await uploadFile(file, 'gallery');
-    }
-  }, []);
-
-  const galleryDropzone = useDropzone({
-    onDrop: onDropGallery,
-    accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] },
-    maxSize: 5 * 1024 * 1024,
-  });
-
-  // PDF dropzone
-  const onDropPdf = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length === 0) return;
-    const file = acceptedFiles[0];
-    await uploadFile(file, 'pdf');
-  }, []);
-
-  const pdfDropzone = useDropzone({
-    onDrop: onDropPdf,
-    accept: { 'application/pdf': ['.pdf'] },
-    maxFiles: 1,
-    maxSize: 10 * 1024 * 1024, // 10MB
-  });
-
+  // File upload handlers
   const uploadFile = async (file: File, type: 'main' | 'gallery' | 'pdf') => {
     const tempId = `temp-${Date.now()}`;
     const tempFile: UploadedFile = {
@@ -138,149 +137,95 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
       isUploading: true,
     };
 
-    if (type === 'main') {
-      setMainImage(tempFile);
-    } else if (type === 'gallery') {
-      setGalleryImages((prev) => [...prev, tempFile]);
-    } else {
-      setPdfFile(tempFile);
-    }
+    if (type === 'main') setMainImage(tempFile);
+    else if (type === 'gallery') setGalleryImages((prev) => [...prev, tempFile]);
+    else setPdfFile(tempFile);
 
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('type', type);
 
-      const response = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
+      const response = await fetch('/api/admin/upload', { method: 'POST', body: formData });
       if (!response.ok) throw new Error('Upload failed');
 
       const { url } = await response.json();
+      const uploadedFile: UploadedFile = { id: tempId, url, name: file.name, type: type === 'pdf' ? 'pdf' : 'image', isUploading: false };
 
-      const uploadedFile: UploadedFile = {
-        id: tempId,
-        url,
-        name: file.name,
-        type: type === 'pdf' ? 'pdf' : 'image',
-        isUploading: false,
-      };
-
-      if (type === 'main') {
-        setMainImage(uploadedFile);
-      } else if (type === 'gallery') {
-        setGalleryImages((prev) => prev.map((f) => (f.id === tempId ? uploadedFile : f)));
-      } else {
-        setPdfFile(uploadedFile);
-      }
+      if (type === 'main') setMainImage(uploadedFile);
+      else if (type === 'gallery') setGalleryImages((prev) => prev.map((f) => (f.id === tempId ? uploadedFile : f)));
+      else setPdfFile(uploadedFile);
     } catch (error) {
       console.error('Upload error:', error);
-      // Remove on error
-      if (type === 'main') {
-        setMainImage(null);
-      } else if (type === 'gallery') {
-        setGalleryImages((prev) => prev.filter((f) => f.id !== tempId));
-      } else {
-        setPdfFile(null);
-      }
+      if (type === 'main') setMainImage(null);
+      else if (type === 'gallery') setGalleryImages((prev) => prev.filter((f) => f.id !== tempId));
+      else setPdfFile(null);
     }
   };
 
-  const removeGalleryImage = (id: string) => {
-    setGalleryImages((prev) => prev.filter((f) => f.id !== id));
-  };
+  const onDropMainImage = useCallback(async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) await uploadFile(acceptedFiles[0], 'main');
+  }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value,
-    }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
+  const onDropGallery = useCallback(async (acceptedFiles: File[]) => {
+    for (const file of acceptedFiles) await uploadFile(file, 'gallery');
+  }, []);
 
-  const handleSwitchChange = (name: string, checked: boolean) => {
-    setFormData((prev) => ({ ...prev, [name]: checked }));
-  };
+  const onDropPdf = useCallback(async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) await uploadFile(acceptedFiles[0], 'pdf');
+  }, []);
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const mainImageDropzone = useDropzone({ onDrop: onDropMainImage, accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] }, maxFiles: 1, maxSize: 5 * 1024 * 1024 });
+  const galleryDropzone = useDropzone({ onDrop: onDropGallery, accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] }, maxSize: 5 * 1024 * 1024 });
+  const pdfDropzone = useDropzone({ onDrop: onDropPdf, accept: { 'application/pdf': ['.pdf'] }, maxFiles: 1, maxSize: 10 * 1024 * 1024 });
 
   const generateSlug = (title: string): string => {
-    return title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-  };
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const title = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      title,
-      slug: prev.slug || generateSlug(title),
-    }));
+    return title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.title?.trim()) {
-      newErrors.title = 'El título es requerido';
-    }
-    if (!formData.destination?.trim()) {
-      newErrors.destination = 'El destino es requerido';
-    }
-    if (!formData.region) {
-      newErrors.region = 'La región es requerida';
-    }
-    if (!formData.price || formData.price <= 0) {
-      newErrors.price = 'El precio debe ser mayor a 0';
-    }
-    if (!formData.duration_days || formData.duration_days <= 0) {
-      newErrors.duration_days = 'Los días son requeridos';
-    }
-    if (!mainImage) {
-      newErrors.image = 'La imagen principal es requerida';
-    }
-
+    if (!title.trim()) newErrors.title = 'El título es requerido';
+    if (!destination.trim()) newErrors.destination = 'El destino es requerido';
+    if (!region) newErrors.region = 'La región es requerida';
+    if (!price || price <= 0) newErrors.price = 'El precio debe ser mayor a 0';
+    if (!durationDays || durationDays <= 0) newErrors.duration_days = 'Los días son requeridos';
+    if (!mainImage) newErrors.image = 'La imagen principal es requerida';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      setActiveSection('info');
+      return;
+    }
 
     setIsSaving(true);
     try {
       const payload = {
-        ...formData,
-        slug: formData.slug || generateSlug(formData.title || ''),
+        title,
+        slug: generateSlug(title),
+        description,
+        short_description: description.slice(0, 160),
+        destination,
+        region,
+        price,
+        duration_days: durationDays,
+        duration_nights: Math.max(0, durationDays - 1),
         image_url: mainImage?.url,
         gallery: galleryImages.map((img) => img.url),
         pdf_url: pdfFile?.url,
+        content_blocks: contentBlocks,
+        is_featured: isFeatured,
+        is_active: isActive,
       };
 
       const url = isEditing ? `/api/admin/trips/${trip.id}` : '/api/admin/trips';
       const method = isEditing ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error al guardar');
-      }
+      const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!response.ok) throw new Error('Error al guardar');
 
       onClose(true);
     } catch (error) {
@@ -292,272 +237,283 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
 
   return (
     <Sheet open={open} onOpenChange={() => onClose(false)}>
-      <SheetContent className="w-full sm:max-w-3xl overflow-y-auto p-6">
-        <SheetHeader>
-          <SheetTitle>{isEditing ? 'Editar viaje' : 'Nuevo viaje'}</SheetTitle>
-          <SheetDescription>{isEditing ? 'Modifica los detalles del viaje' : 'Completa la información para crear un nuevo viaje'}</SheetDescription>
-        </SheetHeader>
+      <SheetContent className="w-full sm:max-w-4xl overflow-hidden flex flex-col p-0">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-white">
+          <div>
+            <SheetTitle className="text-lg">{isEditing ? 'Editar viaje' : 'Nuevo viaje'}</SheetTitle>
+            <SheetDescription className="text-sm">{isEditing ? title : 'Crea un nuevo viaje con bloques de contenido'}</SheetDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            {isEditing && trip && (
+              <a
+                href={`/viaje/${trip.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+                Ver
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+        </div>
 
-        <Tabs defaultValue="general" className="mt-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="media">Imágenes</TabsTrigger>
-            <TabsTrigger value="details">Detalles</TabsTrigger>
-          </TabsList>
+        {/* Section Tabs */}
+        <div className="flex border-b bg-slate-50 px-6">
+          <button
+            onClick={() => setActiveSection('content')}
+            className={cn(
+              'px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+              activeSection === 'content' ? 'border-primary text-primary' : 'border-transparent text-slate-600 hover:text-slate-900'
+            )}
+          >
+            Editor de Bloques
+          </button>
+          <button
+            onClick={() => setActiveSection('info')}
+            className={cn(
+              'px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+              activeSection === 'info' ? 'border-primary text-primary' : 'border-transparent text-slate-600 hover:text-slate-900'
+            )}
+          >
+            Información Básica
+          </button>
+        </div>
 
-          {/* General Tab */}
-          <TabsContent value="general" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Título *</Label>
-              <Input id="title" name="title" value={formData.title || ''} onChange={handleTitleChange} placeholder="Ej: Aventura en Machu Picchu" className={errors.title ? 'border-red-500' : ''} />
-              {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          {activeSection === 'content' ? (
+            /* Block Editor */
+            <div className="h-full">
+              <BlockEditor initialBlocks={contentBlocks} onChange={setContentBlocks} />
             </div>
+          ) : (
+            /* Info Form */
+            <div className="p-6 space-y-6">
+              {/* Título y Destino */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Título del viaje *</Label>
+                  <Input
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Ej: Maldivas en Grupo"
+                    className={errors.title ? 'border-red-500' : ''}
+                  />
+                  {errors.title && <p className="text-xs text-red-500">{errors.title}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="destination">Destino *</Label>
+                  <Input
+                    id="destination"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    placeholder="Ej: Islas Maldivas"
+                    className={errors.destination ? 'border-red-500' : ''}
+                  />
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="slug">URL amigable</Label>
-              <Input id="slug" name="slug" value={formData.slug || ''} onChange={handleInputChange} placeholder="aventura-machu-picchu" />
-            </div>
+              {/* Región, Precio, Duración */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Región *</Label>
+                  <Select value={region} onValueChange={setRegion}>
+                    <SelectTrigger className={errors.region ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Seleccionar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REGIONS.map((r) => (
+                        <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="price">Precio (USD) *</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    value={price || ''}
+                    onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+                    placeholder="1500"
+                    min={0}
+                    className={errors.price ? 'border-red-500' : ''}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="duration">Duración (días) *</Label>
+                  <Input
+                    id="duration"
+                    type="number"
+                    value={durationDays || ''}
+                    onChange={(e) => setDurationDays(parseInt(e.target.value) || 1)}
+                    placeholder="8"
+                    min={1}
+                    className={errors.duration_days ? 'border-red-500' : ''}
+                  />
+                </div>
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
+              {/* Descripción */}
               <div className="space-y-2">
-                <Label htmlFor="destination">Destino *</Label>
-                <Input id="destination" name="destination" value={formData.destination || ''} onChange={handleInputChange} placeholder="Cusco, Perú" className={errors.destination ? 'border-red-500' : ''} />
+                <Label htmlFor="description">Descripción del viaje</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe brevemente el viaje..."
+                  rows={3}
+                />
               </div>
+
+              <Separator />
+
+              {/* Imagen Principal */}
               <div className="space-y-2">
-                <Label htmlFor="region">Región *</Label>
-                <Select value={formData.region || ''} onValueChange={(v) => handleSelectChange('region', v)}>
-                  <SelectTrigger className={errors.region ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Seleccionar región" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {REGIONS.map((r) => (
-                      <SelectItem key={r.value} value={r.value}>
-                        {r.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="short_description">Descripción corta</Label>
-              <Input id="short_description" name="short_description" value={formData.short_description || ''} onChange={handleInputChange} placeholder="Resumen breve para tarjetas" maxLength={160} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Descripción completa</Label>
-              <Textarea id="description" name="description" value={formData.description || ''} onChange={handleInputChange} placeholder="Descripción detallada del viaje..." rows={4} />
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="price">Precio (USD) *</Label>
-                <Input id="price" name="price" type="number" value={formData.price || ''} onChange={handleInputChange} placeholder="0" min={0} className={errors.price ? 'border-red-500' : ''} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="original_price">Precio original (USD)</Label>
-                <Input id="original_price" name="original_price" type="number" value={formData.original_price || ''} onChange={handleInputChange} placeholder="Para mostrar descuento" min={0} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="duration_days">Días *</Label>
-                <Input id="duration_days" name="duration_days" type="number" value={formData.duration_days || ''} onChange={handleInputChange} placeholder="5" min={1} className={errors.duration_days ? 'border-red-500' : ''} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="duration_nights">Noches</Label>
-                <Input id="duration_nights" name="duration_nights" type="number" value={formData.duration_nights || ''} onChange={handleInputChange} placeholder="4" min={0} />
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Viaje activo</Label>
-                <p className="text-sm text-slate-500">Los viajes inactivos no se muestran en el sitio</p>
-              </div>
-              <Switch checked={formData.is_active ?? true} onCheckedChange={(v) => handleSwitchChange('is_active', v)} />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Viaje destacado</Label>
-                <p className="text-sm text-slate-500">Se mostrará en la sección de destacados</p>
-              </div>
-              <Switch checked={formData.is_featured ?? false} onCheckedChange={(v) => handleSwitchChange('is_featured', v)} />
-            </div>
-          </TabsContent>
-
-          {/* Media Tab */}
-          <TabsContent value="media" className="space-y-6 mt-4">
-            {/* Main Image */}
-            <div className="space-y-2">
-              <Label>Imagen principal *</Label>
-              {errors.image && <p className="text-sm text-red-500">{errors.image}</p>}
-              <div {...mainImageDropzone.getRootProps()} className={cn('border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors', mainImageDropzone.isDragActive ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 hover:border-slate-400')}>
-                <input {...mainImageDropzone.getInputProps()} />
-                {mainImage ? (
-                  <div className="relative">
-                    <div className="relative h-48 rounded-lg overflow-hidden">
-                      <Image src={mainImage.url} alt="Imagen principal" fill className="object-cover" />
-                      {mainImage.isUploading && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Loader2 className="h-8 w-8 text-white animate-spin" />
-                        </div>
-                      )}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMainImage(null);
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="py-8">
-                    <ImageIcon className="h-12 w-12 mx-auto text-slate-400 mb-2" />
-                    <p className="text-sm text-slate-600">Arrastra una imagen o haz clic para seleccionar</p>
-                    <p className="text-xs text-slate-400 mt-1">JPG, PNG o WEBP hasta 5MB</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Gallery */}
-            <div className="space-y-2">
-              <Label>Galería de imágenes</Label>
-              <div {...galleryDropzone.getRootProps()} className={cn('border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors', galleryDropzone.isDragActive ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 hover:border-slate-400')}>
-                <input {...galleryDropzone.getInputProps()} />
-                <Upload className="h-8 w-8 mx-auto text-slate-400 mb-2" />
-                <p className="text-sm text-slate-600">Arrastra imágenes adicionales para la galería</p>
-              </div>
-
-              {galleryImages.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                  {galleryImages.map((img) => (
-                    <div key={img.id} className="relative group">
-                      <div className="relative h-24 rounded-lg overflow-hidden bg-slate-100">
-                        <Image src={img.url} alt={img.name} fill className="object-cover" />
-                        {img.isUploading && (
+                <Label>Imagen principal *</Label>
+                {errors.image && <p className="text-xs text-red-500">{errors.image}</p>}
+                <div
+                  {...mainImageDropzone.getRootProps()}
+                  className={cn(
+                    'border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors',
+                    mainImageDropzone.isDragActive ? 'border-primary bg-primary/5' : 'border-slate-300 hover:border-slate-400'
+                  )}
+                >
+                  <input {...mainImageDropzone.getInputProps()} />
+                  {mainImage ? (
+                    <div className="relative">
+                      <div className="relative h-40 rounded-lg overflow-hidden">
+                        <Image src={mainImage.url} alt="Imagen principal" fill className="object-cover" />
+                        {mainImage.isUploading && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                            <Loader2 className="h-5 w-5 text-white animate-spin" />
+                            <Loader2 className="h-8 w-8 text-white animate-spin" />
                           </div>
                         )}
                       </div>
-                      <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeGalleryImage(img.id)}>
-                        <X className="h-3 w-3" />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 h-8 w-8"
+                        onClick={(e) => { e.stopPropagation(); setMainImage(null); }}
+                      >
+                        <X className="h-4 w-4" />
                       </Button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* PDF */}
-            <div className="space-y-2">
-              <Label>Itinerario PDF</Label>
-              <div {...pdfDropzone.getRootProps()} className={cn('border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors', pdfDropzone.isDragActive ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 hover:border-slate-400')}>
-                <input {...pdfDropzone.getInputProps()} />
-                {pdfFile ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-red-100 rounded-lg">
-                        <FileText className="h-6 w-6 text-red-600" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-medium">{pdfFile.name}</p>
-                        <p className="text-xs text-slate-500">PDF cargado</p>
-                      </div>
+                  ) : (
+                    <div className="py-6">
+                      <ImageIcon className="h-10 w-10 mx-auto text-slate-400 mb-2" />
+                      <p className="text-sm text-slate-600">Arrastra o haz clic para subir</p>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPdfFile(null);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="py-4">
-                    <FileText className="h-10 w-10 mx-auto text-slate-400 mb-2" />
-                    <p className="text-sm text-slate-600">Arrastra un PDF con el itinerario detallado</p>
-                    <p className="text-xs text-slate-400 mt-1">PDF hasta 10MB</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Galería */}
+              <div className="space-y-2">
+                <Label>Galería de imágenes</Label>
+                <div
+                  {...galleryDropzone.getRootProps()}
+                  className={cn(
+                    'border-2 border-dashed rounded-lg p-3 text-center cursor-pointer transition-colors',
+                    galleryDropzone.isDragActive ? 'border-primary bg-primary/5' : 'border-slate-300 hover:border-slate-400'
+                  )}
+                >
+                  <input {...galleryDropzone.getInputProps()} />
+                  <Upload className="h-6 w-6 mx-auto text-slate-400 mb-1" />
+                  <p className="text-sm text-slate-600">Agregar más imágenes</p>
+                </div>
+                {galleryImages.length > 0 && (
+                  <div className="grid grid-cols-4 gap-2 mt-2">
+                    {galleryImages.map((img) => (
+                      <div key={img.id} className="relative group">
+                        <div className="relative h-20 rounded-lg overflow-hidden bg-slate-100">
+                          <Image src={img.url} alt={img.name} fill className="object-cover" />
+                          {img.isUploading && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                              <Loader2 className="h-4 w-4 text-white animate-spin" />
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-1 -right-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => setGalleryImages((prev) => prev.filter((f) => f.id !== img.id))}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-            </div>
-          </TabsContent>
 
-          {/* Details Tab */}
-          <TabsContent value="details" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="itinerary">Itinerario</Label>
-              <Textarea
-                id="itinerary"
-                name="itinerary"
-                value={formData.itinerary || ''}
-                onChange={handleInputChange}
-                placeholder="Día 1: Llegada a destino...&#10;Día 2: Visita a..."
-                rows={8}
-              />
-              <p className="text-xs text-slate-500">Describe el itinerario día por día</p>
-            </div>
+              {/* PDF */}
+              <div className="space-y-2">
+                <Label>PDF del itinerario (opcional)</Label>
+                <div
+                  {...pdfDropzone.getRootProps()}
+                  className={cn(
+                    'border-2 border-dashed rounded-lg p-3 text-center cursor-pointer transition-colors',
+                    pdfDropzone.isDragActive ? 'border-primary bg-primary/5' : 'border-slate-300 hover:border-slate-400'
+                  )}
+                >
+                  <input {...pdfDropzone.getInputProps()} />
+                  {pdfFile ? (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-100 rounded-lg">
+                          <FileText className="h-5 w-5 text-red-600" />
+                        </div>
+                        <span className="text-sm font-medium">{pdfFile.name}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => { e.stopPropagation(); setPdfFile(null); }}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="py-2">
+                      <FileText className="h-6 w-6 mx-auto text-slate-400 mb-1" />
+                      <p className="text-sm text-slate-600">Subir PDF</p>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="includes">¿Qué incluye?</Label>
-              <Textarea
-                id="includes"
-                name="includes"
-                value={Array.isArray(formData.includes) ? formData.includes.join('\n') : formData.includes || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    includes: e.target.value.split('\n').filter((l) => l.trim()),
-                  }))
-                }
-                placeholder="Transporte terrestre&#10;Alojamiento 4 estrellas&#10;Desayuno incluido"
-                rows={5}
-              />
-              <p className="text-xs text-slate-500">Una línea por cada item incluido</p>
-            </div>
+              <Separator />
 
-            <div className="space-y-2">
-              <Label htmlFor="excludes">No incluye</Label>
-              <Textarea
-                id="excludes"
-                name="excludes"
-                value={Array.isArray(formData.excludes) ? formData.excludes.join('\n') : formData.excludes || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    excludes: e.target.value.split('\n').filter((l) => l.trim()),
-                  }))
-                }
-                placeholder="Vuelos internacionales&#10;Seguro de viaje&#10;Propinas"
-                rows={4}
-              />
-              <p className="text-xs text-slate-500">Una línea por cada item no incluido</p>
+              {/* Switches */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Viaje activo</Label>
+                  <p className="text-xs text-slate-500">Se muestra en el sitio público</p>
+                </div>
+                <Switch checked={isActive} onCheckedChange={setIsActive} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Viaje destacado</Label>
+                  <p className="text-xs text-slate-500">Aparece en la sección de destacados</p>
+                </div>
+                <Switch checked={isFeatured} onCheckedChange={setIsFeatured} />
+              </div>
             </div>
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 mt-6 pt-4 border-t">
+        {/* Footer Actions */}
+        <div className="flex gap-3 px-6 py-4 border-t bg-white">
           <Button variant="outline" className="flex-1" onClick={() => onClose(false)} disabled={isSaving}>
             Cancelar
           </Button>
@@ -570,7 +526,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
             ) : (
               <>
                 <Save className="h-4 w-4" />
-                {isEditing ? 'Guardar cambios' : 'Crear viaje'}
+                {isEditing ? 'Guardar' : 'Crear viaje'}
               </>
             )}
           </Button>
@@ -578,28 +534,4 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
       </SheetContent>
     </Sheet>
   );
-}
-
-function getInitialFormData(trip: Trip | null): Partial<Trip> {
-  if (trip) return { ...trip };
-  return {
-    title: '',
-    slug: '',
-    description: '',
-    short_description: '',
-    destination: '',
-    region: '',
-    price: 0,
-    original_price: undefined,
-    duration_days: 1,
-    duration_nights: 0,
-    image_url: '',
-    gallery: [],
-    itinerary: '',
-    includes: [],
-    excludes: [],
-    pdf_url: '',
-    is_featured: false,
-    is_active: true,
-  };
 }

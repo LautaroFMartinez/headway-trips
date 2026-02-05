@@ -1,43 +1,80 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTripById, trips, type Trip } from '@/lib/trips-data';
-import { TripDetailClient } from '@/components/trip-detail-client';
-import { TripDetailSkeleton } from '@/components/skeletons/trip-detail-skeleton';
-import { generateSEOMetadata, generateTripOfferSchema, generateBreadcrumbSchema } from '@/lib/seo-helpers';
+import { trips } from '@/lib/trips-data';
+import { ProposalPage } from '@/components/proposal';
+import type { ProposalTrip } from '@/components/proposal';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase';
+import type { ContentBlock } from '@/types/blocks';
+import { generateSEOMetadata, generateTripOfferSchema, generateBreadcrumbSchema } from '@/lib/seo-helpers';
 
-// Función para obtener viaje de Supabase o datos estáticos
-async function getTrip(id: string): Promise<Trip | null> {
-  // Primero intentar Supabase
+// Loader mientras carga
+function ProposalLoader() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="animate-pulse flex flex-col items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-gray-200"></div>
+        <div className="h-4 w-32 bg-gray-200 rounded"></div>
+      </div>
+    </div>
+  );
+}
+
+// Obtener viaje completo con bloques de contenido
+async function getTrip(id: string): Promise<ProposalTrip | null> {
+  // Intentar Supabase primero
   if (isSupabaseConfigured()) {
     const supabase = createServerClient();
     if (supabase) {
-      const { data, error } = await supabase.from('trips').select('*').eq('id', id).single();
+      const { data, error } = await supabase
+        .from('trips')
+        .select('*')
+        .eq('id', id)
+        .single();
 
       if (!error && data) {
         return {
           id: data.id,
           title: data.title,
           subtitle: data.subtitle || '',
-          region: data.region || 'sudamerica',
-          description: data.description || '',
+          code: data.id.toUpperCase().slice(0, 10),
           duration: data.duration || `${data.duration_days} días`,
           durationDays: data.duration_days || 1,
-          price: data.price || `Desde USD $${data.price_value}`,
-          priceValue: data.price_value || 0,
-          image: data.image || '/placeholder-trip.jpg',
+          description: data.description || '',
           heroImage: data.hero_image || data.image || '/placeholder-trip.jpg',
-          highlights: data.highlights || [],
-          tags: data.tags || [],
-          pdfUrl: (data as { pdf_url?: string }).pdf_url || undefined,
+          gallery: data.gallery || [],
+          price: data.price || `USD $${data.price_value}`,
+          priceValue: data.price_value || 0,
+          includes: data.includes || [],
+          excludes: data.excludes || [],
+          contentBlocks: (data.content_blocks as ContentBlock[]) || [],
+          pdfUrl: data.pdf_url || undefined,
         };
       }
     }
   }
 
   // Fallback a datos estáticos
-  return getTripById(id) || null;
+  const staticTrip = trips.find((t) => t.id === id);
+  if (!staticTrip) return null;
+
+  return {
+    id: staticTrip.id,
+    title: staticTrip.title,
+    subtitle: staticTrip.subtitle,
+    code: staticTrip.id.toUpperCase().slice(0, 10),
+    duration: staticTrip.duration,
+    durationDays: staticTrip.durationDays,
+    description: staticTrip.description,
+    heroImage: staticTrip.heroImage,
+    gallery: [],
+    price: staticTrip.price,
+    priceValue: staticTrip.priceValue,
+    includes: [],
+    excludes: [],
+    contentBlocks: staticTrip.contentBlocks || [],
+    pdfUrl: staticTrip.pdfUrl,
+  };
 }
 
 export function generateStaticParams() {
@@ -46,7 +83,6 @@ export function generateStaticParams() {
   }));
 }
 
-// Permitir rutas dinámicas que no estén en generateStaticParams
 export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -64,7 +100,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     description: trip.description,
     url: `/viaje/${trip.id}`,
     image: trip.heroImage,
-    keywords: [...trip.tags, trip.region, 'viaje', 'turismo', 'viajes internacionales'],
+    keywords: ['viaje', 'turismo', trip.title],
     type: 'article',
   });
 }
@@ -105,8 +141,8 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
           __html: JSON.stringify(breadcrumbSchema),
         }}
       />
-      <Suspense fallback={<TripDetailSkeleton />}>
-        <TripDetailClient trip={trip} />
+      <Suspense fallback={<ProposalLoader />}>
+        <ProposalPage trip={trip} />
       </Suspense>
     </>
   );
