@@ -129,4 +129,9 @@ export const RATE_LIMITS = {
     limit: 20,
     windowInSeconds: 60,
   },
+  // Newsletter: 3 requests per 15 minutes
+  newsletter: {
+    limit: 3,
+    windowInSeconds: 900,
+  },
 } as const;

@@ -3,7 +3,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { MessageCircle, CreditCard, XCircle, FileText, MapPin } from 'lucide-react';
-import { generateSEOMetadata, generateBreadcrumbSchema } from '@/lib/seo-helpers';
+import { generateSEOMetadata, generateBreadcrumbSchema, generateFAQSchema } from '@/lib/seo-helpers';
 
 export const metadata: Metadata = generateSEOMetadata({
   title: 'Preguntas Frecuentes',
@@ -130,25 +130,9 @@ const faqCategories = [
   },
 ];
 
-// Generate FAQ Schema.org structured data
-function generateFAQSchema() {
-  const allQuestions = faqCategories.flatMap((cat) => cat.questions);
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: allQuestions.map((q) => ({
-      '@type': 'Question',
-      name: q.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: q.answer,
-      },
-    })),
-  };
-}
-
 export default function FAQPage() {
-  const faqSchema = generateFAQSchema();
+  const allQuestions = faqCategories.flatMap((cat) => cat.questions);
+  const faqSchema = generateFAQSchema(allQuestions);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Inicio', url: 'https://headwaytrips.com' },
     { name: 'Preguntas Frecuentes', url: 'https://headwaytrips.com/faq' },

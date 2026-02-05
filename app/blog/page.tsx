@@ -66,6 +66,7 @@ export default function BlogPage() {
                 alt={featuredPost.title}
                 fill
                 className="object-cover"
+                sizes="100vw"
                 priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
@@ -147,6 +148,7 @@ export default function BlogPage() {
                           alt={post.title}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
                         <div className="absolute top-3 left-3">
                           <span className="bg-accent/90 text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">

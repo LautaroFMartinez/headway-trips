@@ -197,6 +197,27 @@ export type Database = {
           },
         ]
       }
+      newsletter_subscribers: {
+        Row: {
+          id: string
+          email: string
+          subscribed_at: string
+          status: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          subscribed_at?: string
+          status?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          subscribed_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string | null
