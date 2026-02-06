@@ -58,6 +58,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       title: body.title,
       subtitle: body.short_description || '',
       description: body.description || '',
+      destination: body.destination || '',
       region: body.region,
       duration: `${body.duration_days} días / ${body.duration_nights || body.duration_days - 1} noches`,
       duration_days: body.duration_days,

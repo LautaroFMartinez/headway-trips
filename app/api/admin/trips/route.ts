@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       slug: t.id, // Using id as slug since table doesn't have slug
       description: t.description || '',
       short_description: t.subtitle || '',
-      destination: t.region,
+      destination: t.destination || t.region,
       region: t.region,
       price: t.price_value || parseFloat(t.price?.replace(/[^0-9.]/g, '') || '0'),
       original_price: null,
@@ -126,6 +126,7 @@ export async function POST(request: NextRequest) {
         title: body.title,
         subtitle: body.short_description || '',
         description: body.description || '',
+        destination: body.destination || '',
         region: body.region,
         duration: `${body.duration_days} días / ${body.duration_nights || body.duration_days - 1} noches`,
         duration_days: body.duration_days,
