@@ -18,6 +18,7 @@ import { TripEditor } from '@/components/admin/trip-editor';
 interface Trip {
   id: string;
   title: string;
+  subtitle?: string;
   slug: string;
   description: string;
   short_description?: string;

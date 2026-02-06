@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
     const trips = (rawTrips || []).map((t) => ({
       id: t.id,
       title: t.title,
+      subtitle: t.subtitle || '',
       slug: t.id, // Using id as slug since table doesn't have slug
       description: t.description || '',
       short_description: t.subtitle || '',

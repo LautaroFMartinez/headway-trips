@@ -8,6 +8,9 @@ import { createServerClient, isSupabaseConfigured } from '@/lib/supabase';
 import type { ContentBlock } from '@/types/blocks';
 import { generateSEOMetadata, generateTripOfferSchema, generateBreadcrumbSchema } from '@/lib/seo-helpers';
 
+// No cachear esta página para que siempre muestre datos actualizados de Supabase
+export const revalidate = 0;
+
 // Loader mientras carga
 function ProposalLoader() {
   return (

@@ -20,6 +20,7 @@ import { BlockEditor } from './block-editor';
 interface Trip {
   id: string;
   title: string;
+  subtitle?: string;
   slug: string;
   description: string;
   short_description?: string;
@@ -69,6 +70,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
 
   // Form state - solo campos esenciales
   const [title, setTitle] = useState('');
+  const [subtitle, setSubtitle] = useState('');
   const [description, setDescription] = useState('');
   const [destination, setDestination] = useState('');
   const [region, setRegion] = useState('');
@@ -95,6 +97,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
     if (open) {
       if (trip) {
         setTitle(trip.title || '');
+        setSubtitle(trip.subtitle || '');
         setDescription(trip.description || '');
         setDestination(trip.destination || '');
         setRegion(trip.region || '');
@@ -109,6 +112,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
       } else {
         // Reset para nuevo viaje
         setTitle('');
+        setSubtitle('');
         setDescription('');
         setDestination('');
         setRegion('');
@@ -207,7 +211,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         title,
         slug: generateSlug(title),
         description,
-        short_description: description.slice(0, 160),
+        short_description: subtitle || description.slice(0, 160),
         destination,
         region,
         price,
@@ -315,6 +319,17 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
                     className={errors.destination ? 'border-red-500' : ''}
                   />
                 </div>
+              </div>
+
+              {/* Subtítulo */}
+              <div className="space-y-2">
+                <Label htmlFor="subtitle">Subtítulo</Label>
+                <Input
+                  id="subtitle"
+                  value={subtitle}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                  placeholder="Ej: 8 días de aventura tropical con todo incluido"
+                />
               </div>
 
               {/* Región, Precio, Duración */}
