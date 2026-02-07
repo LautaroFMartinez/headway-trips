@@ -21,7 +21,6 @@ const contactInfo = [
     icon: Phone,
     title: 'Telefono',
     description: '+525527118391',
-    extra: 'Lun - Vie: 9:00 - 18:00',
   },
 ];
 
@@ -75,7 +74,7 @@ export function ContactForm() {
   };
 
   return (
-    <section id="contacto" className="py-20 md:py-28 bg-secondary/30">
+    <section className="py-20 md:py-28 bg-secondary/30">
       <div className="container mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">
@@ -115,9 +114,6 @@ export function ContactForm() {
                       <div>
                         <h4 className="font-medium text-foreground text-sm">{info.title}</h4>
                         <p className="text-sm text-muted-foreground">{info.description}</p>
-                        {info.extra && (
-                          <p className="text-xs text-muted-foreground mt-1">{info.extra}</p>
-                        )}
                       </div>
                     </div>
                   );
@@ -202,7 +198,7 @@ export function ContactForm() {
                         required
                         value={formData.message}
                         onChange={handleChange}
-                        placeholder="Contanos sobre el viaje que soñas..."
+                        placeholder="Dejá cualquier consulta o comentario aqui..."
                         rows={4}
                         className="resize-none"
                       />

@@ -22,7 +22,6 @@ const footerLinks = {
 const contactInfo = [
   { icon: Mail, text: 'info@headwaytrips.com' },
   { icon: Phone, text: '+525527118391' },
-  { icon: MapPin, text: 'Buenos Aires, Argentina' },
 ];
 
 export function Footer() {
@@ -108,10 +107,6 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-            <div className="mt-4 pt-4 border-t border-primary-foreground/10">
-              <p className="text-xs text-primary-foreground/50">Lun - Vie: 9:00 - 18:00</p>
-              <p className="text-xs text-primary-foreground/50">Sab: 10:00 - 14:00</p>
-            </div>
           </div>
         </div>
       </div>

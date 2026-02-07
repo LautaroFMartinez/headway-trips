@@ -54,7 +54,6 @@ export function Header() {
             {[
               { href: '/', label: 'Inicio' },
               { href: '/#destinos', label: 'Destinos' },
-              { href: '/comparador', label: 'Comparador' },
               { href: '/blog', label: 'Blog' },
               { href: '/nosotros', label: 'Nosotros' },
               { href: '/#contacto', label: 'Contacto' },

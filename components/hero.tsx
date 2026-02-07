@@ -153,34 +153,6 @@ export function Hero() {
             </Link>
           </div>
 
-          {/* Stats - con text-shadow en lugar de fondos */}
-          <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-xl mx-auto">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div key={stat.label} className="text-center">
-                  <div 
-                    className="inline-flex items-center justify-center w-10 h-10 rounded-lg mb-2 border border-white/20"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
-                  >
-                    <Icon className="w-5 h-5 text-accent drop-shadow-lg" />
-                  </div>
-                  <div 
-                    className="text-2xl sm:text-3xl font-bold text-white"
-                    style={textShadowStyles.stats}
-                  >
-                    {stat.value}
-                  </div>
-                  <div 
-                    className="text-xs sm:text-sm text-white/90"
-                    style={textShadowStyles.scroll}
-                  >
-                    {stat.label}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       </div>
 

@@ -6,9 +6,9 @@ import { generateSEOMetadata, generateOrganizationSchema, generateBreadcrumbSche
 
 export const metadata: Metadata = generateSEOMetadata({
   title: 'Sobre Nosotros',
-  description: 'Conoce a Headway Trips, tu agencia de viajes de confianza en Argentina. Mas de 10 años creando experiencias de viaje unicas e inolvidables.',
+  description: 'Conoce a Headway Trips, tu agencia de viajes de confianza internacional. Mas de 10 años creando experiencias de viaje unicas e inolvidables.',
   url: '/nosotros',
-  keywords: ['sobre nosotros', 'agencia de viajes argentina', 'equipo headway trips', 'historia'],
+  keywords: ['sobre nosotros', 'agencia de viajes internacional', 'equipo headway trips', 'historia'],
 });
 
 const values = [
@@ -73,7 +73,7 @@ export default function NosotrosPage() {
               Hacemos que tus sueños de viaje <span className="font-serif italic text-accent">se hagan realidad</span>
             </h1>
             <p className="text-primary-foreground/80 max-w-2xl mx-auto text-lg leading-relaxed">
-              Somos una agencia de viajes argentina con mas de 10 años de experiencia diseñando experiencias unicas e inolvidables alrededor del mundo.
+              Somos una agencia de viajes internacional diseñamos experiencias unicas e inolvidables alrededor del mundo.
             </p>
           </div>
         </section>
@@ -92,29 +92,8 @@ export default function NosotrosPage() {
                 Headway Trips nacio de la conviccion de que viajar transforma vidas. Comenzamos como un pequeño equipo con grandes sueños, y hoy somos una agencia reconocida por crear experiencias que van mas alla del turismo convencional.
               </p>
             </div>
-
-            {/* Timeline */}
-            <div className="max-w-2xl mx-auto">
-              <div className="space-y-8">
-                {milestones.map((milestone, index) => (
-                  <div key={index} className="flex gap-6">
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-sm font-bold text-primary">{milestone.year}</span>
-                      </div>
-                      {index < milestones.length - 1 && (
-                        <div className="w-px h-full bg-border mt-2" />
-                      )}
-                    </div>
-                    <div className="pb-8">
-                      <h3 className="text-lg font-semibold text-foreground mb-1">{milestone.title}</h3>
-                      <p className="text-muted-foreground">{milestone.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
+            {/* aca poner timeline con fotitos de ig etc*/}
         </section>
 
         {/* Valores */}

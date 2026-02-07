@@ -24,6 +24,7 @@ const regionLabels: Record<string, string> = {
   'medio-oriente': 'Medio Oriente',
   asia: 'Asia',
   oceania: 'Oceania',
+  africa: 'Africa',
 };
 
 interface TripFilters {

@@ -73,9 +73,11 @@ export default function Home() {
       <Hero />
       <DestinationsGrid />
       <WhyChooseUs />
-      <Testimonials />
+      {/*<Testimonials />*/}
       <Newsletter />
-      <ContactForm />
+      <div id="contacto">
+        <ContactForm />
+      </div>
       <Footer />
     </main>
   );

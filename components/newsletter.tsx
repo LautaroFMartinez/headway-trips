@@ -101,7 +101,7 @@ export function Newsletter({ variant = 'section', className }: NewsletterProps) 
             Recibí ofertas <span className="font-serif italic text-accent">exclusivas</span>
           </h2>
           <p className="text-primary-foreground/80 mb-8 max-w-lg mx-auto">
-            Suscribite a nuestro newsletter y sé el primero en conocer destinos nuevos, promociones especiales y consejos de viaje.
+            Suscribite a nuestro newsletter y enterate antes que nadie de nuestras propuestas grupales
           </p>
 
           {/* Form */}

@@ -36,7 +36,7 @@ const faqCategories = [
       },
       {
         question: '¿Cual es el tamaño de los grupos?',
-        answer: 'Trabajamos con grupos reducidos de maximo 15 personas para garantizar una experiencia mas personalizada y autentica. Tambien organizamos viajes privados para familias o amigos.',
+        answer: 'Trabajamos con grupos reducidos de maximo 20 personas para garantizar una experiencia mas personalizada y autentica. Tambien organizamos viajes privados para familias o amigos.',
       },
     ],
   },
@@ -47,15 +47,15 @@ const faqCategories = [
     questions: [
       {
         question: '¿Cuales son las formas de pago?',
-        answer: 'Aceptamos tarjetas de credito y debito (Visa, Mastercard, American Express), transferencias bancarias, efectivo en nuestras oficinas y pagos digitales (Mercado Pago). Ofrecemos planes de financiacion en cuotas con bancos seleccionados.',
+        answer: 'Aceptamos tarjetas de credito y debito (Visa, Mastercard), transferencias bancarias y pagos digitales Offrecemos planes de financiacion en cuotas siempre que el viaje se encuentre completamente saldado 15 dias antes de realizar el mismo.',
       },
       {
         question: '¿Puedo pagar en cuotas?',
-        answer: 'Si, ofrecemos financiacion en hasta 12 cuotas sin interes con tarjetas de bancos seleccionados. Tambien tenemos planes de ahorro previo para viajes programados con antelacion.',
+        answer: 'Ofrecemos planes de ahorro previos para viajes programados con antelacion.',
       },
       {
         question: '¿Los precios estan en dolares o pesos?',
-        answer: 'Los precios en nuestra web estan expresados en dolares estadounidenses (USD) para destinos internacionales y en pesos argentinos (ARS) para destinos nacionales. El tipo de cambio se define al momento de la reserva.',
+        answer: 'Todos los precios en nuestra pagina estan expresados en dolares estadounidenses (USD)',
       },
       {
         question: '¿Hay cargos adicionales?',
@@ -70,7 +70,8 @@ const faqCategories = [
     questions: [
       {
         question: '¿Que pasa si necesito cancelar?',
-        answer: 'Nuestras politicas de cancelacion varian segun la anticipacion: mas de 60 dias antes del viaje, reintegro del 90%; entre 30-60 dias, reintegro del 70%; entre 15-30 dias, reintegro del 50%. Menos de 15 dias, se evalua caso por caso.',
+
+        answer: 'Entendemos que tus planes pueden cambiar. Nuestras políticas de cancelación contemplan reintegros según la antelación del aviso: 90% si es con más de 60 días, y 50% entre 30 y 60 días. Lamentablemente, con menos de 30 días de anticipación no podemos realizar reembolsos.',
       },
       {
         question: '¿Puedo cambiar las fechas del viaje?',
@@ -93,7 +94,7 @@ const faqCategories = [
     questions: [
       {
         question: '¿Que documentos necesito para viajar?',
-        answer: 'Para viajes nacionales, solo necesitas tu DNI. Para internacionales, pasaporte vigente (con al menos 6 meses de validez) y visa si el destino lo requiere. Te asesoramos sobre los requisitos especificos de cada destino.',
+        answer: 'Los documentos necesarios para viajar varian de acuerdo a la nacionalidad y el destino de cada viajero. Si tenes alguna duda en cuanto a que documentos necesitas, no dudes en contactarnos mediante el boton de contacto que se encuentra mas abajo.',
       },
       {
         question: '¿Me ayudan con el tramite de visa?',
@@ -101,7 +102,7 @@ const faqCategories = [
       },
       {
         question: '¿Necesito vacunas especiales?',
-        answer: 'Depende del destino. Te informamos sobre las vacunas requeridas u opcionales para cada viaje. Algunos destinos como ciertos paises de Africa y Asia requieren certificado de fiebre amarilla.',
+        answer: 'Depende del destino. Te informamos sobre las vacunas requeridas u opcionales para cada viaje.',
       },
     ],
   },
@@ -110,10 +111,6 @@ const faqCategories = [
     title: 'Destinos y experiencias',
     icon: MapPin,
     questions: [
-      {
-        question: '¿Que destinos ofrecen?',
-        answer: 'Contamos con mas de 25 destinos en America Latina, Europa, Asia y Oceania. Desde escapadas de fin de semana en Argentina hasta expediciones de varias semanas. Podes ver todos nuestros destinos en la seccion de la pagina principal.',
-      },
       {
         question: '¿Los viajes son solo para adultos?',
         answer: 'No, tenemos opciones para todos. Ofrecemos viajes familiares con actividades para niños, viajes de aventura para jovenes, escapadas romanticas y tours culturales. Cada paquete indica el perfil de viajero recomendado.',

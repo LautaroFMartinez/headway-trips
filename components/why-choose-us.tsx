@@ -14,7 +14,7 @@ const features = [
   {
     icon: Users,
     title: 'Grupos pequeños',
-    description: 'Maximo 15 personas por grupo para garantizar una atencion personalizada.',
+    description: 'Maximo 20 personas por grupo para garantizar una atencion personalizada.',
   },
   {
     icon: HeartHandshake,
@@ -67,6 +67,7 @@ export function WhyChooseUs() {
         </div>
 
         {/* Stats Section */}
+        {/* 
         <div className="bg-primary rounded-2xl p-8 md:p-12">
           <div className="text-center mb-8">
             <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-2">
@@ -76,6 +77,8 @@ export function WhyChooseUs() {
               Unite a nuestra comunidad de aventureros que han descubierto el mundo con nosotros
             </p>
           </div>
+        
+
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {stats.map((stat, index) => (
@@ -86,6 +89,7 @@ export function WhyChooseUs() {
             ))}
           </div>
         </div>
+        */}
       </div>
     </section>
   );

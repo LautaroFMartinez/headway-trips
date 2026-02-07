@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase';
-import { resend, isResendConfigured, ADMIN_EMAIL, FROM_EMAIL } from '@/lib/resend';
+import { resend, isResendConfigured, CONTACT_FORM_EMAIL, FROM_EMAIL } from '@/lib/resend';
 import {
   contactAdminNotificationHtml,
   contactAdminNotificationText,
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
           const emailPromises = [
             resendClient.emails.send({
               from: FROM_EMAIL,
-              to: ADMIN_EMAIL,
+              to: CONTACT_FORM_EMAIL,
               subject: `Nuevo mensaje de contacto de ${data.name}`,
               html: adminHtml,
               text: adminText,
