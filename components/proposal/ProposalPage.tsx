@@ -80,7 +80,7 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
   // Contacto por defecto
   const defaultContact: ProposalContact = {
     name: 'Headway Trips',
-    email: 'ACliente@headwaytrips.com',
+    email: 'contacto@headwaytrips.com',
     phone: '+525527118391',
     company: 'Headway Trips',
     logo: '/icono.png',
