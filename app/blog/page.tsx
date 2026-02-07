@@ -5,7 +5,7 @@ import { Calendar, Clock, ArrowRight, User } from 'lucide-react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Newsletter } from '@/components/newsletter';
-import { blogPosts, blogCategories, getFeaturedPost, getCategoryName } from '@/lib/blog-data';
+import { getAllBlogPosts, getFeaturedPost, getBlogCategories, getCategoryName, getRecentPosts } from '@/lib/blog-db';
 import { generateSEOMetadata, generateBreadcrumbSchema } from '@/lib/seo-helpers';
 
 export const metadata: Metadata = generateSEOMetadata({
@@ -14,6 +14,8 @@ export const metadata: Metadata = generateSEOMetadata({
   url: '/blog',
   keywords: ['blog viajes', 'consejos viaje', 'guías turismo', 'destinos Argentina'],
 });
+
+export const revalidate = 60; // Revalidate every minute
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('es-AR', {
@@ -38,9 +40,15 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-export default function BlogPage() {
-  const featuredPost = getFeaturedPost();
-  const otherPosts = blogPosts.filter((post) => !post.featured);
+export default async function BlogPage() {
+  const [allPosts, featuredPost, categories, recentPosts] = await Promise.all([
+    getAllBlogPosts(),
+    getFeaturedPost(),
+    getBlogCategories(),
+    getRecentPosts(3),
+  ]);
+
+  const otherPosts = allPosts.filter((post) => !post.featured);
   
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Inicio', url: 'https://headwaytrips.com' },
@@ -135,52 +143,58 @@ export default function BlogPage() {
                   Últimos <span className="font-serif italic text-primary">artículos</span>
                 </h2>
 
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {otherPosts.map((post) => (
-                    <article
-                      key={post.slug}
-                      className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
-                    >
-                      {/* Image */}
-                      <div className="relative aspect-[16/10] overflow-hidden">
-                        <Image
-                          src={post.coverImage}
-                          alt={post.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        />
-                        <div className="absolute top-3 left-3">
-                          <span className="bg-accent/90 text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">
-                            {getCategoryName(post.category)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-5">
-                        <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                          <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-                        </h3>
-                        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                          {post.excerpt}
-                        </p>
-
-                        {/* Meta */}
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Avatar name={post.author.name} />
-                            <span>{post.author.name}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5" />
-                            <span>{post.readingTime} min</span>
+                {otherPosts.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    {otherPosts.map((post) => (
+                      <article
+                        key={post.slug}
+                        className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
+                      >
+                        {/* Image */}
+                        <div className="relative aspect-[16/10] overflow-hidden">
+                          <Image
+                            src={post.coverImage}
+                            alt={post.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          />
+                          <div className="absolute top-3 left-3">
+                            <span className="bg-accent/90 text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">
+                              {getCategoryName(post.category)}
+                            </span>
                           </div>
                         </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+
+                        {/* Content */}
+                        <div className="p-5">
+                          <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                            <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                          </h3>
+                          <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                            {post.excerpt}
+                          </p>
+
+                          {/* Meta */}
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <Avatar name={post.author.name} />
+                              <span>{post.author.name}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5" />
+                              <span>{post.readingTime} min</span>
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>No hay artículos disponibles en este momento.</p>
+                  </div>
+                )}
               </div>
 
               {/* Sidebar */}
@@ -192,7 +206,7 @@ export default function BlogPage() {
                     Categorías
                   </h3>
                   <ul className="space-y-2">
-                    {blogCategories.map((category) => (
+                    {categories.map((category) => (
                       <li key={category.id}>
                         <Link
                           href={`/blog?category=${category.id}`}
@@ -217,7 +231,7 @@ export default function BlogPage() {
                     Más leídos
                   </h3>
                   <ul className="space-y-4">
-                    {blogPosts.slice(0, 3).map((post, index) => (
+                    {recentPosts.map((post, index) => (
                       <li key={post.slug}>
                         <Link
                           href={`/blog/${post.slug}`}

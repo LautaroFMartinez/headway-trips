@@ -7,19 +7,22 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Newsletter } from '@/components/newsletter';
 import {
-  blogPosts,
   getPostBySlug,
   getPostsByCategory,
   getCategoryName,
-} from '@/lib/blog-data';
+  getAllBlogPosts,
+} from '@/lib/blog-db';
 import {
   generateSEOMetadata,
   generateBreadcrumbSchema,
   generateBlogPostingSchema,
 } from '@/lib/seo-helpers';
 
-export function generateStaticParams() {
-  return blogPosts.map((post) => ({
+export const revalidate = 60; // Revalidate every minute
+
+export async function generateStaticParams() {
+  const posts = await getAllBlogPosts();
+  return posts.map((post) => ({
     slug: post.slug,
   }));
 }
@@ -30,7 +33,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     return { title: 'Artículo no encontrado' };
@@ -84,8 +87,21 @@ function CopyLinkButton() {
   );
 }
 
-function MarkdownContent({ content }: { content: string }) {
-  // Simple markdown-to-HTML conversion for our blog content
+function BlogContent({ content }: { content: string }) {
+  // Check if content is already HTML (from WYSIWYG editor)
+  const isHtml = content.trim().startsWith('<');
+  
+  if (isHtml) {
+    // Content from TipTap WYSIWYG editor - already HTML
+    return (
+      <div
+        className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-p:leading-relaxed prose-strong:text-foreground prose-a:text-primary prose-ul:text-muted-foreground prose-ol:text-muted-foreground prose-blockquote:text-muted-foreground prose-blockquote:border-primary/30"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  }
+  
+  // Legacy Markdown content - convert to HTML
   const html = content
     // Headers
     .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold text-foreground mt-8 mb-3">$1</h3>')
@@ -94,18 +110,8 @@ function MarkdownContent({ content }: { content: string }) {
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
     // Unordered lists
     .replace(/^- (.+)$/gm, '<li class="ml-4 text-muted-foreground">$1</li>')
-    // Table handling
-    .replace(/\|(.+)\|/g, (match) => {
-      const cells = match.split('|').filter(c => c.trim());
-      if (cells.every(c => /^[\s-:]+$/.test(c))) return ''; // separator row
-      const isHeader = match.includes('---') ? false : true;
-      const tag = isHeader ? 'td' : 'td';
-      return '<tr>' + cells.map(c => `<${tag} class="border border-border px-4 py-2 text-sm">${c.trim()}</${tag}>`).join('') + '</tr>';
-    })
     // Wrap consecutive li elements in ul
     .replace(/((?:<li[^>]*>.*<\/li>\n?)+)/g, '<ul class="list-disc space-y-1 my-4">$1</ul>')
-    // Wrap consecutive tr elements in table
-    .replace(/((?:<tr>.*<\/tr>\n?)+)/g, '<div class="overflow-x-auto my-6"><table class="w-full border-collapse border border-border rounded-lg">$1</table></div>')
     // Numbered lists
     .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 text-muted-foreground">$1</li>')
     // Paragraphs (lines that aren't already HTML)
@@ -132,13 +138,14 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  const relatedPosts = getPostsByCategory(post.category)
+  const allRelated = await getPostsByCategory(post.category);
+  const relatedPosts = allRelated
     .filter((p) => p.slug !== post.slug)
     .slice(0, 3);
 
@@ -257,7 +264,7 @@ export default async function BlogPostPage({
 
                   {/* Content */}
                   <div className="mt-8">
-                    <MarkdownContent content={post.content} />
+                    <BlogContent content={post.content} />
                   </div>
 
                   {/* Share & Actions */}

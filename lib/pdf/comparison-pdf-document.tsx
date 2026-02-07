@@ -816,7 +816,7 @@ export function ComparisonPdfDocument({ trips, qrCodeDataUrl }: ComparisonPdfDoc
 
         <View style={styles.ctaContact}>
           <Text style={styles.ctaContactItem}>📧 info@headwaytrips.com</Text>
-          <Text style={styles.ctaContactItem}>📱 WhatsApp: +54 9 351 XXX-XXXX</Text>
+          <Text style={styles.ctaContactItem}>📱 WhatsApp: +525527118391</Text>
           <Link src="https://headwaytrips.com" style={styles.ctaContactLink}>
             www.headwaytrips.com
           </Link>

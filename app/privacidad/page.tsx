@@ -157,7 +157,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <p className="text-muted-foreground">Email: privacy@headwaytrips.com</p>
               <p className="text-muted-foreground">Email general: info@headwaytrips.com</p>
-              <p className="text-muted-foreground">Teléfono: +54 11 1234-5678</p>
+              <p className="text-muted-foreground">Teléfono: +525527118391</p>
             </div>
           </section>
         </div>

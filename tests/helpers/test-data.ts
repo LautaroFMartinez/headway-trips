@@ -2,7 +2,7 @@ export const contactFormData = {
   valid: {
     name: 'Juan Pérez',
     email: 'juan@example.com',
-    phone: '+54 11 1234-5678',
+    phone: '+525527118391',
     message: 'Hola, me interesa el viaje a Bariloche para febrero.',
   },
   invalidEmail: {

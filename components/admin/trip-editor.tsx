@@ -246,7 +246,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
 
   return (
     <Sheet open={open} onOpenChange={() => onClose(false)}>
-      <SheetContent className="w-full sm:max-w-4xl overflow-hidden flex flex-col p-0">
+      <SheetContent className="w-full sm:max-w-4xl overflow-hidden flex flex-col p-0 px-6">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-white">
           <div>

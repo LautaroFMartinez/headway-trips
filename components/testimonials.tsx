@@ -177,28 +177,7 @@ export function Testimonials() {
                     key={testimonial.id}
                     className="flex-[0_0_100%] md:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-4"
                   >
-                    <div className="h-full p-6 md:p-8 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group flex flex-col">
-                      {/* Media thumbnail */}
-                      {testimonial.media && (
-                        <button
-                          onClick={() => setLightboxMedia(testimonial.media)}
-                          className="relative w-full h-40 mb-4 rounded-xl overflow-hidden group/media"
-                          aria-label={`Ver foto: ${testimonial.media.alt}`}
-                        >
-                          <Image
-                            src={testimonial.media.url}
-                            alt={testimonial.media.alt}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover/media:scale-105"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          />
-                          <div className="absolute inset-0 bg-black/0 group-hover/media:bg-black/20 transition-colors flex items-center justify-center">
-                            {testimonial.media.type === 'video' && (
-                              <Play className="h-12 w-12 text-white drop-shadow-lg opacity-80" />
-                            )}
-                          </div>
-                        </button>
-                      )}
+                    <div className="h-full p-4 md:p-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group flex flex-col">
 
                       {/* Quote icon */}
                       <div className="mb-3">

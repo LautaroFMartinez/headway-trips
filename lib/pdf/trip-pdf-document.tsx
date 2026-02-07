@@ -975,7 +975,7 @@ export function TripPdfDocument({ trip, qrCodeDataUrl }: TripPdfDocumentProps) {
         )}
 
         <View style={styles.ctaContact}>
-          <Text style={styles.ctaContactItem}>Tel: +54 11 XXXX-XXXX</Text>
+          <Text style={styles.ctaContactItem}>Tel: +525527118391</Text>
           <Text style={styles.ctaContactItem}>Email: viajes@headwaytrips.com</Text>
           <Link src="https://headwaytrips.com" style={styles.ctaContactLink}>
             Web: headwaytrips.com

@@ -93,7 +93,7 @@ function BlockEditorInner({ onChange }: { onChange: (blocks: ContentBlock[]) => 
 
       {/* Block Editor Sheet */}
       <Sheet open={!!editingBlock} onOpenChange={(open) => !open && handleCloseEditor()}>
-        <SheetContent className="w-[500px] sm:max-w-[500px] overflow-y-auto">
+        <SheetContent className="w-[500px] sm:max-w-[500px] overflow-y-auto px-6">
           {editingBlock && (
             <>
               <SheetHeader>

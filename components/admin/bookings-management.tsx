@@ -670,7 +670,7 @@ function CreateBookingDialog({
               <Input
                 value={form.customer_phone}
                 onChange={(e) => updateForm('customer_phone', e.target.value)}
-                placeholder="+54 9 11..."
+                placeholder="+52..."
               />
             </div>
           </div>

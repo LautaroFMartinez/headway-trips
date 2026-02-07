@@ -20,7 +20,7 @@ const contactInfo = [
   {
     icon: Phone,
     title: 'Telefono',
-    description: '+54 11 1234-5678',
+    description: '+525527118391',
     extra: 'Lun - Vie: 9:00 - 18:00',
   },
 ];
@@ -162,7 +162,7 @@ export function ContactForm() {
                         type="tel"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="+54 11 1234-5678"
+                        placeholder="+525527118391"
                         className="h-11"
                       />
                     </div>

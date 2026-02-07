@@ -426,7 +426,7 @@ Este proyecto es privado. Todos los derechos reservados.
 Para soporte o consultas:
 
 - **Email:** contacto@headwaytrips.com
-- **WhatsApp:** +54 9 11 1234-5678
+- **WhatsApp:** +525527118391
 
 ---
 

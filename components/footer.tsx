@@ -21,7 +21,7 @@ const footerLinks = {
 
 const contactInfo = [
   { icon: Mail, text: 'info@headwaytrips.com' },
-  { icon: Phone, text: '+54 11 1234-5678' },
+  { icon: Phone, text: '+525527118391' },
   { icon: MapPin, text: 'Buenos Aires, Argentina' },
 ];
 

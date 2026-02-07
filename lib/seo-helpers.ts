@@ -241,7 +241,7 @@ export function generateLocalBusinessSchema() {
     logo: 'https://headwaytrips.com/icono.png',
     image: 'https://headwaytrips.com/og-image.jpg',
     description: 'Tu agencia de viajes de confianza en Argentina. Creamos experiencias de viaje inolvidables.',
-    telephone: '+54 11 1234-5678',
+    telephone: '+525527118391',
     email: 'info@headwaytrips.com',
     address: {
       '@type': 'PostalAddress',

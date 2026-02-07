@@ -79,9 +79,9 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
 
   // Contacto por defecto
   const defaultContact: ProposalContact = {
-    name: 'Ramiro Martinez',
-    email: 'info@headwaytrips.com',
-    phone: '+54 9 11 1234-5678',
+    name: 'Headway Trips',
+    email: 'ACliente@headwaytrips.com',
+    phone: '+525527118391',
     company: 'Headway Trips',
     logo: '/icono.png',
   };

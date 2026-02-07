@@ -375,7 +375,7 @@ export function QuotesManagement() {
 
       {/* Quote Detail Dialog */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               Detalle de cotización
@@ -422,28 +422,28 @@ export function QuotesManagement() {
                       Información del cliente
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Nombre</span>
+                  <CardContent className="space-y-3 text-sm">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-slate-500 text-xs">Nombre</span>
                       <span className="font-medium">{selectedQuote.name}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Email</span>
-                      <a href={`mailto:${selectedQuote.email}`} className="font-medium text-indigo-600 hover:underline">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-slate-500 text-xs">Email</span>
+                      <a href={`mailto:${selectedQuote.email}`} className="font-medium text-indigo-600 hover:underline break-all">
                         {selectedQuote.email}
                       </a>
                     </div>
                     {selectedQuote.phone && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Teléfono</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-500 text-xs">Teléfono</span>
                         <a href={`tel:${selectedQuote.phone}`} className="font-medium text-indigo-600 hover:underline">
                           {selectedQuote.phone}
                         </a>
                       </div>
                     )}
                     {selectedQuote.country && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">País</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-500 text-xs">País</span>
                         <span className="font-medium flex items-center gap-1">
                           <Globe className="h-3 w-3" />
                           {selectedQuote.country}
@@ -461,39 +461,41 @@ export function QuotesManagement() {
                       Detalles del viaje
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Viaje</span>
-                      <span className="font-medium text-right max-w-[60%]">{selectedQuote.trips?.title || 'N/A'}</span>
+                  <CardContent className="space-y-3 text-sm">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-slate-500 text-xs">Viaje</span>
+                      <span className="font-medium">{selectedQuote.trips?.title || 'N/A'}</span>
                     </div>
                     {selectedQuote.trips?.destination && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Región</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-500 text-xs">Región</span>
                         <span className="font-medium">{selectedQuote.trips.destination}</span>
                       </div>
                     )}
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Fecha de viaje</span>
-                      <span className="font-medium">
-                        {selectedQuote.travel_date
-                          ? format(new Date(selectedQuote.travel_date), 'dd MMM yyyy', { locale: es })
-                          : 'No especificada'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Adultos</span>
-                      <span className="font-medium">{selectedQuote.adults}</span>
-                    </div>
-                    {selectedQuote.children > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Menores</span>
-                        <span className="font-medium">{selectedQuote.children}</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-500 text-xs">Fecha de viaje</span>
+                        <span className="font-medium">
+                          {selectedQuote.travel_date
+                            ? format(new Date(selectedQuote.travel_date), 'dd MMM yyyy', { locale: es })
+                            : 'No especificada'}
+                        </span>
                       </div>
-                    )}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-500 text-xs">Adultos</span>
+                        <span className="font-medium">{selectedQuote.adults}</span>
+                      </div>
+                      {selectedQuote.children > 0 && (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-slate-500 text-xs">Menores</span>
+                          <span className="font-medium">{selectedQuote.children}</span>
+                        </div>
+                      )}
+                    </div>
                     {selectedQuote.trips?.price && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Precio base p/p</span>
-                        <span className="font-medium text-green-700">
+                      <div className="flex flex-col gap-1 pt-2 border-t border-slate-100">
+                        <span className="text-slate-500 text-xs">Precio base p/p</span>
+                        <span className="font-semibold text-green-700 text-base">
                           USD ${selectedQuote.trips.price.toLocaleString()}
                         </span>
                       </div>
