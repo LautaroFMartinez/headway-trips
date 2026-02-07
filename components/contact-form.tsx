@@ -35,17 +35,36 @@ export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    setIsSuccess(true);
-    setFormData({ name: '', email: '', phone: '', message: '' });
-    setIsSubmitting(false);
+      const data = await response.json();
 
-    setTimeout(() => setIsSuccess(false), 5000);
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Error al enviar el mensaje');
+      }
+
+      setIsSuccess(true);
+      setFormData({ name: '', email: '', phone: '', message: '' });
+      setTimeout(() => setIsSuccess(false), 5000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al enviar el mensaje');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -119,6 +138,12 @@ export function ContactForm() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-5">
+                    {error && (
+                      <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg flex items-center gap-2">
+                        <span className="block w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
+                        {error}
+                      </div>
+                    )}
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">

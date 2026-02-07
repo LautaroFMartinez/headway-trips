@@ -10,7 +10,7 @@ export function isResendConfigured(): boolean {
 }
 
 // Email del administrador que recibirá las notificaciones
-export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'info@headwaytrips.com';
+export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'formulario@headwaytrips.com';
 
 // Email desde el cual se envían los correos (debe estar verificado en Resend)
 export const FROM_EMAIL = process.env.FROM_EMAIL || 'Headway Trips <noreply@headwaytrips.com>';
