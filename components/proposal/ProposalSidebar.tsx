@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Download, Phone, Mail, Building2, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ProposalContact } from './ProposalPage';
+import { SpotsIndicator } from './SpotsIndicator';
 
 interface Section {
   id: string;
@@ -14,9 +15,12 @@ interface ProposalSidebarProps {
   sections: Section[];
   tripId: string;
   contact: ProposalContact;
+  maxCapacity?: number;
+  currentBookings?: number;
+  price?: string;
 }
 
-export function ProposalSidebar({ sections, tripId, contact }: ProposalSidebarProps) {
+export function ProposalSidebar({ sections, tripId, contact, maxCapacity, currentBookings, price }: ProposalSidebarProps) {
   const [activeSection, setActiveSection] = useState<string>('');
   const [contactExpanded, setContactExpanded] = useState(true);
 
@@ -64,6 +68,11 @@ export function ProposalSidebar({ sections, tripId, contact }: ProposalSidebarPr
         <Download className="w-5 h-5" />
         Descargar PDF
       </a>
+
+      {/* Reserva y cupos */}
+      {maxCapacity != null && currentBookings != null && (
+        <SpotsIndicator variant="card" maxCapacity={maxCapacity} currentBookings={currentBookings} price={price} />
+      )}
 
       {/* Navegación por secciones */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

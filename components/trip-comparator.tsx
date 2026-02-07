@@ -5,13 +5,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, ArrowRight, Check, Clock, MapPin, Sparkles, TrendingDown, Calendar, Star, Shield, CreditCard, Plane, Share2, CheckCircle2, DollarSign, AlertCircle } from 'lucide-react';
+import { Plus, X, ArrowRight, Check, Clock, MapPin, Sparkles, TrendingDown, Calendar, Star, Shield, CreditCard, Plane, Share2, CheckCircle2, DollarSign, AlertCircle, FileDown, SlidersHorizontal, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 // Interfaz para los datos del viaje que vienen de la base de datos
 export interface TripData {
@@ -312,59 +315,326 @@ function ShareButton({ selectedTripIds }: ShareButtonProps) {
   );
 }
 
+// Advanced Filters Component
+interface AdvancedFiltersProps {
+  allTrips: TripData[];
+  priceRange: [number, number];
+  setPriceRange: (range: [number, number]) => void;
+  durationRange: [number, number];
+  setDurationRange: (range: [number, number]) => void;
+  selectedRegions: string[];
+  setSelectedRegions: (regions: string[]) => void;
+  selectedTags: string[];
+  setSelectedTags: (tags: string[]) => void;
+}
+
+function AdvancedFilters({
+  allTrips,
+  priceRange,
+  setPriceRange,
+  durationRange,
+  setDurationRange,
+  selectedRegions,
+  setSelectedRegions,
+  selectedTags,
+  setSelectedTags,
+}: AdvancedFiltersProps) {
+  // Get unique regions and tags from all trips
+  const regions = useMemo(() => [...new Set(allTrips.map((t) => t.region))], [allTrips]);
+  const allTags = useMemo(() => [...new Set(allTrips.flatMap((t) => t.tags))], [allTrips]);
+  const maxPrice = useMemo(() => Math.max(...allTrips.map((t) => t.priceValue)), [allTrips]);
+  const minPrice = useMemo(() => Math.min(...allTrips.map((t) => t.priceValue)), [allTrips]);
+  const maxDuration = useMemo(() => Math.max(...allTrips.map((t) => t.durationDays)), [allTrips]);
+  const minDuration = useMemo(() => Math.min(...allTrips.map((t) => t.durationDays)), [allTrips]);
+
+  const toggleRegion = (region: string) => {
+    if (selectedRegions.includes(region)) {
+      setSelectedRegions(selectedRegions.filter((r) => r !== region));
+    } else {
+      setSelectedRegions([...selectedRegions, region]);
+    }
+  };
+
+  const toggleTag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.3 }}
+      className="overflow-hidden"
+    >
+      <div className="p-6 bg-muted/50 border-t border-border">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Price Range */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Rango de precio</Label>
+            <Slider
+              min={minPrice}
+              max={maxPrice}
+              step={100}
+              value={priceRange}
+              onValueChange={(value) => setPriceRange(value as [number, number])}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>USD ${priceRange[0].toLocaleString()}</span>
+              <span>USD ${priceRange[1].toLocaleString()}</span>
+            </div>
+          </div>
+
+          {/* Duration Range */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Duración (días)</Label>
+            <Slider
+              min={minDuration}
+              max={maxDuration}
+              step={1}
+              value={durationRange}
+              onValueChange={(value) => setDurationRange(value as [number, number])}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{durationRange[0]} días</span>
+              <span>{durationRange[1]} días</span>
+            </div>
+          </div>
+
+          {/* Regions */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Regiones</Label>
+            <div className="flex flex-wrap gap-2">
+              {regions.map((region) => (
+                <button
+                  key={region}
+                  onClick={() => toggleRegion(region)}
+                  className={cn(
+                    'px-3 py-1.5 text-xs rounded-full border transition-colors',
+                    selectedRegions.includes(region)
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-background text-foreground border-border hover:border-primary'
+                  )}
+                >
+                  {region}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Tipo de viaje</Label>
+            <div className="flex flex-wrap gap-2">
+              {allTags.slice(0, 6).map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => toggleTag(tag)}
+                  className={cn(
+                    'px-3 py-1.5 text-xs rounded-full border transition-colors capitalize',
+                    selectedTags.includes(tag)
+                      ? 'bg-accent text-white border-accent'
+                      : 'bg-background text-foreground border-border hover:border-accent'
+                  )}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// PDF Export Button
+interface ExportPdfButtonProps {
+  selectedTripIds: string[];
+}
+
+function ExportPdfButton({ selectedTripIds }: ExportPdfButtonProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (selectedTripIds.length === 0) return;
+
+    setIsExporting(true);
+    try {
+      const response = await fetch(`/api/comparison/pdf?trips=${selectedTripIds.join(',')}`);
+      
+      if (!response.ok) {
+        throw new Error('Error generating PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `comparacion-viajes-headway-trips.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  if (selectedTripIds.length === 0) return null;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={isExporting}
+            className="gap-2"
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generando...
+              </>
+            ) : (
+              <>
+                <FileDown className="h-4 w-4" />
+                Exportar PDF
+              </>
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Descargar comparación en PDF</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 interface SelectorSectionProps {
   selectedTrips: TripData[];
   availableTrips: TripData[];
+  allTrips: TripData[];
   dropdownOpen: boolean;
   setDropdownOpen: (open: boolean) => void;
   onAddTrip: (tripId: string) => void;
   onClearAll: () => void;
+  // Advanced filters
+  priceRange: [number, number];
+  setPriceRange: (range: [number, number]) => void;
+  durationRange: [number, number];
+  setDurationRange: (range: [number, number]) => void;
+  selectedRegions: string[];
+  setSelectedRegions: (regions: string[]) => void;
+  selectedTags: string[];
+  setSelectedTags: (tags: string[]) => void;
 }
 
-function SelectorSection({ selectedTrips, availableTrips, dropdownOpen, setDropdownOpen, onAddTrip, onClearAll }: SelectorSectionProps) {
+function SelectorSection({
+  selectedTrips,
+  availableTrips,
+  allTrips,
+  dropdownOpen,
+  setDropdownOpen,
+  onAddTrip,
+  onClearAll,
+  priceRange,
+  setPriceRange,
+  durationRange,
+  setDurationRange,
+  selectedRegions,
+  setSelectedRegions,
+  selectedTags,
+  setSelectedTags,
+}: SelectorSectionProps) {
+  const [showFilters, setShowFilters] = useState(false);
   const canAddMore = selectedTrips.length < MAX_COMPARISON_ITEMS;
   const selectedTripIds = selectedTrips.map((t) => t.id);
 
   return (
     <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-card border border-border rounded-2xl shadow-sm">
-          <div>
-            <h2 className="text-lg font-semibold">Seleccioná tus destinos</h2>
-            <p className="text-sm text-muted-foreground">
-              {selectedTrips.length} de {MAX_COMPARISON_ITEMS} destinos seleccionados
-            </p>
-          </div>
+        <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6">
+            <div>
+              <h2 className="text-lg font-semibold">Seleccioná tus destinos</h2>
+              <p className="text-sm text-muted-foreground">
+                {selectedTrips.length} de {MAX_COMPARISON_ITEMS} destinos seleccionados
+              </p>
+            </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Select open={dropdownOpen} onOpenChange={setDropdownOpen} onValueChange={onAddTrip} disabled={!canAddMore}>
-              <SelectTrigger className="w-full sm:w-[280px] h-11 rounded-xl">
-                <div className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  <SelectValue placeholder="Agregar destino" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {availableTrips.map((trip) => (
-                  <SelectItem key={trip.id} value={trip.id}>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                      {trip.title}
-                      <span className="text-xs text-muted-foreground">· {trip.price}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
+              <Select open={dropdownOpen} onOpenChange={setDropdownOpen} onValueChange={onAddTrip} disabled={!canAddMore}>
+                <SelectTrigger className="w-full sm:w-[280px] h-11 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    <SelectValue placeholder="Agregar destino" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTrips.map((trip) => (
+                    <SelectItem key={trip.id} value={trip.id}>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                        {trip.title}
+                        <span className="text-xs text-muted-foreground">· {trip.price}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <ShareButton selectedTripIds={selectedTripIds} />
-
-            {selectedTrips.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={onClearAll} className="text-muted-foreground hover:text-destructive">
-                Limpiar
+              {/* Filters Toggle Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn('gap-2', showFilters && 'bg-primary/10 border-primary')}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Filtros
+                {showFilters ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </Button>
-            )}
+
+              <ExportPdfButton selectedTripIds={selectedTripIds} />
+              <ShareButton selectedTripIds={selectedTripIds} />
+
+              {selectedTrips.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={onClearAll} className="text-muted-foreground hover:text-destructive">
+                  Limpiar
+                </Button>
+              )}
+            </div>
           </div>
+
+          {/* Advanced Filters Panel */}
+          <AnimatePresence>
+            {showFilters && (
+              <AdvancedFilters
+                allTrips={allTrips}
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
+                durationRange={durationRange}
+                setDurationRange={setDurationRange}
+                selectedRegions={selectedRegions}
+                setSelectedRegions={setSelectedRegions}
+                selectedTags={selectedTags}
+                setSelectedTags={setSelectedTags}
+              />
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </motion.section>
@@ -607,6 +877,23 @@ export function TripComparator({ allTrips }: TripComparatorProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Filter states
+  const maxPrice = useMemo(() => Math.max(...allTrips.map((t) => t.priceValue)), [allTrips]);
+  const minPrice = useMemo(() => Math.min(...allTrips.map((t) => t.priceValue)), [allTrips]);
+  const maxDuration = useMemo(() => Math.max(...allTrips.map((t) => t.durationDays)), [allTrips]);
+  const minDuration = useMemo(() => Math.min(...allTrips.map((t) => t.durationDays)), [allTrips]);
+
+  const [priceRange, setPriceRange] = useState<[number, number]>([minPrice, maxPrice]);
+  const [durationRange, setDurationRange] = useState<[number, number]>([minDuration, maxDuration]);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // Initialize filter ranges when data loads
+  useEffect(() => {
+    setPriceRange([minPrice, maxPrice]);
+    setDurationRange([minDuration, maxDuration]);
+  }, [minPrice, maxPrice, minDuration, maxDuration]);
+
   // Cargar viajes desde URL al montar el componente
   useEffect(() => {
     if (isInitialized) return;
@@ -640,10 +927,29 @@ export function TripComparator({ allTrips }: TripComparatorProps) {
     }
   }, [selectedTrips, router, searchParams, isInitialized]);
 
+  // Filter available trips based on filters
+  const filteredTrips = useMemo(() => {
+    return allTrips.filter((trip) => {
+      // Price filter
+      if (trip.priceValue < priceRange[0] || trip.priceValue > priceRange[1]) return false;
+      
+      // Duration filter
+      if (trip.durationDays < durationRange[0] || trip.durationDays > durationRange[1]) return false;
+      
+      // Region filter (if any selected)
+      if (selectedRegions.length > 0 && !selectedRegions.includes(trip.region)) return false;
+      
+      // Tags filter (if any selected, trip must have at least one matching tag)
+      if (selectedTags.length > 0 && !selectedTags.some((tag) => trip.tags.includes(tag))) return false;
+      
+      return true;
+    });
+  }, [allTrips, priceRange, durationRange, selectedRegions, selectedTags]);
+
   const availableTrips = useMemo(() => {
     const selectedIds = new Set(selectedTrips.map((t) => t.id));
-    return allTrips.filter((t) => !selectedIds.has(t.id));
-  }, [selectedTrips, allTrips]);
+    return filteredTrips.filter((t) => !selectedIds.has(t.id));
+  }, [selectedTrips, filteredTrips]);
 
   const handleAddTrip = useCallback((tripId: string) => {
     const trip = allTrips.find((t) => t.id === tripId);
@@ -670,7 +976,23 @@ export function TripComparator({ allTrips }: TripComparatorProps) {
       <HeroSection />
       <TrustBadges />
 
-      <SelectorSection selectedTrips={selectedTrips} availableTrips={availableTrips} dropdownOpen={dropdownOpen} setDropdownOpen={setDropdownOpen} onAddTrip={handleAddTrip} onClearAll={handleClearAll} />
+      <SelectorSection
+        selectedTrips={selectedTrips}
+        availableTrips={availableTrips}
+        allTrips={allTrips}
+        dropdownOpen={dropdownOpen}
+        setDropdownOpen={setDropdownOpen}
+        onAddTrip={handleAddTrip}
+        onClearAll={handleClearAll}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        durationRange={durationRange}
+        setDurationRange={setDurationRange}
+        selectedRegions={selectedRegions}
+        setSelectedRegions={setSelectedRegions}
+        selectedTags={selectedTags}
+        setSelectedTags={setSelectedTags}
+      />
 
       {selectedTrips.length > 0 ? <ComparisonGrid selectedTrips={selectedTrips} onRemoveTrip={handleRemoveTrip} /> : <EmptyState />}
 
@@ -678,3 +1000,4 @@ export function TripComparator({ allTrips }: TripComparatorProps) {
     </div>
   );
 }
+

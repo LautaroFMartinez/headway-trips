@@ -39,6 +39,7 @@ interface Trip {
   content_blocks?: ContentBlock[];
   is_featured: boolean;
   is_active: boolean;
+  max_capacity?: number;
 }
 
 interface TripEditorProps {
@@ -78,6 +79,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
   const [durationDays, setDurationDays] = useState<number>(1);
   const [isActive, setIsActive] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
+  const [maxCapacity, setMaxCapacity] = useState<number>(20);
 
   // Files state
   const [mainImage, setMainImage] = useState<UploadedFile | null>(null);
@@ -105,6 +107,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         setDurationDays(trip.duration_days || 1);
         setIsActive(trip.is_active ?? true);
         setIsFeatured(trip.is_featured ?? false);
+        setMaxCapacity(trip.max_capacity ?? 20);
         setMainImage(trip.image_url ? { id: '1', url: trip.image_url, name: 'Imagen principal', type: 'image' } : null);
         setGalleryImages(trip.gallery?.map((url, i) => ({ id: `g-${i}`, url, name: `Galería ${i + 1}`, type: 'image' })) || []);
         setPdfFile(trip.pdf_url ? { id: 'pdf', url: trip.pdf_url, name: 'Itinerario PDF', type: 'pdf' } : null);
@@ -120,6 +123,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         setDurationDays(1);
         setIsActive(true);
         setIsFeatured(false);
+        setMaxCapacity(20);
         setMainImage(null);
         setGalleryImages([]);
         setPdfFile(null);
@@ -223,6 +227,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         content_blocks: contentBlocks,
         is_featured: isFeatured,
         is_active: isActive,
+        max_capacity: maxCapacity,
       };
 
       const url = isEditing ? `/api/admin/trips/${trip.id}` : '/api/admin/trips';
@@ -332,8 +337,8 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
                 />
               </div>
 
-              {/* Región, Precio, Duración */}
-              <div className="grid grid-cols-3 gap-4">
+              {/* Región, Precio, Duración, Cupos */}
+              <div className="grid grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label>Región *</Label>
                   <Select value={region} onValueChange={setRegion}>
@@ -369,6 +374,17 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
                     placeholder="8"
                     min={1}
                     className={errors.duration_days ? 'border-red-500' : ''}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="max_capacity">Cupos (max)</Label>
+                  <Input
+                    id="max_capacity"
+                    type="number"
+                    value={maxCapacity || ''}
+                    onChange={(e) => setMaxCapacity(parseInt(e.target.value) || 20)}
+                    placeholder="20"
+                    min={1}
                   />
                 </div>
               </div>

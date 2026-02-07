@@ -1,0 +1,115 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+// GET - Lista de reservas con filtros
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const status = searchParams.get('status') || '';
+    const tripId = searchParams.get('trip_id') || '';
+    const search = searchParams.get('search') || '';
+
+    const offset = (page - 1) * limit;
+
+    let query = supabase
+      .from('bookings')
+      .select('*, trips(title, image)', { count: 'exact' });
+
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
+    }
+
+    if (tripId) {
+      query = query.eq('trip_id', tripId);
+    }
+
+    if (search) {
+      query = query.or(`customer_name.ilike.%${search}%,customer_email.ilike.%${search}%`);
+    }
+
+    query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+
+    const { data: bookings, count, error } = await query;
+
+    if (error) {
+      console.error('Error fetching bookings:', error);
+      return NextResponse.json({ error: 'Error al obtener reservas' }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      bookings: bookings || [],
+      total: count || 0,
+      page,
+      limit,
+    });
+  } catch (error) {
+    console.error('Bookings API error:', error);
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+  }
+}
+
+// POST - Crear nueva reserva (desde admin)
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // Validar campos requeridos
+    const required = ['trip_id', 'customer_name', 'customer_email', 'travel_date', 'adults', 'total_price'];
+    for (const field of required) {
+      if (!body[field]) {
+        return NextResponse.json({ error: `El campo ${field} es requerido` }, { status: 400 });
+      }
+    }
+
+    const { data: booking, error } = await supabase
+      .from('bookings')
+      .insert({
+        trip_id: body.trip_id,
+        customer_name: body.customer_name,
+        customer_email: body.customer_email,
+        customer_phone: body.customer_phone || null,
+        travel_date: body.travel_date,
+        adults: body.adults || 1,
+        children: body.children || 0,
+        total_price: body.total_price,
+        currency: body.currency || 'USD',
+        status: body.status || 'pending',
+        payment_status: body.payment_status || 'pending',
+        special_requests: body.special_requests || null,
+        internal_notes: body.internal_notes || null,
+      })
+      .select('*, trips(title, image)')
+      .single();
+
+    if (error) {
+      console.error('Error creating booking:', error);
+      return NextResponse.json({ error: 'Error al crear la reserva', details: error.message }, { status: 500 });
+    }
+
+    // Actualizar booking_count del viaje (best-effort)
+    try {
+      const passengerCount = (body.adults || 1) + (body.children || 0);
+      const { data: tripData } = await supabase
+        .from('trips')
+        .select('booking_count')
+        .eq('id', body.trip_id)
+        .single();
+
+      await supabase
+        .from('trips')
+        .update({ booking_count: (tripData?.booking_count || 0) + passengerCount })
+        .eq('id', body.trip_id);
+    } catch {
+      // Silently fail - booking_count update is best-effort
+    }
+
+    return NextResponse.json(booking, { status: 201 });
+  } catch (error) {
+    console.error('Create booking error:', error);
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+  }
+}

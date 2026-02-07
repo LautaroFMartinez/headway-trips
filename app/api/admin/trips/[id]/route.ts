@@ -73,6 +73,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       pdf_url: body.pdf_url || null,
       available: body.is_active ?? true,
       featured: body.is_featured || false,
+      group_size_max: body.max_capacity ?? 20,
       updated_at: new Date().toISOString(),
     };
 

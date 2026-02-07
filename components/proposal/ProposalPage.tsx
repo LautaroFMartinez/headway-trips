@@ -33,6 +33,8 @@ export interface ProposalTrip {
   excludes?: string[];
   contentBlocks?: ContentBlock[];
   pdfUrl?: string;
+  maxCapacity?: number;
+  currentBookings?: number;
 }
 
 export interface ProposalContact {
@@ -122,6 +124,8 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
         gallery={trip.gallery}
         companyLogo={displayContact.logo}
         onViewGallery={() => setShowGallery(true)}
+        maxCapacity={trip.maxCapacity}
+        currentBookings={trip.currentBookings}
       />
 
       {/* Main Content */}
@@ -170,30 +174,57 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
               sections={SECTIONS}
               tripId={trip.id}
               contact={displayContact}
+              maxCapacity={trip.maxCapacity}
+              currentBookings={trip.currentBookings}
+              price={trip.price}
             />
           </div>
         </div>
       </div>
 
       {/* Mobile Floating Actions */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex gap-3 z-40">
-        <a
-          href={`/api/trips/${trip.id}/pdf`}
-          download
-          className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary/90 transition-colors"
-        >
-          <Download className="w-5 h-5" />
-          Descargar PDF
-        </a>
-        <a
-          href={`https://wa.me/${displayContact.phone.replace(/\D/g, '')}?text=Hola! Me interesa el viaje ${trip.title}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors"
-        >
-          <Phone className="w-5 h-5" />
-          WhatsApp
-        </a>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-40">
+        {trip.maxCapacity != null && trip.currentBookings != null && (
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-xs text-gray-500">
+              {Math.max(0, trip.maxCapacity - trip.currentBookings)} cupos disponibles
+            </span>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+              trip.maxCapacity - trip.currentBookings <= 0
+                ? 'bg-red-100 text-red-700'
+                : trip.maxCapacity - trip.currentBookings <= 3
+                  ? 'bg-orange-100 text-orange-700'
+                  : 'bg-green-100 text-green-700'
+            }`}>
+              {trip.maxCapacity - trip.currentBookings <= 0 ? 'Agotado' : trip.price}
+            </span>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <a
+            href={`/api/trips/${trip.id}/pdf`}
+            download
+            className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-3 px-3 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
+          >
+            <Download className="w-4 h-4" />
+            PDF
+          </a>
+          <a
+            href={`https://wa.me/${displayContact.phone.replace(/\D/g, '')}?text=Hola! Me interesa el viaje ${trip.title}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 px-3 rounded-lg font-medium hover:bg-green-700 transition-colors text-sm"
+          >
+            <Phone className="w-4 h-4" />
+            WhatsApp
+          </a>
+          <button
+            disabled
+            className="flex-1 flex items-center justify-center gap-2 bg-primary/40 text-white py-3 px-3 rounded-lg font-semibold cursor-not-allowed text-sm"
+          >
+            Reservar
+          </button>
+        </div>
       </div>
 
       {/* Gallery Modal */}

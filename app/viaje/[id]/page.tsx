@@ -52,6 +52,8 @@ async function getTrip(id: string): Promise<ProposalTrip | null> {
           excludes: data.excludes || [],
           contentBlocks: (data.content_blocks as unknown as ContentBlock[]) || [],
           pdfUrl: data.pdf_url || undefined,
+          maxCapacity: data.group_size_max ?? undefined,
+          currentBookings: data.booking_count ?? undefined,
         };
       }
     }

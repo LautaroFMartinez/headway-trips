@@ -64,6 +64,8 @@ export async function GET(request: NextRequest) {
       content_blocks: t.content_blocks || [],
       is_featured: t.featured || false,
       is_active: t.available ?? true,
+      max_capacity: t.group_size_max ?? 20,
+      current_bookings: t.booking_count ?? 0,
       created_at: t.created_at,
       updated_at: t.updated_at,
     }));
@@ -146,6 +148,7 @@ export async function POST(request: NextRequest) {
         accommodation_type: 'Hotel 4 estrellas',
         available: body.is_active ?? true,
         featured: body.is_featured || false,
+        group_size_max: body.max_capacity ?? 20,
       })
       .select()
       .single();

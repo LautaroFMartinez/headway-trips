@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { Images, Calendar } from 'lucide-react';
+import { SpotsIndicator } from './SpotsIndicator';
 
 interface ProposalHeroProps {
   title: string;
@@ -14,6 +15,8 @@ interface ProposalHeroProps {
   gallery?: string[];
   companyLogo?: string;
   onViewGallery: () => void;
+  maxCapacity?: number;
+  currentBookings?: number;
 }
 
 export function ProposalHero({
@@ -27,6 +30,8 @@ export function ProposalHero({
   gallery = [],
   companyLogo,
   onViewGallery,
+  maxCapacity,
+  currentBookings,
 }: ProposalHeroProps) {
   const allImages = [heroImage, ...gallery].filter(Boolean);
   const displayImages = allImages.slice(0, 4);
@@ -76,6 +81,12 @@ export function ProposalHero({
                     <Calendar className="w-4 h-4" />
                     {dateRange}
                   </span>
+                </>
+              )}
+              {maxCapacity != null && currentBookings != null && (
+                <>
+                  <span className="text-gray-300">|</span>
+                  <SpotsIndicator variant="badge" maxCapacity={maxCapacity} currentBookings={currentBookings} />
                 </>
               )}
             </div>
