@@ -83,34 +83,52 @@ export type Database = {
           birth_date: string | null
           booking_id: string | null
           created_at: string | null
+          dietary_restrictions: string | null
           document_number: string | null
           document_type: string | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           full_name: string
           id: string
           is_adult: boolean | null
+          medical_conditions: string | null
           nationality: string | null
+          phone: string | null
         }
         Insert: {
           birth_date?: string | null
           booking_id?: string | null
           created_at?: string | null
+          dietary_restrictions?: string | null
           document_number?: string | null
           document_type?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name: string
           id?: string
           is_adult?: boolean | null
+          medical_conditions?: string | null
           nationality?: string | null
+          phone?: string | null
         }
         Update: {
           birth_date?: string | null
           booking_id?: string | null
           created_at?: string | null
+          dietary_restrictions?: string | null
           document_number?: string | null
           document_type?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name?: string
           id?: string
           is_adult?: boolean | null
+          medical_conditions?: string | null
           nationality?: string | null
+          phone?: string | null
         }
         Relationships: [
           {
@@ -125,18 +143,30 @@ export type Database = {
       bookings: {
         Row: {
           adults: number | null
+          cancelled_at: string | null
           children: number | null
+          client_id: string | null
+          completion_token: string | null
+          confirmed_at: string | null
           created_at: string | null
           currency: string | null
+          customer_country: string | null
+          customer_document_number: string | null
+          customer_document_type: string | null
           customer_email: string
           customer_name: string
           customer_phone: string | null
+          details_completed: boolean | null
+          discount_amount: number | null
+          discount_code: string | null
           id: string
           internal_notes: string | null
           payment_status: string | null
           quote_request_id: string | null
           special_requests: string | null
           status: string | null
+          subtotal: number | null
+          token_expires_at: string | null
           total_price: number | null
           travel_date: string
           trip_id: string | null
@@ -144,18 +174,30 @@ export type Database = {
         }
         Insert: {
           adults?: number | null
+          cancelled_at?: string | null
           children?: number | null
+          client_id?: string | null
+          completion_token?: string | null
+          confirmed_at?: string | null
           created_at?: string | null
           currency?: string | null
+          customer_country?: string | null
+          customer_document_number?: string | null
+          customer_document_type?: string | null
           customer_email: string
           customer_name: string
           customer_phone?: string | null
+          details_completed?: boolean | null
+          discount_amount?: number | null
+          discount_code?: string | null
           id?: string
           internal_notes?: string | null
           payment_status?: string | null
           quote_request_id?: string | null
           special_requests?: string | null
           status?: string | null
+          subtotal?: number | null
+          token_expires_at?: string | null
           total_price?: number | null
           travel_date: string
           trip_id?: string | null
@@ -163,18 +205,30 @@ export type Database = {
         }
         Update: {
           adults?: number | null
+          cancelled_at?: string | null
           children?: number | null
+          client_id?: string | null
+          completion_token?: string | null
+          confirmed_at?: string | null
           created_at?: string | null
           currency?: string | null
+          customer_country?: string | null
+          customer_document_number?: string | null
+          customer_document_type?: string | null
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
+          details_completed?: boolean | null
+          discount_amount?: number | null
+          discount_code?: string | null
           id?: string
           internal_notes?: string | null
           payment_status?: string | null
           quote_request_id?: string | null
           special_requests?: string | null
           status?: string | null
+          subtotal?: number | null
+          token_expires_at?: string | null
           total_price?: number | null
           travel_date?: string
           trip_id?: string | null
@@ -357,6 +411,7 @@ export type Database = {
           subtitle: string | null
           tags: string[] | null
           title: string
+          departure_date: string | null
           updated_at: string | null
         }
         Insert: {
@@ -365,6 +420,7 @@ export type Database = {
           booking_count?: number | null
           content_blocks?: Json | null
           created_at?: string | null
+          departure_date?: string | null
           description?: string | null
           difficulty_level?: string | null
           duration: string
@@ -395,6 +451,7 @@ export type Database = {
           booking_count?: number | null
           content_blocks?: Json | null
           created_at?: string | null
+          departure_date?: string | null
           description?: string | null
           difficulty_level?: string | null
           duration?: string

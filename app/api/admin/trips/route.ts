@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
       is_active: t.available ?? true,
       max_capacity: t.group_size_max ?? 20,
       current_bookings: t.booking_count ?? 0,
+      departure_date: t.departure_date || null,
       created_at: t.created_at,
       updated_at: t.updated_at,
     }));
@@ -149,6 +150,7 @@ export async function POST(request: NextRequest) {
         available: body.is_active ?? true,
         featured: body.is_featured || false,
         group_size_max: body.max_capacity ?? 20,
+        departure_date: body.departure_date || null,
       })
       .select()
       .single();

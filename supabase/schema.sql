@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS public.trips (
   accommodation_type TEXT DEFAULT 'hotel',
   cancellation_policy TEXT DEFAULT 'Cancelación gratuita hasta 30 días antes del viaje.',
   
+  departure_date DATE,
+
   -- Metadatos
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -135,7 +137,12 @@ CREATE TABLE IF NOT EXISTS public.bookings (
   -- Notas
   special_requests TEXT,
   internal_notes TEXT,
-  
+
+  -- Public booking flow
+  completion_token TEXT UNIQUE,
+  token_expires_at TIMESTAMPTZ,
+  details_completed BOOLEAN DEFAULT FALSE,
+
   -- Metadatos
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -149,6 +156,8 @@ CREATE INDEX IF NOT EXISTS idx_bookings_trip ON public.bookings(trip_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_travel_date ON public.bookings(travel_date);
 CREATE INDEX IF NOT EXISTS idx_bookings_email ON public.bookings(customer_email);
 CREATE INDEX IF NOT EXISTS idx_bookings_client_id ON public.bookings(client_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_completion_token
+  ON public.bookings(completion_token) WHERE completion_token IS NOT NULL;
 
 -- =============================================
 -- 4. TABLA: booking_passengers (Pasajeros)
@@ -219,10 +228,15 @@ CREATE TABLE IF NOT EXISTS public.booking_payments (
   reference TEXT,
   notes TEXT,
   payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  revolut_order_id TEXT,
+  revolut_status TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_booking_payments_booking_id ON public.booking_payments(booking_id);
+CREATE INDEX IF NOT EXISTS idx_booking_payments_revolut_order
+  ON public.booking_payments(revolut_order_id)
+  WHERE revolut_order_id IS NOT NULL;
 
 -- =============================================
 -- 7. TABLA: contact_messages (Mensajes de Contacto)

@@ -15,6 +15,7 @@ import { ProposalItinerary } from './sections/ProposalItinerary';
 import { ProposalPricing } from './sections/ProposalPricing';
 import { ProposalCancellation } from './sections/ProposalCancellation';
 import { ProposalGallery } from './sections/ProposalGallery';
+import { BookingModal } from '@/components/booking/BookingModal';
 
 export interface ProposalTrip {
   id: string;
@@ -36,6 +37,7 @@ export interface ProposalTrip {
   pdfUrl?: string;
   maxCapacity?: number;
   currentBookings?: number;
+  departureDate?: string;
 }
 
 export interface ProposalContact {
@@ -63,6 +65,11 @@ const SECTIONS = [
 
 export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPageProps) {
   const [showGallery, setShowGallery] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+
+  const canBook = trip.maxCapacity != null && trip.currentBookings != null &&
+    trip.maxCapacity - trip.currentBookings > 0;
+  const handleBookingClick = canBook ? () => setShowBookingModal(true) : undefined;
 
   // Extraer datos de los bloques de contenido
   const servicesBlock = trip.contentBlocks?.find(b => b.type === 'services' && b.isVisible);
@@ -184,6 +191,7 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
               maxCapacity={trip.maxCapacity}
               currentBookings={trip.currentBookings}
               price={trip.price}
+              onBookingClick={handleBookingClick}
             />
           </div>
         </div>
@@ -228,13 +236,32 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
             WhatsApp
           </a>
           <button
-            disabled
-            className="flex-1 flex items-center justify-center gap-2 bg-primary/40 text-white py-3 px-3 rounded-lg font-semibold cursor-not-allowed text-sm"
+            onClick={handleBookingClick}
+            disabled={!canBook}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg font-semibold text-sm ${
+              canBook
+                ? 'bg-primary text-white hover:bg-primary/90'
+                : 'bg-primary/40 text-white cursor-not-allowed'
+            }`}
           >
-            Reservar
+            {canBook ? 'Reservar' : 'Sin cupos'}
           </button>
         </div>
       </div>
+
+      {/* Booking Modal */}
+      {trip.maxCapacity != null && trip.currentBookings != null && (
+        <BookingModal
+          open={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+          tripId={trip.id}
+          tripTitle={trip.title}
+          priceValue={trip.priceValue}
+          priceFormatted={trip.price}
+          maxCapacity={trip.maxCapacity}
+          currentBookings={trip.currentBookings}
+        />
+      )}
 
       {/* Gallery Modal */}
       {showGallery && (

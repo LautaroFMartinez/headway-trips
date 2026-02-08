@@ -47,14 +47,16 @@ export async function GET(request: NextRequest) {
     if (bookingIds.length > 0) {
       const { data: payments } = await supabase
         .from('booking_payments')
-        .select('booking_id, amount')
+        .select('booking_id, amount, revolut_status')
         .in('booking_id', bookingIds);
 
       if (payments) {
-        paidTotals = payments.reduce((acc: Record<string, number>, p) => {
-          acc[p.booking_id] = (acc[p.booking_id] || 0) + Number(p.amount);
-          return acc;
-        }, {});
+        paidTotals = payments
+          .filter((p) => !p.revolut_status || p.revolut_status === 'completed')
+          .reduce((acc: Record<string, number>, p) => {
+            acc[p.booking_id] = (acc[p.booking_id] || 0) + Number(p.amount);
+            return acc;
+          }, {});
       }
     }
 

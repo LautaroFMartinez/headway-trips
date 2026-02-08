@@ -41,6 +41,7 @@ interface Trip {
   is_featured: boolean;
   is_active: boolean;
   max_capacity?: number;
+  departure_date?: string;
 }
 
 interface TripEditorProps {
@@ -81,6 +82,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
   const [isActive, setIsActive] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
   const [maxCapacity, setMaxCapacity] = useState<number>(20);
+  const [departureDate, setDepartureDate] = useState<string>('');
 
   // Files state
   const [mainImage, setMainImage] = useState<UploadedFile | null>(null);
@@ -109,6 +111,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         setIsActive(trip.is_active ?? true);
         setIsFeatured(trip.is_featured ?? false);
         setMaxCapacity(trip.max_capacity ?? 20);
+        setDepartureDate(trip.departure_date || '');
         setMainImage(trip.image_url ? { id: '1', url: trip.image_url, name: 'Imagen principal', type: 'image' } : null);
         setGalleryImages(trip.gallery?.map((url, i) => ({ id: `g-${i}`, url, name: `Galería ${i + 1}`, type: 'image' })) || []);
         setPdfFile(trip.pdf_url ? { id: 'pdf', url: trip.pdf_url, name: 'Itinerario PDF', type: 'pdf' } : null);
@@ -125,6 +128,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         setIsActive(true);
         setIsFeatured(false);
         setMaxCapacity(20);
+        setDepartureDate('');
         setMainImage(null);
         setGalleryImages([]);
         setPdfFile(null);
@@ -222,6 +226,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         is_featured: isFeatured,
         is_active: isActive,
         max_capacity: maxCapacity,
+        departure_date: departureDate || null,
       };
 
       const url = isEditing ? `/api/admin/trips/${trip.id}` : '/api/admin/trips';
@@ -381,6 +386,17 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
                     min={0}
                   />
                 </div>
+              </div>
+
+              {/* Fecha de salida */}
+              <div className="space-y-2">
+                <Label htmlFor="departure_date">Fecha de salida</Label>
+                <Input
+                  id="departure_date"
+                  type="date"
+                  value={departureDate}
+                  onChange={(e) => setDepartureDate(e.target.value)}
+                />
               </div>
 
               {/* Descripción */}

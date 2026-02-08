@@ -7,9 +7,10 @@ interface SpotsIndicatorProps {
   currentBookings: number;
   variant: 'badge' | 'card';
   price?: string;
+  onBookingClick?: () => void;
 }
 
-export function SpotsIndicator({ maxCapacity, currentBookings, variant, price }: SpotsIndicatorProps) {
+export function SpotsIndicator({ maxCapacity, currentBookings, variant, price, onBookingClick }: SpotsIndicatorProps) {
   const remaining = Math.max(0, maxCapacity - currentBookings);
   const percentage = maxCapacity > 0 ? (currentBookings / maxCapacity) * 100 : 0;
 
@@ -98,16 +99,22 @@ export function SpotsIndicator({ maxCapacity, currentBookings, variant, price }:
       {/* Botón Reservar */}
       <div className="px-5 pb-5">
         <button
-          disabled
-          className="flex items-center justify-center gap-2 w-full bg-primary/40 text-white py-3 px-4 rounded-xl font-semibold cursor-not-allowed transition-colors"
-          title="Reservas próximamente disponibles"
+          onClick={onBookingClick}
+          disabled={isSoldOut || !onBookingClick}
+          className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-semibold transition-colors ${
+            isSoldOut || !onBookingClick
+              ? 'bg-primary/40 text-white cursor-not-allowed'
+              : 'bg-primary text-white hover:bg-primary/90 cursor-pointer'
+          }`}
         >
           <CalendarCheck className="w-5 h-5" />
-          Reservar ahora
+          {isSoldOut ? 'Sin cupos' : 'Reservar ahora'}
         </button>
-        <p className="text-xs text-gray-400 text-center mt-2">
-          Reservas online próximamente
-        </p>
+        {!isSoldOut && onBookingClick && (
+          <p className="text-xs text-gray-400 text-center mt-2">
+            Pago seguro con Revolut
+          </p>
+        )}
       </div>
     </div>
   );

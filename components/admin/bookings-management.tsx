@@ -65,6 +65,8 @@ interface Payment {
   notes: string | null;
   payment_date: string;
   created_at: string;
+  revolut_order_id?: string | null;
+  revolut_status?: string | null;
 }
 
 interface Trip {
@@ -436,6 +438,7 @@ const PAYMENT_METHODS: Record<string, string> = {
   transferencia: 'Transferencia',
   tarjeta: 'Tarjeta',
   wise: 'Wise',
+  revolut: 'Revolut',
   otro: 'Otro',
 };
 
@@ -457,6 +460,10 @@ function BookingDetailDialog({
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [savingPayment, setSavingPayment] = useState(false);
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
+  const [generatingRevolutLink, setGeneratingRevolutLink] = useState(false);
+  const [revolutCheckoutUrl, setRevolutCheckoutUrl] = useState<string | null>(null);
+  const [showRevolutForm, setShowRevolutForm] = useState(false);
+  const [revolutAmount, setRevolutAmount] = useState('');
   const [paymentForm, setPaymentForm] = useState({
     amount: '',
     payment_method: 'transferencia',
@@ -485,6 +492,9 @@ function BookingDetailDialog({
     } else {
       setPayments([]);
       setShowPaymentForm(false);
+      setRevolutCheckoutUrl(null);
+      setShowRevolutForm(false);
+      setRevolutAmount('');
       resetPaymentForm();
     }
   }, [open, booking, fetchPayments]);
@@ -559,9 +569,44 @@ function BookingDetailDialog({
     }
   };
 
+  const handleGenerateRevolutLink = async () => {
+    const customAmount = revolutAmount ? parseFloat(revolutAmount) : undefined;
+    if (customAmount !== undefined && (isNaN(customAmount) || customAmount <= 0)) {
+      toast.error('Ingresá un monto válido');
+      return;
+    }
+
+    setGeneratingRevolutLink(true);
+    setRevolutCheckoutUrl(null);
+    try {
+      const res = await fetch(`/api/admin/bookings/${booking!.id}/revolut-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(customAmount ? { amount: customAmount } : {}),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setRevolutCheckoutUrl(data.checkout_url);
+        toast.success('Link de pago generado');
+        await fetchPayments();
+        onPaymentChange('__refresh__');
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Error al generar link');
+      }
+    } catch {
+      toast.error('Error al generar link de pago');
+    } finally {
+      setGeneratingRevolutLink(false);
+    }
+  };
+
   if (!booking) return null;
 
-  const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalPaid = payments
+    .filter((p) => !p.revolut_status || p.revolut_status === 'completed')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
   const remaining = Math.max(0, (booking.total_price || 0) - totalPaid);
   const progressPercent = booking.total_price > 0 ? Math.min(100, (totalPaid / booking.total_price) * 100) : 0;
 
@@ -695,10 +740,21 @@ function BookingDetailDialog({
                         <Badge variant="outline" className="text-xs border-0 bg-slate-100">
                           {PAYMENT_METHODS[payment.payment_method] || payment.payment_method}
                         </Badge>
+                        {payment.revolut_status && (
+                          <Badge variant="outline" className={`text-xs border-0 ${
+                            payment.revolut_status === 'completed' ? 'bg-green-100 text-green-800' :
+                            payment.revolut_status === 'cancelled' || payment.revolut_status === 'failed' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {payment.revolut_status === 'completed' ? 'Completado' :
+                             payment.revolut_status === 'cancelled' ? 'Cancelado' :
+                             payment.revolut_status === 'failed' ? 'Fallido' : 'Pendiente'}
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
                         <span>{format(new Date(payment.payment_date + 'T12:00:00'), 'dd MMM yyyy', { locale: es })}</span>
-                        {payment.reference && <span>· Ref: {payment.reference}</span>}
+                        {payment.reference && !payment.revolut_order_id && <span>· Ref: {payment.reference}</span>}
                       </div>
                       {payment.notes && <p className="text-xs text-slate-400 mt-0.5 truncate">{payment.notes}</p>}
                     </div>
@@ -796,14 +852,100 @@ function BookingDetailDialog({
                 </div>
               </div>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-1"
-                onClick={() => setShowPaymentForm(true)}
-              >
-                <Plus className="w-3.5 h-3.5" /> Registrar pago
-              </Button>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-1"
+                    onClick={() => setShowPaymentForm(true)}
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Registrar pago
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-1"
+                    onClick={() => { setShowRevolutForm(true); setRevolutAmount(remaining.toString()); }}
+                    disabled={remaining <= 0}
+                  >
+                    <CreditCard className="w-3.5 h-3.5" /> Link Revolut
+                  </Button>
+                </div>
+
+                {showRevolutForm && !revolutCheckoutUrl && (
+                  <div className="p-3 bg-slate-50 rounded-lg border space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Monto del link ({booking.currency})</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        placeholder="0.00"
+                        value={revolutAmount}
+                        onChange={(e) => setRevolutAmount(e.target.value)}
+                      />
+                      <p className="text-xs text-slate-400">Restante: ${remaining.toLocaleString()}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => { setShowRevolutForm(false); setRevolutAmount(''); }}
+                        disabled={generatingRevolutLink}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 gap-1"
+                        onClick={handleGenerateRevolutLink}
+                        disabled={generatingRevolutLink}
+                      >
+                        {generatingRevolutLink ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <CreditCard className="w-3.5 h-3.5" />
+                        )}
+                        Generar link
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {revolutCheckoutUrl && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
+                    <p className="text-xs font-medium text-blue-800">Link de pago generado</p>
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value={revolutCheckoutUrl}
+                        className="text-xs h-8 bg-white"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 shrink-0"
+                        onClick={() => {
+                          navigator.clipboard.writeText(revolutCheckoutUrl);
+                          toast.success('Link copiado al portapapeles');
+                        }}
+                      >
+                        Copiar
+                      </Button>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs text-slate-500"
+                      onClick={() => { setRevolutCheckoutUrl(null); setShowRevolutForm(false); setRevolutAmount(''); }}
+                    >
+                      Cerrar
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

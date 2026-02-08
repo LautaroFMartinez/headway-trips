@@ -54,6 +54,7 @@ async function getTrip(id: string): Promise<ProposalTrip | null> {
           pdfUrl: data.pdf_url || undefined,
           maxCapacity: data.group_size_max ?? undefined,
           currentBookings: data.booking_count ?? undefined,
+          departureDate: data.departure_date || undefined,
         };
       }
     }

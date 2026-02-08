@@ -18,9 +18,10 @@ interface ProposalSidebarProps {
   maxCapacity?: number;
   currentBookings?: number;
   price?: string;
+  onBookingClick?: () => void;
 }
 
-export function ProposalSidebar({ sections, tripId, contact, maxCapacity, currentBookings, price }: ProposalSidebarProps) {
+export function ProposalSidebar({ sections, tripId, contact, maxCapacity, currentBookings, price, onBookingClick }: ProposalSidebarProps) {
   const [activeSection, setActiveSection] = useState<string>('');
   const [contactExpanded, setContactExpanded] = useState(true);
 
@@ -71,7 +72,7 @@ export function ProposalSidebar({ sections, tripId, contact, maxCapacity, curren
 
       {/* Reserva y cupos */}
       {maxCapacity != null && currentBookings != null && (
-        <SpotsIndicator variant="card" maxCapacity={maxCapacity} currentBookings={currentBookings} price={price} />
+        <SpotsIndicator variant="card" maxCapacity={maxCapacity} currentBookings={currentBookings} price={price} onBookingClick={onBookingClick} />
       )}
 
       {/* Navegación por secciones */}

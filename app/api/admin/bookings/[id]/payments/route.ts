@@ -84,10 +84,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 async function recalculatePaymentStatus(bookingId: string, totalPrice: number) {
   const { data: payments } = await supabase
     .from('booking_payments')
-    .select('amount')
+    .select('amount, revolut_status')
     .eq('booking_id', bookingId);
 
-  const totalPaid = (payments || []).reduce((sum, p) => sum + Number(p.amount), 0);
+  // Only count non-revolut payments and completed revolut payments
+  const totalPaid = (payments || [])
+    .filter((p) => !p.revolut_status || p.revolut_status === 'completed')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
 
   let paymentStatus: string;
   if (totalPaid >= totalPrice) {
