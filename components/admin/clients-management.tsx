@@ -30,11 +30,12 @@ interface Client {
   phone: string | null;
   nationality: string | null;
   birth_date: string | null;
-  document_type: string | null;
-  document_number: string | null;
   passport_number: string | null;
+  passport_issuing_country: string | null;
+  passport_expiry_date: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
+  emergency_contact_relationship: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string | null;
@@ -68,7 +69,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   cancelled: { label: 'Cancelada', color: 'bg-red-100 text-red-800' },
 };
 
-const DOCUMENT_TYPES = ['DNI', 'Pasaporte', 'Cédula', 'Otro'];
+const RELATIONSHIP_TYPES = ['Padre/Madre', 'Hermano/a', 'Pareja', 'Hijo/a', 'Amigo/a', 'Otro'];
 
 export function ClientsManagement() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -161,7 +162,7 @@ export function ClientsManagement() {
               <TableHead>Nombre</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Teléfono</TableHead>
-              <TableHead>Documento</TableHead>
+              <TableHead>Pasaporte</TableHead>
               <TableHead>Nacionalidad</TableHead>
               <TableHead>Reservas</TableHead>
               <TableHead className="w-12"></TableHead>
@@ -203,13 +204,7 @@ export function ClientsManagement() {
                     <p className="text-sm text-slate-600">{client.phone || '—'}</p>
                   </TableCell>
                   <TableCell>
-                    {client.document_type || client.document_number ? (
-                      <p className="text-sm text-slate-600">
-                        {client.document_type ? `${client.document_type}: ` : ''}{client.document_number || '—'}
-                      </p>
-                    ) : (
-                      <p className="text-sm text-slate-400">—</p>
-                    )}
+                    <p className="text-sm text-slate-600">{client.passport_number || '—'}</p>
                   </TableCell>
                   <TableCell>
                     <p className="text-sm text-slate-600">{client.nationality || '—'}</p>
@@ -339,11 +334,12 @@ function ClientDetailDialog({
             phone: data.phone || '',
             nationality: data.nationality || '',
             birth_date: data.birth_date || '',
-            document_type: data.document_type || '',
-            document_number: data.document_number || '',
             passport_number: data.passport_number || '',
+            passport_issuing_country: data.passport_issuing_country || '',
+            passport_expiry_date: data.passport_expiry_date || '',
             emergency_contact_name: data.emergency_contact_name || '',
             emergency_contact_phone: data.emergency_contact_phone || '',
+            emergency_contact_relationship: data.emergency_contact_relationship || '',
             notes: data.notes || '',
           });
         })
@@ -427,25 +423,16 @@ function ClientDetailDialog({
                     <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Tipo de documento</Label>
-                    <Select value={form.document_type} onValueChange={(v) => setForm({ ...form, document_type: v })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DOCUMENT_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Número de documento</Label>
-                    <Input value={form.document_number} onChange={(e) => setForm({ ...form, document_number: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
                     <Label>Número de pasaporte</Label>
                     <Input value={form.passport_number} onChange={(e) => setForm({ ...form, passport_number: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>País de emisión</Label>
+                    <Input value={form.passport_issuing_country} onChange={(e) => setForm({ ...form, passport_issuing_country: e.target.value })} placeholder="Argentina" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Vencimiento pasaporte</Label>
+                    <Input type="date" value={form.passport_expiry_date} onChange={(e) => setForm({ ...form, passport_expiry_date: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label>Fecha de nacimiento</Label>
@@ -462,6 +449,19 @@ function ClientDetailDialog({
                   <div className="space-y-2">
                     <Label>Tel. emergencia</Label>
                     <Input value={form.emergency_contact_phone} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} placeholder="Teléfono" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Relación</Label>
+                    <Select value={form.emergency_contact_relationship} onValueChange={(v) => setForm({ ...form, emergency_contact_relationship: v })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RELATIONSHIP_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="col-span-2 space-y-2">
                     <Label>Notas internas</Label>
@@ -481,19 +481,18 @@ function ClientDetailDialog({
                   <div className="grid grid-cols-2 gap-3">
                     <InfoField icon={<Mail className="w-3.5 h-3.5" />} label="Email" value={client.email} />
                     <InfoField icon={<Phone className="w-3.5 h-3.5" />} label="Teléfono" value={client.phone} />
-                    <InfoField icon={<FileText className="w-3.5 h-3.5" />} label="Documento" value={
-                      client.document_type || client.document_number
-                        ? `${client.document_type || ''} ${client.document_number || ''}`.trim()
-                        : null
-                    } />
                     <InfoField icon={<FileText className="w-3.5 h-3.5" />} label="Pasaporte" value={client.passport_number} />
+                    <InfoField icon={<Globe className="w-3.5 h-3.5" />} label="País emisión" value={client.passport_issuing_country} />
+                    <InfoField icon={<Calendar className="w-3.5 h-3.5" />} label="Vencimiento pasaporte" value={
+                      client.passport_expiry_date ? format(new Date(client.passport_expiry_date + 'T12:00:00'), 'dd/MM/yyyy') : null
+                    } />
                     <InfoField icon={<Calendar className="w-3.5 h-3.5" />} label="Fecha de nacimiento" value={
                       client.birth_date ? format(new Date(client.birth_date), 'dd/MM/yyyy') : null
                     } />
                     <InfoField icon={<Globe className="w-3.5 h-3.5" />} label="Nacionalidad" value={client.nationality} />
                     <InfoField icon={<Shield className="w-3.5 h-3.5" />} label="Contacto emergencia" value={
                       client.emergency_contact_name
-                        ? `${client.emergency_contact_name}${client.emergency_contact_phone ? ` (${client.emergency_contact_phone})` : ''}`
+                        ? `${client.emergency_contact_name}${client.emergency_contact_relationship ? ` (${client.emergency_contact_relationship})` : ''}${client.emergency_contact_phone ? ` — ${client.emergency_contact_phone}` : ''}`
                         : null
                     } />
                   </div>
@@ -588,19 +587,21 @@ function CreateClientDialog({
     phone: '',
     nationality: '',
     birth_date: '',
-    document_type: '',
-    document_number: '',
     passport_number: '',
+    passport_issuing_country: '',
+    passport_expiry_date: '',
     emergency_contact_name: '',
     emergency_contact_phone: '',
+    emergency_contact_relationship: '',
     notes: '',
   });
 
   const resetForm = () => {
     setForm({
       full_name: '', email: '', phone: '', nationality: '', birth_date: '',
-      document_type: '', document_number: '', passport_number: '',
-      emergency_contact_name: '', emergency_contact_phone: '', notes: '',
+      passport_number: '', passport_issuing_country: '', passport_expiry_date: '',
+      emergency_contact_name: '', emergency_contact_phone: '', emergency_contact_relationship: '',
+      notes: '',
     });
   };
 
@@ -674,32 +675,27 @@ function CreateClientDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Tipo de documento</Label>
-              <Select value={form.document_type} onValueChange={(v) => setForm({ ...form, document_type: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DOCUMENT_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Número de documento</Label>
-              <Input
-                value={form.document_number}
-                onChange={(e) => setForm({ ...form, document_number: e.target.value })}
-                placeholder="12345678"
-              />
-            </div>
-            <div className="space-y-2">
               <Label>Número de pasaporte</Label>
               <Input
                 value={form.passport_number}
                 onChange={(e) => setForm({ ...form, passport_number: e.target.value })}
                 placeholder="AAB123456"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>País de emisión</Label>
+              <Input
+                value={form.passport_issuing_country}
+                onChange={(e) => setForm({ ...form, passport_issuing_country: e.target.value })}
+                placeholder="Argentina"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Vencimiento pasaporte</Label>
+              <Input
+                type="date"
+                value={form.passport_expiry_date}
+                onChange={(e) => setForm({ ...form, passport_expiry_date: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -722,7 +718,7 @@ function CreateClientDialog({
 
           <Separator />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
               <Label>Contacto de emergencia</Label>
               <Input
@@ -738,6 +734,19 @@ function CreateClientDialog({
                 onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })}
                 placeholder="+54..."
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Relación</Label>
+              <Select value={form.emergency_contact_relationship} onValueChange={(v) => setForm({ ...form, emergency_contact_relationship: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {RELATIONSHIP_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

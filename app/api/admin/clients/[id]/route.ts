@@ -46,8 +46,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     const fields = [
       'full_name', 'email', 'phone', 'nationality', 'birth_date',
-      'document_type', 'document_number', 'passport_number',
-      'emergency_contact_name', 'emergency_contact_phone', 'notes',
+      'passport_number', 'passport_issuing_country', 'passport_expiry_date',
+      'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
+      'notes',
     ];
 
     for (const field of fields) {

@@ -192,11 +192,12 @@ CREATE TABLE IF NOT EXISTS public.clients (
   phone TEXT,
   nationality TEXT,
   birth_date DATE,
-  document_type TEXT,
-  document_number TEXT,
   passport_number TEXT,
+  passport_issuing_country TEXT,
+  passport_expiry_date DATE,
   emergency_contact_name TEXT,
   emergency_contact_phone TEXT,
+  emergency_contact_relationship TEXT,
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -204,7 +205,6 @@ CREATE TABLE IF NOT EXISTS public.clients (
 
 CREATE INDEX IF NOT EXISTS idx_clients_email ON public.clients(email);
 CREATE INDEX IF NOT EXISTS idx_clients_full_name ON public.clients(full_name);
-CREATE INDEX IF NOT EXISTS idx_clients_document_number ON public.clients(document_number);
 CREATE INDEX IF NOT EXISTS idx_clients_passport_number ON public.clients(passport_number);
 
 -- =============================================

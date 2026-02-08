@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       query = query.or(
-        `full_name.ilike.%${search}%,email.ilike.%${search}%,document_number.ilike.%${search}%,passport_number.ilike.%${search}%`
+        `full_name.ilike.%${search}%,email.ilike.%${search}%,passport_number.ilike.%${search}%`
       );
     }
 
@@ -84,11 +84,12 @@ export async function POST(request: NextRequest) {
         phone: body.phone || null,
         nationality: body.nationality || null,
         birth_date: body.birth_date || null,
-        document_type: body.document_type || null,
-        document_number: body.document_number || null,
         passport_number: body.passport_number || null,
+        passport_issuing_country: body.passport_issuing_country || null,
+        passport_expiry_date: body.passport_expiry_date || null,
         emergency_contact_name: body.emergency_contact_name || null,
         emergency_contact_phone: body.emergency_contact_phone || null,
+        emergency_contact_relationship: body.emergency_contact_relationship || null,
         notes: body.notes || null,
       })
       .select()
