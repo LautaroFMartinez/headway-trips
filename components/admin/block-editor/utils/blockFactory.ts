@@ -209,21 +209,11 @@ export function createBlock(type: BlockType, order: number): ContentBlock {
         ...baseBlock,
         type: 'cancellation_policy',
         data: {
-          rules: [
+          items: [
             {
               id: uuidv4(),
-              daysBeforeTrip: 30,
-              refundPercentage: 100,
-            },
-            {
-              id: uuidv4(),
-              daysBeforeTrip: 15,
-              refundPercentage: 50,
-            },
-            {
-              id: uuidv4(),
-              daysBeforeTrip: 7,
-              refundPercentage: 0,
+              title: '',
+              content: '',
             },
           ],
           notes: '',

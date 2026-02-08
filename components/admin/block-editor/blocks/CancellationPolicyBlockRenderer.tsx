@@ -7,9 +7,11 @@ interface CancellationPolicyBlockRendererProps {
 }
 
 export function CancellationPolicyBlockRenderer({ block }: CancellationPolicyBlockRendererProps) {
-  const { rules, notes } = block.data;
+  const { items, notes } = block.data;
 
-  if (rules.length === 0) {
+  const hasContent = items.some((i) => i.title || i.content) || notes;
+
+  if (!hasContent) {
     return (
       <p className="text-muted-foreground italic text-sm">
         Haz clic para configurar la política de cancelación...
@@ -17,24 +19,20 @@ export function CancellationPolicyBlockRenderer({ block }: CancellationPolicyBlo
     );
   }
 
-  const sortedRules = [...rules].sort((a, b) => b.daysBeforeTrip - a.daysBeforeTrip);
-
   return (
     <div className="space-y-2">
-      <div className="space-y-1">
-        {sortedRules.map((rule) => (
-          <div key={rule.id} className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              +{rule.daysBeforeTrip} días antes
-            </span>
-            <span className={rule.refundPercentage > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-              {rule.refundPercentage}% reembolso
-            </span>
-          </div>
-        ))}
-      </div>
+      {items.map((item) => (
+        <div key={item.id}>
+          {item.title && (
+            <p className="text-sm font-medium">{item.title}</p>
+          )}
+          {item.content && (
+            <p className="text-sm text-muted-foreground line-clamp-2">{item.content}</p>
+          )}
+        </div>
+      ))}
       {notes && (
-        <p className="text-xs text-muted-foreground line-clamp-2">{notes}</p>
+        <p className="text-xs text-muted-foreground italic line-clamp-2">{notes}</p>
       )}
     </div>
   );

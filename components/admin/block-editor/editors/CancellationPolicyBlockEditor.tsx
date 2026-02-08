@@ -16,77 +16,61 @@ interface CancellationPolicyBlockEditorProps {
 
 export function CancellationPolicyBlockEditor({ block }: CancellationPolicyBlockEditorProps) {
   const { updateBlock } = useBlockEditor();
-  const { rules, notes } = block.data;
+  const { items, notes } = block.data;
 
-  const addRule = () => {
+  const addItem = () => {
     updateBlock(block.id, {
-      rules: [
-        ...rules,
+      items: [
+        ...items,
         {
           id: uuidv4(),
-          daysBeforeTrip: 0,
-          refundPercentage: 0,
+          title: '',
+          content: '',
         },
       ],
     });
   };
 
-  const removeRule = (id: string) => {
-    updateBlock(block.id, { rules: rules.filter((r) => r.id !== id) });
+  const removeItem = (id: string) => {
+    updateBlock(block.id, { items: items.filter((i) => i.id !== id) });
   };
 
-  const updateRule = (id: string, field: string, value: number | string) => {
+  const updateItem = (id: string, field: string, value: string) => {
     updateBlock(block.id, {
-      rules: rules.map((r) => (r.id === id ? { ...r, [field]: value } : r)),
+      items: items.map((i) => (i.id === id ? { ...i, [field]: value } : i)),
     });
   };
 
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <Label>Reglas de cancelación</Label>
+        <Label>Secciones de cancelación</Label>
 
-        <ScrollArea className="max-h-[350px]">
+        <ScrollArea className="max-h-[400px]">
           <div className="space-y-3">
-            {rules.map((rule) => (
+            {items.map((item) => (
               <div
-                key={rule.id}
+                key={item.id}
                 className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg"
               >
                 <div className="flex-1 space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Días antes del viaje</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={rule.daysBeforeTrip}
-                        onChange={(e) => updateRule(rule.id, 'daysBeforeTrip', parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Reembolso (%)</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={rule.refundPercentage}
-                        onChange={(e) => updateRule(rule.id, 'refundPercentage', parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                  </div>
                   <Input
-                    value={rule.description || ''}
-                    onChange={(e) => updateRule(rule.id, 'description', e.target.value)}
-                    placeholder="Descripción (opcional)"
-                    className="text-sm"
+                    value={item.title}
+                    onChange={(e) => updateItem(item.id, 'title', e.target.value)}
+                    placeholder="Título (ej: Cancelación con más de 30 días)"
+                  />
+                  <Textarea
+                    value={item.content}
+                    onChange={(e) => updateItem(item.id, 'content', e.target.value)}
+                    placeholder="Descripción de la política..."
+                    rows={3}
                   />
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 shrink-0 mt-5"
-                  onClick={() => removeRule(rule.id)}
+                  className="h-8 w-8 shrink-0 mt-1"
+                  onClick={() => removeItem(item.id)}
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
@@ -95,9 +79,9 @@ export function CancellationPolicyBlockEditor({ block }: CancellationPolicyBlock
           </div>
         </ScrollArea>
 
-        <Button onClick={addRule} variant="outline" size="sm" className="w-full">
+        <Button onClick={addItem} variant="outline" size="sm" className="w-full">
           <Plus className="h-4 w-4 mr-2" />
-          Agregar regla
+          Agregar sección
         </Button>
       </div>
 

@@ -254,15 +254,14 @@ export interface FoodBlock extends BaseBlock {
 }
 
 // Cancellation Policy Block
-export interface CancellationRule {
+export interface CancellationPolicyItem {
   id: string;
-  daysBeforeTrip: number;
-  refundPercentage: number;
-  description?: string;
+  title: string;
+  content: string;
 }
 
 export interface CancellationPolicyBlockData {
-  rules: CancellationRule[];
+  items: CancellationPolicyItem[];
   notes?: string;
 }
 
