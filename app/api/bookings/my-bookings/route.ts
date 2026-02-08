@@ -55,7 +55,7 @@ export async function GET() {
           revolut_status
         )
       `)
-      .eq('customer_email', email)
+      .ilike('customer_email', email)
       .order('created_at', { ascending: false });
 
     if (bookingsError) {

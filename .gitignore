@@ -35,3 +35,6 @@ node_modules/
 /playwright/.auth/
 /tests/visual-regression.spec.ts-snapshots/
 
+
+# clerk configuration (can include secrets)
+/.clerk/
