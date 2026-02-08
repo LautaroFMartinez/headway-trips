@@ -202,8 +202,10 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
         )}
         <div className="flex gap-2">
           <a
-            href={`/api/trips/${trip.id}/pdf`}
-            download
+            href={trip.pdfUrl || `/api/trips/${trip.id}/pdf`}
+            download={!trip.pdfUrl}
+            target={trip.pdfUrl ? '_blank' : undefined}
+            rel={trip.pdfUrl ? 'noopener noreferrer' : undefined}
             className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-3 px-3 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
           >
             <Download className="w-4 h-4" />

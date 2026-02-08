@@ -50,6 +50,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         if (!error && data) {
           const dbData = data as Record<string, unknown>;
+
+          // Si tiene PDF personalizado, redirigir a ese archivo
+          if (dbData.pdf_url) {
+            return NextResponse.redirect(dbData.pdf_url as string);
+          }
+
           tripData = {
             id: dbData.id as string,
             title: dbData.title as string,
