@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Plane, MessageSquare, FileText, CalendarCheck, Settings, LogOut, Menu, X, ChevronDown, User, Newspaper } from 'lucide-react';
+import { LayoutDashboard, Plane, MessageSquare, FileText, CalendarCheck, Settings, LogOut, Menu, X, ChevronDown, User, Newspaper, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ const navigation = [
   { name: 'Viajes', href: '/admin/viajes', icon: Plane },
   { name: 'Blog', href: '/admin/blog', icon: Newspaper },
   { name: 'Reservas', href: '/admin/reservas', icon: CalendarCheck },
+  { name: 'Clientes', href: '/admin/clientes', icon: Users },
   { name: 'Cotizaciones', href: '/admin/cotizaciones', icon: FileText },
   { name: 'Mensajes', href: '/admin/mensajes', icon: MessageSquare },
 ];

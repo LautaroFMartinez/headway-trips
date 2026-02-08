@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('bookings')
-      .select('*, trips(title, image)', { count: 'exact' });
+      .select('*, trips(title, image), clients(id, full_name)', { count: 'exact' });
 
     if (status && status !== 'all') {
       query = query.eq('status', status);
@@ -65,6 +65,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Si viene client_id (desde admin), usarlo directamente.
+    // Si no, auto-crear cliente desde los datos del formulario público.
+    let clientId: string | null = body.client_id || null;
+    if (!clientId && body.customer_name) {
+      try {
+        const { data: client } = await supabase
+          .from('clients')
+          .insert({
+            full_name: body.customer_name,
+            email: body.customer_email || null,
+            phone: body.customer_phone || null,
+          })
+          .select('id')
+          .single();
+
+        if (client) clientId = client.id;
+      } catch {
+        // Best-effort: si falla la creación del cliente, la reserva se crea igual
+      }
+    }
+
     const { data: booking, error } = await supabase
       .from('bookings')
       .insert({
@@ -81,6 +102,7 @@ export async function POST(request: NextRequest) {
         payment_status: body.payment_status || 'pending',
         special_requests: body.special_requests || null,
         internal_notes: body.internal_notes || null,
+        client_id: clientId,
       })
       .select('*, trips(title, image)')
       .single();

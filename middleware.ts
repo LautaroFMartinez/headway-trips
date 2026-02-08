@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-const ADMIN_ROUTES = ['/admin/dashboard', '/admin/viajes', '/admin/cotizaciones', '/admin/mensajes'];
+const ADMIN_ROUTES = ['/admin/dashboard', '/admin/viajes', '/admin/cotizaciones', '/admin/mensajes', '/admin/reservas', '/admin/clientes', '/admin/blog'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const { data: booking, error } = await supabase
       .from('bookings')
-      .select('*, trips(title, image, price, price_value)')
+      .select('*, trips(title, image, price, price_value), clients(id, full_name, email, phone)')
       .eq('id', id)
       .single();
 
@@ -39,9 +39,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updated_at: new Date().toISOString(),
     };
 
-    if (body.customer_name !== undefined) updateData.customer_name = body.customer_name;
-    if (body.customer_email !== undefined) updateData.customer_email = body.customer_email;
-    if (body.customer_phone !== undefined) updateData.customer_phone = body.customer_phone;
+    // customer_name/email/phone son de solo lectura (se gestionan desde Clientes)
     if (body.travel_date !== undefined) updateData.travel_date = body.travel_date;
     if (body.adults !== undefined) updateData.adults = body.adults;
     if (body.children !== undefined) updateData.children = body.children;

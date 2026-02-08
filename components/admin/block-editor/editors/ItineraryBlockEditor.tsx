@@ -15,7 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Plus, Trash2, GripVertical, Coffee, UtensilsCrossed, Moon } from 'lucide-react';
+import { Plus, Trash2, X, GripVertical, Coffee, UtensilsCrossed, Moon } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ItineraryBlockEditorProps {
@@ -61,6 +61,27 @@ export function ItineraryBlockEditor({ block }: ItineraryBlockEditorProps) {
     updateDay(dayId, {
       meals: { ...day.meals, [meal]: !day.meals[meal] },
     });
+  };
+
+  const addActivity = (dayId: string) => {
+    const day = days.find((d) => d.id === dayId);
+    if (!day) return;
+    updateDay(dayId, { activities: [...(day.activities || []), ''] });
+  };
+
+  const updateActivity = (dayId: string, index: number, value: string) => {
+    const day = days.find((d) => d.id === dayId);
+    if (!day) return;
+    const newActivities = [...(day.activities || [])];
+    newActivities[index] = value;
+    updateDay(dayId, { activities: newActivities });
+  };
+
+  const removeActivity = (dayId: string, index: number) => {
+    const day = days.find((d) => d.id === dayId);
+    if (!day) return;
+    const newActivities = (day.activities || []).filter((_, i) => i !== index);
+    updateDay(dayId, { activities: newActivities });
   };
 
   return (
@@ -153,6 +174,38 @@ export function ItineraryBlockEditor({ block }: ItineraryBlockEditorProps) {
                         </label>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Actividades del día */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Actividades</Label>
+                      <Button size="sm" variant="outline" onClick={() => addActivity(day.id)}>
+                        <Plus className="h-3 w-3 mr-1" />
+                        Agregar
+                      </Button>
+                    </div>
+                    {(day.activities || []).map((activity, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs flex-shrink-0">
+                          {index + 1}
+                        </span>
+                        <Input
+                          value={activity}
+                          onChange={(e) => updateActivity(day.id, index, e.target.value)}
+                          placeholder="Ej: Visita al centro histórico"
+                          className="flex-1"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0"
+                          onClick={() => removeActivity(day.id, index)}
+                        >
+                          <X className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
 
                   <Button

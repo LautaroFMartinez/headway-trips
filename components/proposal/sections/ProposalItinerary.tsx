@@ -109,7 +109,7 @@ export function ProposalItinerary({ days, startDate }: ProposalItineraryProps) {
           <h3 className="text-lg font-semibold text-gray-900 mb-3">{currentDay.title}</h3>
 
           {/* Descripción */}
-          <p className="text-gray-600 text-sm leading-relaxed mb-4">{currentDay.description}</p>
+          <p className="text-gray-600 text-sm leading-relaxed mb-4 whitespace-pre-line">{currentDay.description}</p>
 
           {/* Comidas incluidas */}
           {(currentDay.meals.breakfast || currentDay.meals.lunch || currentDay.meals.dinner) && (

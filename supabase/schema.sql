@@ -101,8 +101,9 @@ CREATE INDEX IF NOT EXISTS idx_quotes_created ON public.quote_requests(created_a
 CREATE TABLE IF NOT EXISTS public.bookings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
-  -- Relación con cotización (opcional)
+  -- Relación con cotización y cliente (opcional)
   quote_request_id UUID REFERENCES public.quote_requests(id) ON DELETE SET NULL,
+  client_id UUID REFERENCES public.clients(id) ON DELETE SET NULL,
   
   -- Información del viaje
   trip_id TEXT NOT NULL REFERENCES public.trips(id) ON DELETE CASCADE,
@@ -147,6 +148,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_status ON public.bookings(status);
 CREATE INDEX IF NOT EXISTS idx_bookings_trip ON public.bookings(trip_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_travel_date ON public.bookings(travel_date);
 CREATE INDEX IF NOT EXISTS idx_bookings_email ON public.bookings(customer_email);
+CREATE INDEX IF NOT EXISTS idx_bookings_client_id ON public.bookings(client_id);
 
 -- =============================================
 -- 4. TABLA: booking_passengers (Pasajeros)
@@ -181,7 +183,49 @@ CREATE TABLE IF NOT EXISTS public.booking_passengers (
 CREATE INDEX IF NOT EXISTS idx_passengers_booking ON public.booking_passengers(booking_id);
 
 -- =============================================
--- 5. TABLA: contact_messages (Mensajes de Contacto)
+-- 5. TABLA: clients (Clientes)
+-- =============================================
+CREATE TABLE IF NOT EXISTS public.clients (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name TEXT NOT NULL,
+  email TEXT,
+  phone TEXT,
+  nationality TEXT,
+  birth_date DATE,
+  document_type TEXT,
+  document_number TEXT,
+  passport_number TEXT,
+  emergency_contact_name TEXT,
+  emergency_contact_phone TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_clients_email ON public.clients(email);
+CREATE INDEX IF NOT EXISTS idx_clients_full_name ON public.clients(full_name);
+CREATE INDEX IF NOT EXISTS idx_clients_document_number ON public.clients(document_number);
+CREATE INDEX IF NOT EXISTS idx_clients_passport_number ON public.clients(passport_number);
+
+-- =============================================
+-- 6. TABLA: booking_payments (Historial de pagos)
+-- =============================================
+CREATE TABLE IF NOT EXISTS public.booking_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID NOT NULL REFERENCES public.bookings(id) ON DELETE CASCADE,
+  amount NUMERIC(10, 2) NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  payment_method TEXT DEFAULT 'transferencia',
+  reference TEXT,
+  notes TEXT,
+  payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_booking_payments_booking_id ON public.booking_payments(booking_id);
+
+-- =============================================
+-- 7. TABLA: contact_messages (Mensajes de Contacto)
 -- =============================================
 CREATE TABLE IF NOT EXISTS public.contact_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -235,6 +279,11 @@ CREATE TRIGGER trigger_bookings_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
 
+CREATE TRIGGER trigger_clients_updated_at
+  BEFORE UPDATE ON public.clients
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at();
+
 CREATE TRIGGER trigger_contact_messages_updated_at
   BEFORE UPDATE ON public.contact_messages
   FOR EACH ROW
@@ -279,6 +328,8 @@ ALTER TABLE public.trips ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quote_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.booking_passengers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.booking_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para trips (lectura pública)
@@ -325,6 +376,36 @@ CREATE POLICY "Passengers viewable by authenticated users"
   ON public.booking_passengers FOR SELECT 
   USING (auth.role() = 'authenticated');
 
+-- Políticas para clients
+CREATE POLICY "Clients viewable by authenticated users"
+  ON public.clients FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Clients insertable by authenticated users"
+  ON public.clients FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Clients updatable by authenticated users"
+  ON public.clients FOR UPDATE
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Clients deletable by authenticated users"
+  ON public.clients FOR DELETE
+  USING (auth.role() = 'authenticated');
+
+-- Políticas para booking_payments
+CREATE POLICY "Booking payments viewable by authenticated users"
+  ON public.booking_payments FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Booking payments insertable by authenticated users"
+  ON public.booking_payments FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Booking payments deletable by authenticated users"
+  ON public.booking_payments FOR DELETE
+  USING (auth.role() = 'authenticated');
+
 -- Políticas para contact_messages
 CREATE POLICY "Anyone can create contact messages" 
   ON public.contact_messages FOR INSERT 
@@ -354,6 +435,8 @@ COMMENT ON TABLE public.trips IS 'Catálogo de viajes/destinos disponibles';
 COMMENT ON TABLE public.quote_requests IS 'Solicitudes de cotización de clientes';
 COMMENT ON TABLE public.bookings IS 'Reservas confirmadas de viajes';
 COMMENT ON TABLE public.booking_passengers IS 'Pasajeros asociados a cada reserva';
+COMMENT ON TABLE public.clients IS 'Clientes registrados con datos personales';
+COMMENT ON TABLE public.booking_payments IS 'Historial de pagos asociados a reservas';
 COMMENT ON TABLE public.contact_messages IS 'Mensajes del formulario de contacto';
 
 COMMENT ON COLUMN public.trips.difficulty_level IS 'Nivel de dificultad física: easy, moderate, challenging, difficult';

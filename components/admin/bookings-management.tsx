@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import {
   Search, MoreHorizontal, ChevronLeft, ChevronRight, Mail, Phone, Calendar,
   Users, Filter, CheckCircle, Clock, XCircle, Plus, DollarSign, Trash2,
-  CalendarCheck, Plane, CreditCard, StickyNote,
+  CalendarCheck, Plane, CreditCard, StickyNote, ExternalLink, Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -40,10 +41,29 @@ interface Booking {
   internal_notes: string | null;
   created_at: string;
   updated_at: string | null;
+  client_id?: string | null;
   trips?: {
     title: string;
     image: string | null;
   };
+  clients?: {
+    id: string;
+    full_name: string;
+    email: string | null;
+    phone: string | null;
+  } | null;
+}
+
+interface Payment {
+  id: string;
+  booking_id: string;
+  amount: number;
+  currency: string;
+  payment_method: string;
+  reference: string | null;
+  notes: string | null;
+  payment_date: string;
+  created_at: string;
 }
 
 interface Trip {
@@ -360,7 +380,13 @@ export function BookingsManagement() {
         open={showDetail}
         onClose={() => setShowDetail(false)}
         onStatusChange={(status) => selectedBooking && updateBookingStatus(selectedBooking.id, status)}
-        onPaymentChange={(status) => selectedBooking && updatePaymentStatus(selectedBooking.id, status)}
+        onPaymentChange={(status) => {
+          if (status === '__refresh__') {
+            fetchBookings();
+          } else if (selectedBooking) {
+            updatePaymentStatus(selectedBooking.id, status);
+          }
+        }}
       />
 
       {/* Modal crear reserva */}
@@ -399,6 +425,14 @@ export function BookingsManagement() {
 
 // --- Sub-componentes ---
 
+const PAYMENT_METHODS: Record<string, string> = {
+  efectivo: 'Efectivo',
+  transferencia: 'Transferencia',
+  tarjeta: 'Tarjeta',
+  wise: 'Wise',
+  otro: 'Otro',
+};
+
 function BookingDetailDialog({
   booking,
   open,
@@ -412,14 +446,122 @@ function BookingDetailDialog({
   onStatusChange: (status: string) => void;
   onPaymentChange: (status: string) => void;
 }) {
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [savingPayment, setSavingPayment] = useState(false);
+  const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
+  const [paymentForm, setPaymentForm] = useState({
+    amount: '',
+    payment_method: 'transferencia',
+    payment_date: new Date().toISOString().split('T')[0],
+    reference: '',
+    notes: '',
+  });
+
+  const fetchPayments = useCallback(async () => {
+    if (!booking) return;
+    setLoadingPayments(true);
+    try {
+      const res = await fetch(`/api/admin/bookings/${booking.id}/payments`);
+      const data = await res.json();
+      if (res.ok) setPayments(data.payments || []);
+    } catch {
+      // silently fail
+    } finally {
+      setLoadingPayments(false);
+    }
+  }, [booking]);
+
+  useEffect(() => {
+    if (open && booking) {
+      fetchPayments();
+    } else {
+      setPayments([]);
+      setShowPaymentForm(false);
+      resetPaymentForm();
+    }
+  }, [open, booking, fetchPayments]);
+
+  const resetPaymentForm = () => {
+    setPaymentForm({
+      amount: '',
+      payment_method: 'transferencia',
+      payment_date: new Date().toISOString().split('T')[0],
+      reference: '',
+      notes: '',
+    });
+  };
+
+  const handleAddPayment = async () => {
+    const amount = parseFloat(paymentForm.amount);
+    if (!amount || amount <= 0) {
+      toast.error('Ingresá un monto válido');
+      return;
+    }
+
+    setSavingPayment(true);
+    try {
+      const res = await fetch(`/api/admin/bookings/${booking!.id}/payments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          payment_method: paymentForm.payment_method,
+          payment_date: paymentForm.payment_date,
+          reference: paymentForm.reference || null,
+          notes: paymentForm.notes || null,
+        }),
+      });
+
+      if (res.ok) {
+        toast.success('Pago registrado');
+        resetPaymentForm();
+        setShowPaymentForm(false);
+        await fetchPayments();
+        // Refrescar el booking para actualizar payment_status
+        onPaymentChange('__refresh__');
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Error al registrar pago');
+      }
+    } catch {
+      toast.error('Error al registrar pago');
+    } finally {
+      setSavingPayment(false);
+    }
+  };
+
+  const handleDeletePayment = async (paymentId: string) => {
+    setDeletingPaymentId(paymentId);
+    try {
+      const res = await fetch(`/api/admin/bookings/${booking!.id}/payments/${paymentId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        toast.success('Pago eliminado');
+        await fetchPayments();
+        onPaymentChange('__refresh__');
+      } else {
+        toast.error('Error al eliminar pago');
+      }
+    } catch {
+      toast.error('Error al eliminar pago');
+    } finally {
+      setDeletingPaymentId(null);
+    }
+  };
+
   if (!booking) return null;
 
-  const statusConf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending;
-  const paymentConf = PAYMENT_STATUS_CONFIG[booking.payment_status] || PAYMENT_STATUS_CONFIG.pending;
+  const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const remaining = Math.max(0, (booking.total_price || 0) - totalPaid);
+  const progressPercent = booking.total_price > 0 ? Math.min(100, (totalPaid / booking.total_price) * 100) : 0;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Detalle de reserva</DialogTitle>
           <DialogDescription>
@@ -440,9 +582,20 @@ function BookingDetailDialog({
             </div>
           </div>
 
-          {/* Cliente */}
+          {/* Cliente (solo lectura) */}
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase text-slate-400 tracking-wide">Cliente</p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase text-slate-400 tracking-wide">Cliente</p>
+              {booking.client_id && (
+                <Link
+                  href="/admin/clientes"
+                  className="text-xs text-primary hover:underline flex items-center gap-1"
+                  onClick={onClose}
+                >
+                  Ver ficha <ExternalLink className="w-3 h-3" />
+                </Link>
+              )}
+            </div>
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-slate-900">{booking.customer_name}</p>
               <p className="text-sm text-slate-600 flex items-center gap-2">
@@ -477,34 +630,175 @@ function BookingDetailDialog({
 
           <Separator />
 
-          {/* Estados */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs">Estado de reserva</Label>
-              <Select value={booking.status} onValueChange={onStatusChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>{config.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Estado de reserva */}
+          <div className="space-y-2">
+            <Label className="text-xs">Estado de reserva</Label>
+            <Select value={booking.status} onValueChange={onStatusChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+                  <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator />
+
+          {/* Sección de Pagos */}
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase text-slate-400 tracking-wide flex items-center gap-1">
+              <CreditCard className="w-3.5 h-3.5" /> Pagos
+            </p>
+
+            {/* Resumen */}
+            <div className="p-3 bg-slate-50 rounded-lg space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Pagado</span>
+                <span className="font-semibold text-green-700">${totalPaid.toLocaleString()} {booking.currency}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Restante</span>
+                <span className={`font-semibold ${remaining > 0 ? 'text-orange-600' : 'text-green-700'}`}>
+                  ${remaining.toLocaleString()} {booking.currency}
+                </span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all ${progressPercent >= 100 ? 'bg-green-500' : progressPercent > 0 ? 'bg-orange-400' : 'bg-slate-200'}`}
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <p className="text-xs text-slate-400 text-right">{Math.round(progressPercent)}% pagado</p>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Estado de pago</Label>
-              <Select value={booking.payment_status} onValueChange={onPaymentChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PAYMENT_STATUS_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>{config.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
+            {/* Historial de pagos */}
+            {loadingPayments ? (
+              <div className="flex items-center justify-center py-4 text-slate-400">
+                <Loader2 className="w-4 h-4 animate-spin mr-2" /> Cargando pagos...
+              </div>
+            ) : payments.length > 0 ? (
+              <div className="space-y-2">
+                {payments.map((payment) => (
+                  <div key={payment.id} className="flex items-center justify-between p-2 bg-white border rounded-lg text-sm">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-900">${Number(payment.amount).toLocaleString()}</span>
+                        <Badge variant="outline" className="text-xs border-0 bg-slate-100">
+                          {PAYMENT_METHODS[payment.payment_method] || payment.payment_method}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                        <span>{format(new Date(payment.payment_date + 'T12:00:00'), 'dd MMM yyyy', { locale: es })}</span>
+                        {payment.reference && <span>· Ref: {payment.reference}</span>}
+                      </div>
+                      {payment.notes && <p className="text-xs text-slate-400 mt-0.5 truncate">{payment.notes}</p>}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-slate-400 hover:text-red-600 shrink-0"
+                      onClick={() => handleDeletePayment(payment.id)}
+                      disabled={deletingPaymentId === payment.id}
+                    >
+                      {deletingPaymentId === payment.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5" />
+                      )}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {/* Formulario de nuevo pago */}
+            {showPaymentForm ? (
+              <div className="space-y-3 p-3 bg-slate-50 rounded-lg border">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Monto *</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="0.00"
+                      value={paymentForm.amount}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Método</Label>
+                    <Select value={paymentForm.payment_method} onValueChange={(v) => setPaymentForm({ ...paymentForm, payment_method: v })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(PAYMENT_METHODS).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Fecha</Label>
+                    <Input
+                      type="date"
+                      value={paymentForm.payment_date}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, payment_date: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Referencia</Label>
+                    <Input
+                      placeholder="Nro. transferencia..."
+                      value={paymentForm.reference}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Notas</Label>
+                  <Input
+                    placeholder="Nota opcional..."
+                    value={paymentForm.notes}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => { setShowPaymentForm(false); resetPaymentForm(); }}
+                    disabled={savingPayment}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleAddPayment}
+                    disabled={savingPayment}
+                  >
+                    {savingPayment ? 'Guardando...' : 'Registrar pago'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-1"
+                onClick={() => setShowPaymentForm(true)}
+              >
+                <Plus className="w-3.5 h-3.5" /> Registrar pago
+              </Button>
+            )}
           </div>
 
           {/* Notas */}
@@ -522,21 +816,17 @@ function BookingDetailDialog({
               <p className="text-sm text-slate-600 bg-yellow-50 p-2 rounded">{booking.internal_notes}</p>
             </div>
           )}
-
-          {/* Link de pago (placeholder para Wise) */}
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-            <div className="flex items-center gap-2 text-blue-700">
-              <CreditCard className="w-4 h-4" />
-              <span className="text-sm font-medium">Link de pago</span>
-            </div>
-            <p className="text-xs text-blue-600 mt-1">
-              La integración con Wise estará disponible próximamente. Podrás generar links de pago directamente desde aquí.
-            </p>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
   );
+}
+
+interface ClientOption {
+  id: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
 }
 
 function CreateBookingDialog({
@@ -549,11 +839,20 @@ function CreateBookingDialog({
   onClose: (created: boolean) => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [clientSearch, setClientSearch] = useState('');
+  const [clientResults, setClientResults] = useState<ClientOption[]>([]);
+  const [searchingClients, setSearchingClients] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<ClientOption | null>(null);
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [showNewClient, setShowNewClient] = useState(false);
+  const [newClientForm, setNewClientForm] = useState({ full_name: '', email: '', phone: '' });
+  const [creatingClient, setCreatingClient] = useState(false);
+
+  const debouncedClientSearch = useDebounce(clientSearch, 300);
+
   const [form, setForm] = useState({
     trip_id: '',
-    customer_name: '',
-    customer_email: '',
-    customer_phone: '',
+    client_id: '',
     travel_date: '',
     adults: 1,
     children: 0,
@@ -569,6 +868,32 @@ function CreateBookingDialog({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  // Buscar clientes
+  useEffect(() => {
+    if (!debouncedClientSearch || debouncedClientSearch.length < 2) {
+      setClientResults([]);
+      return;
+    }
+
+    const searchClients = async () => {
+      setSearchingClients(true);
+      try {
+        const res = await fetch(`/api/admin/clients?search=${encodeURIComponent(debouncedClientSearch)}&limit=10`);
+        const data = await res.json();
+        if (res.ok) {
+          setClientResults(data.clients || []);
+          setShowClientDropdown(true);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        setSearchingClients(false);
+      }
+    };
+
+    searchClients();
+  }, [debouncedClientSearch]);
+
   // Auto-calcular precio al cambiar viaje o pasajeros
   useEffect(() => {
     if (selectedTrip) {
@@ -577,9 +902,64 @@ function CreateBookingDialog({
     }
   }, [form.trip_id, form.adults, form.children, selectedTrip]);
 
+  const selectClient = (client: ClientOption) => {
+    setSelectedClient(client);
+    setForm((prev) => ({ ...prev, client_id: client.id }));
+    setClientSearch('');
+    setShowClientDropdown(false);
+  };
+
+  const clearClient = () => {
+    setSelectedClient(null);
+    setForm((prev) => ({ ...prev, client_id: '' }));
+  };
+
+  const handleCreateClient = async () => {
+    if (!newClientForm.full_name.trim()) {
+      toast.error('El nombre es requerido');
+      return;
+    }
+
+    setCreatingClient(true);
+    try {
+      const res = await fetch('/api/admin/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newClientForm),
+      });
+
+      if (res.ok) {
+        const client = await res.json();
+        selectClient(client);
+        setShowNewClient(false);
+        setNewClientForm({ full_name: '', email: '', phone: '' });
+        toast.success('Cliente creado');
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Error al crear cliente');
+      }
+    } catch {
+      toast.error('Error al crear cliente');
+    } finally {
+      setCreatingClient(false);
+    }
+  };
+
+  const resetAll = () => {
+    setForm({
+      trip_id: '', client_id: '', travel_date: '', adults: 1,
+      children: 0, total_price: 0, currency: 'USD',
+      special_requests: '', internal_notes: '',
+    });
+    setSelectedClient(null);
+    setClientSearch('');
+    setShowNewClient(false);
+    setNewClientForm({ full_name: '', email: '', phone: '' });
+  };
+
   const handleSubmit = async () => {
-    if (!form.trip_id || !form.customer_name || !form.customer_email || !form.travel_date) {
-      toast.error('Completa todos los campos requeridos');
+    if (!form.trip_id || !form.client_id || !form.travel_date) {
+      toast.error('Seleccioná un cliente, viaje y fecha');
       return;
     }
 
@@ -588,24 +968,17 @@ function CreateBookingDialog({
       const res = await fetch('/api/admin/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          customer_name: selectedClient?.full_name || '',
+          customer_email: selectedClient?.email || '',
+          customer_phone: selectedClient?.phone || '',
+        }),
       });
 
       if (res.ok) {
         toast.success('Reserva creada exitosamente');
-        setForm({
-          trip_id: '',
-          customer_name: '',
-          customer_email: '',
-          customer_phone: '',
-          travel_date: '',
-          adults: 1,
-          children: 0,
-          total_price: 0,
-          currency: 'USD',
-          special_requests: '',
-          internal_notes: '',
-        });
+        resetAll();
         onClose(true);
       } else {
         const data = await res.json();
@@ -619,14 +992,117 @@ function CreateBookingDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => onClose(false)}>
+    <Dialog open={open} onOpenChange={() => { resetAll(); onClose(false); }}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nueva reserva</DialogTitle>
-          <DialogDescription>Crear una reserva manualmente para un viaje</DialogDescription>
+          <DialogDescription>Seleccioná un cliente y un viaje para crear la reserva</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Cliente */}
+          <div className="space-y-2">
+            <Label>Cliente *</Label>
+            {selectedClient ? (
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">{selectedClient.full_name}</p>
+                  <div className="flex gap-3 text-xs text-slate-500 mt-0.5">
+                    {selectedClient.email && (
+                      <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{selectedClient.email}</span>
+                    )}
+                    {selectedClient.phone && (
+                      <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{selectedClient.phone}</span>
+                    )}
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={clearClient} className="text-slate-400 hover:text-slate-600">
+                  <XCircle className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : showNewClient ? (
+              <div className="space-y-3 p-3 bg-slate-50 rounded-lg border">
+                <p className="text-xs font-medium text-slate-500">Nuevo cliente</p>
+                <Input
+                  value={newClientForm.full_name}
+                  onChange={(e) => setNewClientForm({ ...newClientForm, full_name: e.target.value })}
+                  placeholder="Nombre completo *"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="email"
+                    value={newClientForm.email}
+                    onChange={(e) => setNewClientForm({ ...newClientForm, email: e.target.value })}
+                    placeholder="Email"
+                  />
+                  <Input
+                    value={newClientForm.phone}
+                    onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value })}
+                    placeholder="Teléfono"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowNewClient(false)} disabled={creatingClient}>
+                    Cancelar
+                  </Button>
+                  <Button size="sm" className="flex-1" onClick={handleCreateClient} disabled={creatingClient}>
+                    {creatingClient ? 'Creando...' : 'Crear cliente'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  placeholder="Buscar cliente por nombre o email..."
+                  value={clientSearch}
+                  onChange={(e) => setClientSearch(e.target.value)}
+                  onFocus={() => clientResults.length > 0 && setShowClientDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowClientDropdown(false), 200)}
+                  className="pl-10"
+                />
+                {searchingClients && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-slate-300 border-t-primary rounded-full animate-spin" />
+                  </div>
+                )}
+
+                {/* Dropdown de resultados */}
+                {showClientDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {clientResults.length > 0 ? (
+                      clientResults.map((client) => (
+                        <button
+                          key={client.id}
+                          type="button"
+                          className="w-full text-left px-3 py-2 hover:bg-slate-50 border-b last:border-b-0"
+                          onMouseDown={() => selectClient(client)}
+                        >
+                          <p className="text-sm font-medium text-slate-900">{client.full_name}</p>
+                          <p className="text-xs text-slate-500">{client.email || 'Sin email'}</p>
+                        </button>
+                      ))
+                    ) : debouncedClientSearch.length >= 2 ? (
+                      <p className="px-3 py-2 text-sm text-slate-400">Sin resultados</p>
+                    ) : null}
+                  </div>
+                )}
+
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="mt-1 h-auto p-0 text-xs"
+                  onClick={() => { setShowNewClient(true); setClientSearch(''); setShowClientDropdown(false); }}
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Crear nuevo cliente
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
           {/* Viaje */}
           <div className="space-y-2">
             <Label>Viaje *</Label>
@@ -642,37 +1118,6 @@ function CreateBookingDialog({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <Separator />
-
-          {/* Cliente */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2 space-y-2">
-              <Label>Nombre completo *</Label>
-              <Input
-                value={form.customer_name}
-                onChange={(e) => updateForm('customer_name', e.target.value)}
-                placeholder="Juan Pérez"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Email *</Label>
-              <Input
-                type="email"
-                value={form.customer_email}
-                onChange={(e) => updateForm('customer_email', e.target.value)}
-                placeholder="juan@email.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Teléfono</Label>
-              <Input
-                value={form.customer_phone}
-                onChange={(e) => updateForm('customer_phone', e.target.value)}
-                placeholder="+52..."
-              />
-            </div>
           </div>
 
           <Separator />
@@ -755,7 +1200,7 @@ function CreateBookingDialog({
         </div>
 
         <div className="flex gap-3 pt-2">
-          <Button variant="outline" className="flex-1" onClick={() => onClose(false)} disabled={saving}>
+          <Button variant="outline" className="flex-1" onClick={() => { resetAll(); onClose(false); }} disabled={saving}>
             Cancelar
           </Button>
           <Button className="flex-1 gap-2" onClick={handleSubmit} disabled={saving}>

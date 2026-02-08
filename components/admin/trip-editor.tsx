@@ -376,9 +376,9 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
                     id="max_capacity"
                     type="number"
                     value={maxCapacity || ''}
-                    onChange={(e) => setMaxCapacity(parseInt(e.target.value) || 20)}
+                    onChange={(e) => setMaxCapacity(e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                     placeholder="20"
-                    min={1}
+                    min={0}
                   />
                 </div>
               </div>

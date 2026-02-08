@@ -59,6 +59,24 @@ function smoothScrollTo(targetY: number, duration: number = 600): void {
 export function useSmoothScroll(offset: number = 80) {
   const pathname = usePathname();
 
+  // After navigating to the homepage with a hash, scroll to the target element
+  useEffect(() => {
+    if (pathname !== '/') return;
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const targetId = hash.substring(1);
+    // Small delay to let the page render before scrolling
+    const timer = setTimeout(() => {
+      const el = document.getElementById(targetId);
+      if (el) {
+        const pos = el.getBoundingClientRect().top + window.scrollY - offset;
+        smoothScrollTo(pos, 600);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [pathname, offset]);
+
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       const href = e.currentTarget.getAttribute('href');
