@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { createBrowserClient } from '@/lib/auth';
+import { createClient } from '@supabase/supabase-js';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -86,7 +86,10 @@ function MisReservasContent() {
   const [error, setError] = useState('');
   const [loadingBookings, setLoadingBookings] = useState(false);
 
-  const supabase = createBrowserClient();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const fetchBookings = useCallback(async () => {
     setLoadingBookings(true);
