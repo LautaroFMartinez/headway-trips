@@ -10,7 +10,7 @@ import * as React from 'react';
 import { EmailLayout, colors } from './components/email-layout';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://headwaytrips.com';
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5491112345678';
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '525527118391';
 
 interface QuoteCustomerConfirmationEmailProps {
   customerName: string;

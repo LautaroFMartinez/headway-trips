@@ -1,15 +1,14 @@
 'use client';
 
-import type { TextBlock } from '@/types/blocks';
+import type { TextBlock, HeadingBlock } from '@/types/blocks';
 
 interface ProposalAboutProps {
   description: string;
-  textBlocks?: TextBlock[];
+  contentBlocks?: (TextBlock | HeadingBlock)[];
 }
 
-export function ProposalAbout({ description, textBlocks = [] }: ProposalAboutProps) {
-  // Combinar descripción principal con bloques de texto
-  const hasTextBlocks = textBlocks.length > 0;
+export function ProposalAbout({ description, contentBlocks = [] }: ProposalAboutProps) {
+  const hasContentBlocks = contentBlocks.length > 0;
 
   return (
     <section id="sobre-el-viaje" className="scroll-mt-24">
@@ -19,15 +18,27 @@ export function ProposalAbout({ description, textBlocks = [] }: ProposalAboutPro
           {description}
         </div>
 
-        {/* Bloques de texto adicionales */}
-        {hasTextBlocks && textBlocks.map((block) => (
-          <div
-            key={block.id}
-            className="mt-4 text-gray-700"
-            style={{ textAlign: block.data.alignment }}
-            dangerouslySetInnerHTML={{ __html: block.data.content }}
-          />
-        ))}
+        {/* Bloques de contenido (texto y encabezados) */}
+        {hasContentBlocks && contentBlocks.map((block) => {
+          if (block.type === 'heading') {
+            const level = block.data.level;
+            const className = "mt-8 mb-2 font-serif font-bold text-gray-900";
+            const text = block.data.text;
+            if (level === 1) return <h1 key={block.id} className={className}>{text}</h1>;
+            if (level === 2) return <h2 key={block.id} className={className}>{text}</h2>;
+            if (level === 3) return <h3 key={block.id} className={className}>{text}</h3>;
+            return <h4 key={block.id} className={className}>{text}</h4>;
+          }
+
+          return (
+            <div
+              key={block.id}
+              className="mt-4 text-gray-700"
+              style={{ textAlign: block.data.alignment }}
+              dangerouslySetInnerHTML={{ __html: block.data.content }}
+            />
+          );
+        })}
       </div>
     </section>
   );

@@ -1,9 +1,10 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5491112345678';
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '525527118391';
 const DEFAULT_MESSAGE = 'Hola! Me interesa obtener mas informacion sobre sus paquetes de viaje.';
 
 interface WhatsAppButtonProps {
@@ -12,6 +13,10 @@ interface WhatsAppButtonProps {
 }
 
 export function WhatsAppButton({ message = DEFAULT_MESSAGE, className }: WhatsAppButtonProps) {
+  const pathname = usePathname();
+
+  if (pathname.startsWith('/admin')) return null;
+
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
