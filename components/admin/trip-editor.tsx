@@ -179,7 +179,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
 
   const mainImageDropzone = useDropzone({ onDrop: onDropMainImage, accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] }, maxFiles: 1, maxSize: 5 * 1024 * 1024 });
   const galleryDropzone = useDropzone({ onDrop: onDropGallery, accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] }, maxSize: 5 * 1024 * 1024 });
-  const pdfDropzone = useDropzone({ onDrop: onDropPdf, accept: { 'application/pdf': ['.pdf'] }, maxFiles: 1, maxSize: 10 * 1024 * 1024 });
+  const pdfDropzone = useDropzone({ onDrop: onDropPdf, accept: { 'application/pdf': ['.pdf'] }, maxFiles: 1, maxSize: 150 * 1024 * 1024 });
 
   const generateSlug = (title: string): string => {
     return title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
