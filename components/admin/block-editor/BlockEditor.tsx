@@ -27,6 +27,7 @@ import { ActivityBlockEditor } from './editors/ActivityBlockEditor';
 import { TransportBlockEditor } from './editors/TransportBlockEditor';
 import { FlightBlockEditor } from './editors/FlightBlockEditor';
 import { FoodBlockEditor } from './editors/FoodBlockEditor';
+import { CancellationPolicyBlockEditor } from './editors/CancellationPolicyBlockEditor';
 
 interface BlockEditorProps {
   initialBlocks: ContentBlock[];
@@ -82,6 +83,8 @@ function BlockEditorInner({ onChange }: { onChange: (blocks: ContentBlock[]) => 
         return <FlightBlockEditor block={editingBlock} />;
       case 'food':
         return <FoodBlockEditor block={editingBlock} />;
+      case 'cancellation_policy':
+        return <CancellationPolicyBlockEditor block={editingBlock} />;
       default:
         return null;
     }

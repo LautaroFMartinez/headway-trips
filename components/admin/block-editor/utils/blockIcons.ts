@@ -12,6 +12,7 @@ import {
   Bus,
   Plane,
   Utensils,
+  ShieldX,
   LucideIcon,
 } from 'lucide-react';
 import { BlockType } from '@/types/blocks';
@@ -30,6 +31,7 @@ export const BLOCK_ICONS: Record<BlockType, LucideIcon> = {
   transport: Bus,
   flight: Plane,
   food: Utensils,
+  cancellation_policy: ShieldX,
 };
 
 export function getBlockIcon(type: BlockType): LucideIcon {

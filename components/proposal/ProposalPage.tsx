@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Download, Phone, Mail, Building2 } from 'lucide-react';
-import type { ContentBlock, TextBlock, AccommodationBlock } from '@/types/blocks';
+import type { ContentBlock, TextBlock, AccommodationBlock, CancellationPolicyBlock } from '@/types/blocks';
 import { Header } from '@/components/header';
 import { ProposalHero } from './ProposalHero';
 import { ProposalSidebar } from './ProposalSidebar';
@@ -13,6 +13,7 @@ import { ProposalServices } from './sections/ProposalServices';
 import { ProposalAccommodation } from './sections/ProposalAccommodation';
 import { ProposalItinerary } from './sections/ProposalItinerary';
 import { ProposalPricing } from './sections/ProposalPricing';
+import { ProposalCancellation } from './sections/ProposalCancellation';
 import { ProposalGallery } from './sections/ProposalGallery';
 
 export interface ProposalTrip {
@@ -69,6 +70,7 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
   const itineraryBlock = trip.contentBlocks?.find(b => b.type === 'itinerary' && b.isVisible);
   const priceBlock = trip.contentBlocks?.find(b => b.type === 'price' && b.isVisible);
   const textBlocks = (trip.contentBlocks?.filter(b => b.type === 'text' && b.isVisible) || []) as TextBlock[];
+  const cancellationBlock = trip.contentBlocks?.find(b => b.type === 'cancellation_policy' && b.isVisible) as CancellationPolicyBlock | undefined;
 
   // Datos de servicios (del bloque o de los datos del trip)
   const includes = servicesBlock?.type === 'services' ? servicesBlock.data.includes : trip.includes || [];
@@ -166,6 +168,11 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
               defaultPrice={trip.priceValue}
               defaultPriceFormatted={trip.price}
             />
+
+            {/* Política de cancelación */}
+            {cancellationBlock && (
+              <ProposalCancellation block={cancellationBlock} />
+            )}
           </div>
 
           {/* Sidebar */}

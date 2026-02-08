@@ -53,6 +53,7 @@ import { ActivityBlockRenderer } from './ActivityBlockRenderer';
 import { TransportBlockRenderer } from './TransportBlockRenderer';
 import { FlightBlockRenderer } from './FlightBlockRenderer';
 import { FoodBlockRenderer } from './FoodBlockRenderer';
+import { CancellationPolicyBlockRenderer } from './CancellationPolicyBlockRenderer';
 
 interface BlockWrapperProps {
   block: ContentBlock;
@@ -111,6 +112,8 @@ export function BlockWrapper({ block, onClick, isDragOverlay }: BlockWrapperProp
         return <FlightBlockRenderer block={block} />;
       case 'food':
         return <FoodBlockRenderer block={block} />;
+      case 'cancellation_policy':
+        return <CancellationPolicyBlockRenderer block={block} />;
       default:
         return <div>Bloque desconocido</div>;
     }

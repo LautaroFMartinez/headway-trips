@@ -15,6 +15,7 @@ import {
   TransportBlock,
   FlightBlock,
   FoodBlock,
+  CancellationPolicyBlock,
 } from '@/types/blocks';
 
 export function createBlock(type: BlockType, order: number): ContentBlock {
@@ -202,6 +203,32 @@ export function createBlock(type: BlockType, order: number): ContentBlock {
           included: true,
         },
       } as FoodBlock;
+
+    case 'cancellation_policy':
+      return {
+        ...baseBlock,
+        type: 'cancellation_policy',
+        data: {
+          rules: [
+            {
+              id: uuidv4(),
+              daysBeforeTrip: 30,
+              refundPercentage: 100,
+            },
+            {
+              id: uuidv4(),
+              daysBeforeTrip: 15,
+              refundPercentage: 50,
+            },
+            {
+              id: uuidv4(),
+              daysBeforeTrip: 7,
+              refundPercentage: 0,
+            },
+          ],
+          notes: '',
+        },
+      } as CancellationPolicyBlock;
 
     default:
       throw new Error(`Unknown block type: ${type}`);

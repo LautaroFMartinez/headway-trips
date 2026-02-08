@@ -13,7 +13,8 @@ export type BlockType =
   | 'activity'
   | 'transport'
   | 'flight'
-  | 'food';
+  | 'food'
+  | 'cancellation_policy';
 
 // Base interface for all blocks
 export interface BaseBlock {
@@ -252,6 +253,24 @@ export interface FoodBlock extends BaseBlock {
   data: FoodBlockData;
 }
 
+// Cancellation Policy Block
+export interface CancellationRule {
+  id: string;
+  daysBeforeTrip: number;
+  refundPercentage: number;
+  description?: string;
+}
+
+export interface CancellationPolicyBlockData {
+  rules: CancellationRule[];
+  notes?: string;
+}
+
+export interface CancellationPolicyBlock extends BaseBlock {
+  type: 'cancellation_policy';
+  data: CancellationPolicyBlockData;
+}
+
 // Union type of all blocks
 export type ContentBlock =
   | TextBlock
@@ -266,7 +285,8 @@ export type ContentBlock =
   | ActivityBlock
   | TransportBlock
   | FlightBlock
-  | FoodBlock;
+  | FoodBlock
+  | CancellationPolicyBlock;
 
 // Helper type to get data type from block type
 export type BlockDataMap = {
@@ -283,13 +303,14 @@ export type BlockDataMap = {
   transport: TransportBlockData;
   flight: FlightBlockData;
   food: FoodBlockData;
+  cancellation_policy: CancellationPolicyBlockData;
 };
 
 // Block categories for the palette
 export const BLOCK_CATEGORIES = {
   content: ['text', 'heading', 'image', 'gallery', 'file'] as BlockType[],
   trip: ['itinerary', 'services', 'price'] as BlockType[],
-  services: ['accommodation', 'activity', 'transport', 'flight', 'food'] as BlockType[],
+  services: ['accommodation', 'activity', 'transport', 'flight', 'food', 'cancellation_policy'] as BlockType[],
 } as const;
 
 // Block display names
@@ -307,6 +328,7 @@ export const BLOCK_NAMES: Record<BlockType, string> = {
   transport: 'Transporte',
   flight: 'Vuelo',
   food: 'Comida',
+  cancellation_policy: 'Cancelación',
 };
 
 // Block descriptions for palette tooltips
@@ -324,4 +346,5 @@ export const BLOCK_DESCRIPTIONS: Record<BlockType, string> = {
   transport: 'Traslado terrestre o marítimo',
   flight: 'Información de vuelos',
   food: 'Comidas incluidas o extras',
+  cancellation_policy: 'Política de cancelación y reembolsos',
 };
