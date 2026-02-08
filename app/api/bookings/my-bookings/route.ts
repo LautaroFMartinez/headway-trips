@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -14,14 +14,26 @@ export async function GET() {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const user = await currentUser();
-    const email = user?.primaryEmailAddress?.emailAddress;
+    // Use clerkClient to reliably get user data
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
 
-    if (!email) {
-      return NextResponse.json({ error: 'No se encontró email' }, { status: 400 });
+    // Collect ALL email addresses from the Clerk user
+    const allEmails = user.emailAddresses?.map((e) => e.emailAddress) || [];
+    const primaryEmail = user.primaryEmailAddressId
+      ? user.emailAddresses?.find((e) => e.id === user.primaryEmailAddressId)?.emailAddress
+      : null;
+
+    // Use primary email first, otherwise first available
+    const mainEmail = primaryEmail || allEmails[0];
+
+    if (!mainEmail || allEmails.length === 0) {
+      console.error('No email found for Clerk user:', userId);
+      return NextResponse.json({ error: 'No se encontró email asociado a tu cuenta' }, { status: 400 });
     }
 
-    const { data: bookings, error: bookingsError } = await supabase
+    // Query bookings matching ANY of the user's emails (case-insensitive)
+    let query = supabase
       .from('bookings')
       .select(`
         id,
@@ -42,7 +54,7 @@ export async function GET() {
         trips (
           id,
           title,
-          cover_image,
+          image,
           departure_date,
           duration
         ),
@@ -54,8 +66,17 @@ export async function GET() {
           payment_date,
           revolut_status
         )
-      `)
-      .ilike('customer_email', email)
+      `);
+
+    if (allEmails.length === 1) {
+      query = query.ilike('customer_email', allEmails[0]);
+    } else {
+      // Match any of the user's emails
+      const orFilter = allEmails.map((e) => `customer_email.ilike.${e}`).join(',');
+      query = query.or(orFilter);
+    }
+
+    const { data: bookings, error: bookingsError } = await query
       .order('created_at', { ascending: false });
 
     if (bookingsError) {
@@ -77,7 +98,7 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ bookings: bookingsWithPaid, email });
+    return NextResponse.json({ bookings: bookingsWithPaid, email: mainEmail });
   } catch (error) {
     console.error('My bookings error:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

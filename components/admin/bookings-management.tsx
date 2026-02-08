@@ -103,6 +103,7 @@ export function BookingsManagement() {
   const [showDetail, setShowDetail] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showDelete, setShowDelete] = useState<string | null>(null);
+  const [sendingReminders, setSendingReminders] = useState(false);
 
   const debouncedSearch = useDebounce(search, 300);
   const limit = 15;
@@ -204,6 +205,28 @@ export function BookingsManagement() {
     }
   };
 
+  const handleSendReminders = async () => {
+    setSendingReminders(true);
+    try {
+      const res = await fetch('/api/admin/bookings/send-reminders', { method: 'POST' });
+      const data = await res.json();
+
+      if (res.ok) {
+        if (data.sent === 0 && data.errors === 0) {
+          toast.info('No hay reservas pendientes de completar datos');
+        } else {
+          toast.success(`Reminders enviados: ${data.sent}${data.errors > 0 ? `, errores: ${data.errors}` : ''}`);
+        }
+      } else {
+        toast.error(data.error || 'Error al enviar reminders');
+      }
+    } catch {
+      toast.error('Error al enviar reminders');
+    } finally {
+      setSendingReminders(false);
+    }
+  };
+
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -214,10 +237,21 @@ export function BookingsManagement() {
           <h1 className="text-2xl font-bold text-slate-900">Reservas</h1>
           <p className="text-sm text-slate-500">{total} reserva{total !== 1 ? 's' : ''} en total</p>
         </div>
-        <Button onClick={() => setShowCreate(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Nueva reserva
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleSendReminders}
+            disabled={sendingReminders}
+            className="gap-2"
+          >
+            {sendingReminders ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+            Enviar reminders
+          </Button>
+          <Button onClick={() => setShowCreate(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Nueva reserva
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}

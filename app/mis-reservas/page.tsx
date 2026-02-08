@@ -27,12 +27,13 @@ import {
   ExternalLink,
   AlertCircle,
   ArrowLeft,
+  X,
 } from 'lucide-react';
 
 interface BookingTrip {
   id: string;
   title: string;
-  cover_image: string | null;
+  image: string | null;
   departure_date: string | null;
   duration: string | null;
 }
@@ -347,23 +348,197 @@ function LoginFlow() {
   );
 }
 
+function PaymentModal({
+  booking,
+  remaining,
+  formatCurrency,
+  onClose,
+}: {
+  booking: Booking;
+  remaining: number;
+  formatCurrency: (amount: number, currency?: string) => string;
+  onClose: () => void;
+}) {
+  const [amount, setAmount] = useState(remaining.toFixed(2));
+  const [mode, setMode] = useState<'full' | 'half' | 'custom'>('full');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleModeChange = (newMode: 'full' | 'half' | 'custom') => {
+    setMode(newMode);
+    setError('');
+    if (newMode === 'full') setAmount(remaining.toFixed(2));
+    else if (newMode === 'half') setAmount((remaining / 2).toFixed(2));
+  };
+
+  const handleSubmit = async () => {
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      setError('El monto debe ser mayor a 0');
+      return;
+    }
+    if (numAmount > remaining) {
+      setError('El monto no puede superar el saldo restante');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}/pay`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: numAmount }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Error al generar link de pago');
+        return;
+      }
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      }
+    } catch {
+      setError('Error de conexión. Intenta de nuevo.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="text-center mb-5">
+          <CreditCard className="w-10 h-10 text-primary mx-auto mb-2" />
+          <h3 className="text-lg font-semibold text-gray-900">Realizar pago</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            {booking.trips?.title || booking.trip_id}
+          </p>
+        </div>
+
+        <div className="bg-gray-50 rounded-lg p-3 mb-5">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Saldo restante</span>
+            <span className="font-semibold text-amber-600">
+              {formatCurrency(remaining, booking.currency)}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => handleModeChange('full')}
+            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+              mode === 'full'
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Pagar todo
+          </button>
+          <button
+            onClick={() => handleModeChange('half')}
+            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+              mode === 'half'
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            50%
+          </button>
+          <button
+            onClick={() => handleModeChange('custom')}
+            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+              mode === 'custom'
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Personalizado
+          </button>
+        </div>
+
+        <div className="mb-5">
+          <Label htmlFor="pay-amount">Monto ({booking.currency})</Label>
+          <Input
+            id="pay-amount"
+            type="number"
+            min="0.01"
+            max={remaining}
+            step="0.01"
+            value={amount}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              setMode('custom');
+              setError('');
+            }}
+            className="mt-1.5 text-lg"
+          />
+        </div>
+
+        {error && (
+          <p className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            {error}
+          </p>
+        )}
+
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="w-full gap-2"
+          size="lg"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Generando link...
+            </>
+          ) : (
+            <>
+              <CreditCard className="w-4 h-4" />
+              Generar link de pago
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function BookingsList() {
   const { user } = useUser();
-  const userEmail = user?.primaryEmailAddress?.emailAddress || '';
+  const userEmail = user?.primaryEmailAddress?.emailAddress
+    || user?.emailAddresses?.[0]?.emailAddress || '';
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [expandedBooking, setExpandedBooking] = useState<string | null>(null);
   const [loadingBookings, setLoadingBookings] = useState(true);
+  const [fetchError, setFetchError] = useState('');
+  const [payingBooking, setPayingBooking] = useState<string | null>(null);
 
   const fetchBookings = useCallback(async () => {
     setLoadingBookings(true);
+    setFetchError('');
     try {
       const res = await fetch('/api/bookings/my-bookings');
+      const data = await res.json();
       if (res.ok) {
-        const data = await res.json();
         setBookings(data.bookings || []);
+      } else {
+        console.error('my-bookings error:', data);
+        setFetchError(data.error || 'Error al cargar reservas');
       }
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error('fetch error:', err);
+      setFetchError('Error de conexión al cargar reservas');
     } finally {
       setLoadingBookings(false);
     }
@@ -401,6 +576,13 @@ function BookingsList() {
           <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
           <p className="text-gray-600">Cargando reservas...</p>
         </div>
+      ) : fetchError ? (
+        <div className="bg-white rounded-xl border border-red-200 p-8 text-center">
+          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Error</h2>
+          <p className="text-gray-600 mb-4">{fetchError}</p>
+          <Button onClick={fetchBookings} variant="outline">Reintentar</Button>
+        </div>
       ) : bookings.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
           <Plane className="w-12 h-12 text-gray-300 mx-auto mb-4" />
@@ -428,9 +610,9 @@ function BookingsList() {
                   onClick={() => setExpandedBooking(isExpanded ? null : booking.id)}
                 >
                   <div className="flex gap-4">
-                    {booking.trips?.cover_image && (
+                    {booking.trips?.image && (
                       <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 hidden sm:block">
-                        <img src={booking.trips.cover_image} alt={booking.trips?.title || ''} className="w-full h-full object-cover" />
+                        <img src={booking.trips.image} alt={booking.trips?.title || ''} className="w-full h-full object-cover" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
@@ -532,6 +714,18 @@ function BookingsList() {
                       </div>
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-3">
+                      {remaining > 0 && booking.status !== 'cancelled' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPayingBooking(booking.id);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          <CreditCard className="w-3.5 h-3.5" />
+                          Realizar pago
+                        </button>
+                      )}
                       {canComplete && (
                         <Link href={`/reserva/completar?token=${booking.completion_token}`} className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors">
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -552,6 +746,20 @@ function BookingsList() {
           })}
         </div>
       )}
+
+      {payingBooking && (() => {
+        const booking = bookings.find((b) => b.id === payingBooking);
+        if (!booking) return null;
+        const rem = Number(booking.total_price) - booking.total_paid;
+        return (
+          <PaymentModal
+            booking={booking}
+            remaining={rem}
+            formatCurrency={formatCurrency}
+            onClose={() => setPayingBooking(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

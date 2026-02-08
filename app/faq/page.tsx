@@ -61,6 +61,10 @@ const faqCategories = [
         question: '¿Hay cargos adicionales?',
         answer: 'Todos los precios publicados incluyen impuestos y tasas. Pueden existir cargos adicionales por servicios opcionales como excursiones extras, seguros premium o upgrades de alojamiento, que siempre se informan previamente.',
       },
+      {
+        question: '¿Como realizo pagos adicionales o completo el saldo de mi reserva?',
+        answer: 'Podes gestionar tus pagos directamente desde la seccion "Mis Reservas". Inicia sesion con el email asociado a tu reserva, selecciona la reserva que deseas pagar y hace click en "Realizar pago". Podras elegir pagar el total pendiente, el 50% o un monto personalizado. Se generara un link de pago seguro para completar la transaccion, sin necesidad de contactar al equipo.',
+      },
     ],
   },
   {
