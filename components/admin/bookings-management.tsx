@@ -46,6 +46,7 @@ interface Booking {
     title: string;
     image: string | null;
   };
+  total_paid?: number;
   clients?: {
     id: string;
     full_name: string;
@@ -250,10 +251,10 @@ export function BookingsManagement() {
               <TableHead>Cliente</TableHead>
               <TableHead>Viaje</TableHead>
               <TableHead>Fecha viaje</TableHead>
-              <TableHead>Pasajeros</TableHead>
-              <TableHead>Total</TableHead>
+              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right">Pagado</TableHead>
+              <TableHead className="text-right">Restante</TableHead>
               <TableHead>Estado</TableHead>
-              <TableHead>Pago</TableHead>
               <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
@@ -302,24 +303,29 @@ export function BookingsManagement() {
                         {format(new Date(booking.travel_date), 'dd MMM yyyy', { locale: es })}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-slate-600">
-                        {booking.adults} ad. {booking.children > 0 ? `+ ${booking.children} niños` : ''}
+                    <TableCell className="text-right">
+                      <span className="text-sm font-semibold text-slate-900">
+                        ${booking.total_price?.toLocaleString()}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      <span className="text-sm font-semibold text-slate-900">
-                        ${booking.total_price?.toLocaleString()} {booking.currency}
+                    <TableCell className="text-right">
+                      <span className="text-sm text-green-700">
+                        ${(booking.total_paid || 0).toLocaleString()}
                       </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {(() => {
+                        const remaining = Math.max(0, (booking.total_price || 0) - (booking.total_paid || 0));
+                        return (
+                          <span className={`text-sm font-medium ${remaining > 0 ? 'text-orange-600' : 'text-green-700'}`}>
+                            ${remaining.toLocaleString()}
+                          </span>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={`${statusConf.color} border-0 text-xs`}>
                         {statusConf.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={`${paymentConf.color} border-0 text-xs`}>
-                        {paymentConf.label}
                       </Badge>
                     </TableCell>
                     <TableCell>

@@ -40,8 +40,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Error al obtener reservas' }, { status: 500 });
     }
 
+    // Obtener totales pagados por booking
+    const bookingIds = (bookings || []).map((b) => b.id);
+    let paidTotals: Record<string, number> = {};
+
+    if (bookingIds.length > 0) {
+      const { data: payments } = await supabase
+        .from('booking_payments')
+        .select('booking_id, amount')
+        .in('booking_id', bookingIds);
+
+      if (payments) {
+        paidTotals = payments.reduce((acc: Record<string, number>, p) => {
+          acc[p.booking_id] = (acc[p.booking_id] || 0) + Number(p.amount);
+          return acc;
+        }, {});
+      }
+    }
+
+    const bookingsWithPaid = (bookings || []).map((b) => ({
+      ...b,
+      total_paid: paidTotals[b.id] || 0,
+    }));
+
     return NextResponse.json({
-      bookings: bookings || [],
+      bookings: bookingsWithPaid,
       total: count || 0,
       page,
       limit,
