@@ -57,11 +57,12 @@ export function Header() {
               { href: '/blog', label: 'Blog' },
               { href: '/nosotros', label: 'Nosotros' },
               { href: '/#contacto', label: 'Contacto' },
+              { href: '/mis-reservas', label: 'Mis Reservas' },
             ].map((link) => (
-              <Link 
-                key={link.href} 
-                href={link.href} 
-                onClick={link.href.includes('#') ? handleSmoothScroll : undefined} 
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={link.href.includes('#') ? handleSmoothScroll : undefined}
                 className={`px-4 py-2 text-sm font-medium transition-colors rounded-lg ${
                   isOverHero 
                     ? 'text-white/90 hover:text-white hover:bg-white/10' 
@@ -97,6 +98,7 @@ export function Header() {
               { href: '/blog', label: 'Blog' },
               { href: '/nosotros', label: 'Nosotros' },
               { href: '/#contacto', label: 'Contacto' },
+              { href: '/mis-reservas', label: 'Mis Reservas' },
             ].map((link) => (
               <Link
                 key={link.href}
