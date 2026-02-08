@@ -38,6 +38,8 @@ export interface ProposalTrip {
   maxCapacity?: number;
   currentBookings?: number;
   departureDate?: string;
+  startDates?: string[];
+  depositPercentage?: number;
 }
 
 export interface ProposalContact {
@@ -260,6 +262,9 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
           priceFormatted={trip.price}
           maxCapacity={trip.maxCapacity}
           currentBookings={trip.currentBookings}
+          depositPercentage={trip.depositPercentage}
+          startDates={trip.startDates}
+          departureDate={trip.departureDate}
         />
       )}
 

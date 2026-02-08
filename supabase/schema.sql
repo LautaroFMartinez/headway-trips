@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS public.trips (
   cancellation_policy TEXT DEFAULT 'Cancelación gratuita hasta 30 días antes del viaje.',
   
   departure_date DATE,
+  deposit_percentage INTEGER DEFAULT 10 CHECK (deposit_percentage >= 1 AND deposit_percentage <= 100),
 
   -- Metadatos
   created_at TIMESTAMPTZ DEFAULT NOW(),

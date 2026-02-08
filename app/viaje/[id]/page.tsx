@@ -55,6 +55,8 @@ async function getTrip(id: string): Promise<ProposalTrip | null> {
           maxCapacity: data.group_size_max ?? undefined,
           currentBookings: data.booking_count ?? undefined,
           departureDate: data.departure_date || undefined,
+          depositPercentage: data.deposit_percentage ?? 10,
+          startDates: data.start_dates || [],
         };
       }
     }

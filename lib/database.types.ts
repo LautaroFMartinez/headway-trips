@@ -412,6 +412,8 @@ export type Database = {
           tags: string[] | null
           title: string
           departure_date: string | null
+          deposit_percentage: number | null
+          start_dates: string[] | null
           updated_at: string | null
         }
         Insert: {
@@ -421,6 +423,8 @@ export type Database = {
           content_blocks?: Json | null
           created_at?: string | null
           departure_date?: string | null
+          deposit_percentage?: number | null
+          start_dates?: string[] | null
           description?: string | null
           difficulty_level?: string | null
           duration: string
@@ -452,6 +456,8 @@ export type Database = {
           content_blocks?: Json | null
           created_at?: string | null
           departure_date?: string | null
+          deposit_percentage?: number | null
+          start_dates?: string[] | null
           description?: string | null
           difficulty_level?: string | null
           duration?: string

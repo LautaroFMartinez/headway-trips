@@ -67,6 +67,8 @@ export async function GET(request: NextRequest) {
       max_capacity: t.group_size_max ?? 20,
       current_bookings: t.booking_count ?? 0,
       departure_date: t.departure_date || null,
+      deposit_percentage: t.deposit_percentage ?? 10,
+      start_dates: t.start_dates || [],
       created_at: t.created_at,
       updated_at: t.updated_at,
     }));
@@ -151,6 +153,8 @@ export async function POST(request: NextRequest) {
         featured: body.is_featured || false,
         group_size_max: body.max_capacity ?? 20,
         departure_date: body.departure_date || null,
+        deposit_percentage: body.deposit_percentage ?? 10,
+        start_dates: body.start_dates || [],
       })
       .select()
       .single();

@@ -6,6 +6,24 @@ import { BookingConfirmationEmail } from '@/lib/email-templates/BookingConfirmat
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
+interface PassengerData {
+  full_name: string;
+  email: string;
+  phone: string;
+  nationality: string;
+  birth_date: string;
+  passport_number: string;
+  passport_issuing_country: string;
+  passport_expiry_date: string;
+  instagram: string;
+  emergency_contact_name: string;
+  emergency_contact_phone: string;
+  dietary_notes: string;
+  allergies: string;
+  additional_notes: string;
+  is_adult: boolean;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limit
@@ -19,32 +37,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {
-      token,
-      full_name,
-      email,
-      phone,
-      nationality,
-      birth_date,
-      passport_number,
-      passport_expiry_date,
-      instagram,
-      emergency_contact_name,
-      emergency_contact_phone,
-      dietary_notes,
-      allergies,
-      additional_notes,
-    } = body;
+    const { token, passengers } = body as { token: string; passengers: PassengerData[] };
 
-    // Validate required
-    if (!token || !full_name || !email || !phone) {
+    // Validate
+    if (!token || !passengers || !Array.isArray(passengers) || passengers.length === 0) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
+    }
+
+    const primary = passengers[0];
+    if (!primary.full_name || !primary.email || !primary.phone) {
+      return NextResponse.json({ error: 'Faltan datos del pasajero principal' }, { status: 400 });
     }
 
     // Find booking by token
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
-      .select('id, trip_id, adults, children, total_price, currency, details_completed, token_expires_at, customer_name')
+      .select('id, trip_id, adults, children, total_price, currency, details_completed, token_expires_at')
       .eq('completion_token', token)
       .single();
 
@@ -52,12 +60,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Reserva no encontrada' }, { status: 404 });
     }
 
-    // Check if already completed
     if (booking.details_completed) {
       return NextResponse.json({ error: 'Esta reserva ya fue completada' }, { status: 400 });
     }
 
-    // Check token expiration
     if (booking.token_expires_at && new Date(booking.token_expires_at) < new Date()) {
       return NextResponse.json(
         { error: 'El enlace ha expirado. Contacta a soporte para asistencia.' },
@@ -65,45 +71,73 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build notes from extra fields
-    const notesParts: string[] = [];
-    if (instagram) notesParts.push(`Instagram: ${instagram}`);
-    if (dietary_notes) notesParts.push(`Dieta: ${dietary_notes}`);
-    if (allergies) notesParts.push(`Alergias: ${allergies}`);
-    if (additional_notes) notesParts.push(`Notas: ${additional_notes}`);
-    const notes = notesParts.length > 0 ? notesParts.join('\n') : null;
+    // Create a client and booking_passenger for each passenger
+    let primaryClientId: string | null = null;
 
-    // Create or find client
-    const { data: client, error: clientError } = await supabase
-      .from('clients')
-      .insert({
-        full_name,
-        email,
-        phone,
-        nationality: nationality || null,
-        birth_date: birth_date || null,
-        passport_number: passport_number || null,
-        passport_expiry_date: passport_expiry_date || null,
-        emergency_contact_name: emergency_contact_name || null,
-        emergency_contact_phone: emergency_contact_phone || null,
-        notes,
-      })
-      .select('id')
-      .single();
+    for (let i = 0; i < passengers.length; i++) {
+      const p = passengers[i];
 
-    if (clientError || !client) {
-      console.error('Error creating client:', clientError);
-      return NextResponse.json({ error: 'Error al guardar datos del cliente' }, { status: 500 });
+      // Build notes
+      const notesParts: string[] = [];
+      if (p.instagram) notesParts.push(`Instagram: ${p.instagram}`);
+      if (p.dietary_notes) notesParts.push(`Dieta: ${p.dietary_notes}`);
+      if (p.allergies) notesParts.push(`Alergias: ${p.allergies}`);
+      if (p.additional_notes) notesParts.push(`Notas: ${p.additional_notes}`);
+      const notes = notesParts.length > 0 ? notesParts.join('\n') : null;
+
+      // Create client
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .insert({
+          full_name: p.full_name,
+          email: p.email || null,
+          phone: p.phone || null,
+          nationality: p.nationality || null,
+          birth_date: p.birth_date || null,
+          passport_number: p.passport_number || null,
+          passport_issuing_country: p.passport_issuing_country || null,
+          passport_expiry_date: p.passport_expiry_date || null,
+          emergency_contact_name: p.emergency_contact_name || null,
+          emergency_contact_phone: p.emergency_contact_phone || null,
+          notes,
+        })
+        .select('id')
+        .single();
+
+      if (clientError) {
+        console.error(`Error creating client for passenger ${i}:`, clientError);
+        continue;
+      }
+
+      if (i === 0 && client) {
+        primaryClientId = client.id;
+      }
+
+      // Create booking passenger
+      await supabase.from('booking_passengers').insert({
+        booking_id: booking.id,
+        full_name: p.full_name,
+        nationality: p.nationality || null,
+        birth_date: p.birth_date || null,
+        document_type: p.passport_number ? 'Passport' : null,
+        document_number: p.passport_number || null,
+        email: p.email || null,
+        phone: p.phone || null,
+        dietary_restrictions: p.dietary_notes || null,
+        emergency_contact_name: p.emergency_contact_name || null,
+        emergency_contact_phone: p.emergency_contact_phone || null,
+        is_adult: p.is_adult,
+      });
     }
 
-    // Update booking
+    // Update booking with primary passenger info
     const { error: updateError } = await supabase
       .from('bookings')
       .update({
-        client_id: client.id,
-        customer_name: full_name,
-        customer_email: email,
-        customer_phone: phone,
+        client_id: primaryClientId,
+        customer_name: primary.full_name,
+        customer_email: primary.email,
+        customer_phone: primary.phone,
         details_completed: true,
         status: 'confirmed',
         confirmed_at: new Date().toISOString(),
@@ -114,22 +148,6 @@ export async function POST(request: NextRequest) {
       console.error('Error updating booking:', updateError);
       return NextResponse.json({ error: 'Error al actualizar la reserva' }, { status: 500 });
     }
-
-    // Create booking passenger
-    await supabase.from('booking_passengers').insert({
-      booking_id: booking.id,
-      full_name,
-      nationality: nationality || null,
-      birth_date: birth_date || null,
-      document_type: passport_number ? 'Passport' : null,
-      document_number: passport_number || null,
-      email,
-      phone,
-      dietary_restrictions: dietary_notes || null,
-      emergency_contact_name: emergency_contact_name || null,
-      emergency_contact_phone: emergency_contact_phone || null,
-      is_adult: true,
-    });
 
     // Get trip title for email
     const { data: trip } = await supabase
@@ -143,7 +161,7 @@ export async function POST(request: NextRequest) {
       try {
         const emailHtml = await render(
           BookingConfirmationEmail({
-            customerName: full_name,
+            customerName: primary.full_name,
             tripTitle: trip.title,
             departureDate: trip.departure_date || undefined,
             totalPrice: booking.total_price,
@@ -160,7 +178,7 @@ export async function POST(request: NextRequest) {
           },
           body: JSON.stringify({
             from: process.env.EMAIL_FROM || 'Headway Trips <no-reply@headwaytrips.com>',
-            to: email,
+            to: primary.email,
             subject: `Reserva confirmada - ${trip.title}`,
             html: emailHtml,
           }),

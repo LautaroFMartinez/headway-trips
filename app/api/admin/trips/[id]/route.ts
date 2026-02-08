@@ -75,6 +75,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       featured: body.is_featured || false,
       group_size_max: body.max_capacity ?? 20,
       departure_date: body.departure_date || null,
+      deposit_percentage: body.deposit_percentage ?? 10,
+      start_dates: body.start_dates || [],
       updated_at: new Date().toISOString(),
     };
 

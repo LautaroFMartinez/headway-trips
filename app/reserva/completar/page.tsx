@@ -164,6 +164,8 @@ function CompletarContent() {
               customerName={data.customer_name}
               customerEmail={data.customer_email}
               tripTitle={data.trip?.title || ''}
+              adults={data.adults}
+              children={data.children}
               onSuccess={handleSuccess}
             />
           </div>

@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { trip_id, adults, children, customer_name, customer_email } = body;
+    const { trip_id, adults, children, customer_name, customer_email, selected_date } = body;
 
     // Validate
     if (!trip_id || !adults || !customer_name || !customer_email) {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // Get trip info
     const { data: trip, error: tripError } = await supabase
       .from('trips')
-      .select('id, title, price_value, group_size_max, booking_count, departure_date, available')
+      .select('id, title, price_value, group_size_max, booking_count, departure_date, available, deposit_percentage, start_dates')
       .eq('id', trip_id)
       .single();
 
@@ -48,6 +48,14 @@ export async function POST(request: NextRequest) {
 
     if (!trip.available) {
       return NextResponse.json({ error: 'Este viaje no está disponible' }, { status: 400 });
+    }
+
+    // Validate selected_date if provided
+    if (selected_date) {
+      const validDates = trip.start_dates || [];
+      if (validDates.length > 0 && !validDates.includes(selected_date)) {
+        return NextResponse.json({ error: 'Fecha de salida no válida' }, { status: 400 });
+      }
     }
 
     // Check capacity
@@ -60,16 +68,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate deposit (10%)
+    // Calculate deposit
+    const depositPct = (trip.deposit_percentage ?? 10) / 100;
     const totalPrice = trip.price_value * totalPassengers;
-    const deposit = Math.round(totalPrice * 0.10 * 100) / 100;
+    const deposit = Math.round(totalPrice * depositPct * 100) / 100;
 
     // Generate token
     const token = generateBookingToken();
     const tokenExpiresAt = getTokenExpiration();
 
-    // Determine travel_date
-    const travelDate = trip.departure_date || new Date().toISOString().split('T')[0];
+    // Determine travel_date: selected_date > departure_date > today
+    const travelDate = selected_date || trip.departure_date || new Date().toISOString().split('T')[0];
 
     // Create booking (pending)
     const { data: booking, error: bookingError } = await supabase
@@ -106,7 +115,7 @@ export async function POST(request: NextRequest) {
     const order = await createOrder(
       deposit,
       'USD',
-      `Depósito 10% - ${trip.title} (${totalPassengers} pasajero${totalPassengers > 1 ? 's' : ''})`,
+      `Depósito ${trip.deposit_percentage ?? 10}% - ${trip.title} (${totalPassengers} pasajero${totalPassengers > 1 ? 's' : ''})`,
       redirectUrl
     );
 

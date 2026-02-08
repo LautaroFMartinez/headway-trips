@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
-import { X, Upload, ImageIcon, FileText, Trash2, Loader2, Save, Eye, ExternalLink } from 'lucide-react';
+import { X, Upload, ImageIcon, FileText, Trash2, Loader2, Save, Eye, ExternalLink, Plus } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,8 @@ interface Trip {
   is_active: boolean;
   max_capacity?: number;
   departure_date?: string;
+  deposit_percentage?: number;
+  start_dates?: string[];
 }
 
 interface TripEditorProps {
@@ -83,6 +85,9 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
   const [isFeatured, setIsFeatured] = useState(false);
   const [maxCapacity, setMaxCapacity] = useState<number>(20);
   const [departureDate, setDepartureDate] = useState<string>('');
+  const [startDates, setStartDates] = useState<string[]>([]);
+  const [dateMode, setDateMode] = useState<'fixed' | 'multiple'>('fixed');
+  const [depositPercentage, setDepositPercentage] = useState<number>(10);
 
   // Files state
   const [mainImage, setMainImage] = useState<UploadedFile | null>(null);
@@ -112,6 +117,10 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         setIsFeatured(trip.is_featured ?? false);
         setMaxCapacity(trip.max_capacity ?? 20);
         setDepartureDate(trip.departure_date || '');
+        const dates = trip.start_dates || [];
+        setStartDates(dates);
+        setDateMode(dates.length > 0 ? 'multiple' : 'fixed');
+        setDepositPercentage(trip.deposit_percentage ?? 10);
         setMainImage(trip.image_url ? { id: '1', url: trip.image_url, name: 'Imagen principal', type: 'image' } : null);
         setGalleryImages(trip.gallery?.map((url, i) => ({ id: `g-${i}`, url, name: `Galería ${i + 1}`, type: 'image' })) || []);
         setPdfFile(trip.pdf_url ? { id: 'pdf', url: trip.pdf_url, name: 'Itinerario PDF', type: 'pdf' } : null);
@@ -129,6 +138,9 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         setIsFeatured(false);
         setMaxCapacity(20);
         setDepartureDate('');
+        setStartDates([]);
+        setDateMode('fixed');
+        setDepositPercentage(10);
         setMainImage(null);
         setGalleryImages([]);
         setPdfFile(null);
@@ -226,7 +238,9 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         is_featured: isFeatured,
         is_active: isActive,
         max_capacity: maxCapacity,
-        departure_date: departureDate || null,
+        departure_date: dateMode === 'fixed' ? (departureDate || null) : null,
+        start_dates: dateMode === 'multiple' ? startDates.filter(Boolean) : [],
+        deposit_percentage: depositPercentage,
       };
 
       const url = isEditing ? `/api/admin/trips/${trip.id}` : '/api/admin/trips';
@@ -388,15 +402,98 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
                 </div>
               </div>
 
-              {/* Fecha de salida */}
-              <div className="space-y-2">
-                <Label htmlFor="departure_date">Fecha de salida</Label>
-                <Input
-                  id="departure_date"
-                  type="date"
-                  value={departureDate}
-                  onChange={(e) => setDepartureDate(e.target.value)}
-                />
+              {/* Fechas y depósito */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <Label>Fechas de salida</Label>
+                  <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
+                    <button
+                      type="button"
+                      onClick={() => setDateMode('fixed')}
+                      className={cn(
+                        'px-3 py-1.5 transition-colors',
+                        dateMode === 'fixed' ? 'bg-primary text-white' : 'bg-white text-slate-600 hover:bg-slate-50'
+                      )}
+                    >
+                      Fecha fija
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDateMode('multiple')}
+                      className={cn(
+                        'px-3 py-1.5 transition-colors',
+                        dateMode === 'multiple' ? 'bg-primary text-white' : 'bg-white text-slate-600 hover:bg-slate-50'
+                      )}
+                    >
+                      Varias fechas
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {dateMode === 'fixed' ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="departure_date">Fecha de salida</Label>
+                      <Input
+                        id="departure_date"
+                        type="date"
+                        value={departureDate}
+                        onChange={(e) => setDepartureDate(e.target.value)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-2 col-span-2 sm:col-span-1">
+                      <Label>Fechas disponibles</Label>
+                      <div className="space-y-2">
+                        {startDates.map((date, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <Input
+                              type="date"
+                              value={date}
+                              onChange={(e) => {
+                                const updated = [...startDates];
+                                updated[i] = e.target.value;
+                                setStartDates(updated);
+                              }}
+                              className="flex-1"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 shrink-0"
+                              onClick={() => setStartDates(startDates.filter((_, j) => j !== i))}
+                            >
+                              <X className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="gap-1"
+                          onClick={() => setStartDates([...startDates, ''])}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Agregar fecha
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="deposit_percentage">Depósito (%)</Label>
+                    <Input
+                      id="deposit_percentage"
+                      type="number"
+                      value={depositPercentage}
+                      onChange={(e) => setDepositPercentage(Math.min(100, Math.max(1, parseInt(e.target.value) || 10)))}
+                      min={1}
+                      max={100}
+                      placeholder="10"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Descripción */}

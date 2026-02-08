@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Minus, Plus, Users, CreditCard } from 'lucide-react';
+import { Loader2, Minus, Plus, Users, CreditCard, CalendarDays } from 'lucide-react';
 
 interface BookingModalProps {
   open: boolean;
@@ -16,6 +16,9 @@ interface BookingModalProps {
   priceFormatted: string;
   maxCapacity: number;
   currentBookings: number;
+  depositPercentage?: number;
+  startDates?: string[];
+  departureDate?: string;
 }
 
 export function BookingModal({
@@ -27,18 +30,25 @@ export function BookingModal({
   priceFormatted,
   maxCapacity,
   currentBookings,
+  depositPercentage = 10,
+  startDates = [],
+  departureDate,
 }: BookingModalProps) {
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  const hasMultipleDates = startDates.length > 1;
 
   const remaining = Math.max(0, maxCapacity - currentBookings);
   const totalPassengers = adults + children;
   const totalPrice = priceValue * totalPassengers;
-  const deposit = Math.round(totalPrice * 0.10 * 100) / 100;
+  const depositPct = depositPercentage / 100;
+  const deposit = Math.round(totalPrice * depositPct * 100) / 100;
 
   const canAddMore = totalPassengers < remaining;
 
@@ -53,19 +63,28 @@ export function BookingModal({
       setError('Ingresa un email válido');
       return;
     }
+    if (hasMultipleDates && !selectedDate) {
+      setError('Selecciona una fecha de salida');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
+      const payload: Record<string, unknown> = {
+        trip_id: tripId,
+        adults,
+        children,
+        customer_name: name.trim(),
+        customer_email: email.trim(),
+      };
+      if (selectedDate) {
+        payload.selected_date = selectedDate;
+      }
+
       const res = await fetch('/api/bookings/payment-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          trip_id: tripId,
-          adults,
-          children,
-          customer_name: name.trim(),
-          customer_email: email.trim(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -158,6 +177,64 @@ export function BookingModal({
             </p>
           </div>
 
+          {/* Date selector (multiple dates) */}
+          {hasMultipleDates && (
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
+                <CalendarDays className="w-4 h-4" />
+                Fecha de salida
+              </Label>
+              <div className="space-y-2">
+                {startDates.map((date) => {
+                  const d = new Date(date + 'T12:00:00');
+                  const formatted = d.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  });
+                  return (
+                    <label
+                      key={date}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedDate === date
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="travel-date"
+                        value={date}
+                        checked={selectedDate === date}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="accent-primary"
+                      />
+                      <span className="text-sm capitalize">{formatted}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Fixed date display */}
+          {!hasMultipleDates && departureDate && (
+            <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+              <CalendarDays className="w-4 h-4" />
+              <span>
+                Fecha de salida:{' '}
+                <span className="font-medium capitalize">
+                  {new Date(departureDate + 'T12:00:00').toLocaleDateString('es-ES', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </span>
+              </span>
+            </div>
+          )}
+
           {/* Contact info */}
           <div className="space-y-3">
             <div className="space-y-1.5">
@@ -193,7 +270,7 @@ export function BookingModal({
             </div>
             <div className="border-t border-gray-200 pt-2 flex justify-between">
               <span className="text-sm font-semibold text-gray-900">
-                Depósito (10%)
+                Depósito ({depositPercentage}%)
               </span>
               <span className="text-lg font-bold text-primary">
                 USD ${deposit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
