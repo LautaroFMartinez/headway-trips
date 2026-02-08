@@ -1,15 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import { format, subDays, startOfWeek, endOfWeek, eachWeekOfInterval, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Verificar sesión
-    const sessionToken = request.cookies.get('admin_session')?.value;
-    if (!sessionToken) {
+    // Verificar sesión con Clerk
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 

@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useClerk, useUser } from '@clerk/nextjs';
 import { LayoutDashboard, Plane, MessageSquare, FileText, CalendarCheck, Settings, LogOut, Menu, X, ChevronDown, User, Newspaper, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
@@ -26,33 +26,22 @@ const navigation = [
   { name: 'Mensajes', href: '/admin/mensajes', icon: MessageSquare },
 ];
 
-export function AdminShell({ children, adminName = 'Admin', adminEmail = 'admin@headwaytrips.com' }: AdminShellProps) {
+export function AdminShell({ children, adminName, adminEmail }: AdminShellProps) {
   const pathname = usePathname();
-  const router = useRouter();
+  const { signOut } = useClerk();
+  const { user: clerkUser } = useUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [user, setUser] = useState({ name: adminName, email: adminEmail });
 
-  // Fetch user info on mount
-  useState(() => {
-    fetch('/api/admin/session')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.user) {
-          setUser({ name: data.user.name, email: data.user.email });
-        }
-      })
-      .catch(() => {
-        // Use defaults
-      });
-  });
+  const user = {
+    name: adminName || clerkUser?.fullName || clerkUser?.firstName || 'Admin',
+    email: adminEmail || clerkUser?.primaryEmailAddress?.emailAddress || '',
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await fetch('/api/admin/logout', { method: 'POST' });
-      router.push('/admin');
-      router.refresh();
+      await signOut({ redirectUrl: '/admin' });
     } catch {
       setIsLoggingOut(false);
     }

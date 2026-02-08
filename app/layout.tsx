@@ -1,6 +1,8 @@
 import type React from 'react';
 import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Playfair_Display } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
+import { esES } from '@clerk/localizations';
 import { Analytics } from '@vercel/analytics/next';
 import { ServiceWorkerRegister } from '@/components/service-worker-register';
 import { ScrollToTop } from '@/components/scroll-to-top';
@@ -101,30 +103,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="scroll-smooth">
-      <head>
-        {/* DNS Prefetch and Preconnect for critical origins */}
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <ClerkProvider localization={esES}>
+      <html lang="es" className="scroll-smooth">
+        <head>
+          {/* DNS Prefetch and Preconnect for critical origins */}
+          <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+          <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
-        {/* Preload critical assets */}
-        <link rel="preload" href="/fonts" as="font" type="font/woff2" crossOrigin="anonymous" />
+          {/* Preload critical assets */}
+          <link rel="preload" href="/fonts" as="font" type="font/woff2" crossOrigin="anonymous" />
 
-        {/* Resource hints for analytics and monitoring */}
-        <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
-        <link rel="preconnect" href="https://vitals.vercel-insights.com" />
-      </head>
-      <body className={`${dmSans.variable} ${playfair.variable} font-sans antialiased`}>
-        {children}
-        <ScrollToTop />
-        <WhatsAppButton />
-        <Analytics />
-        <GoogleAnalytics />
-        <CookieConsent />
-        <ServiceWorkerRegister />
-      </body>
-    </html>
+          {/* Resource hints for analytics and monitoring */}
+          <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
+          <link rel="preconnect" href="https://vitals.vercel-insights.com" />
+        </head>
+        <body className={`${dmSans.variable} ${playfair.variable} font-sans antialiased`}>
+          {children}
+          <ScrollToTop />
+          <WhatsAppButton />
+          <Analytics />
+          <GoogleAnalytics />
+          <CookieConsent />
+          <ServiceWorkerRegister />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

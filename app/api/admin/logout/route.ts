@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
-import { logoutAdmin } from '@/lib/auth';
 
+// Logout is now handled by Clerk's signOut().
 export async function POST() {
-  try {
-    await logoutAdmin();
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: 'Error al cerrar sesión' }, { status: 500 });
-  }
+  return NextResponse.json(
+    { error: 'Logout is now handled by Clerk.' },
+    { status: 410 }
+  );
 }

@@ -1,44 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { NextResponse } from 'next/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
+import { createClient } from '@supabase/supabase-js';
 
-export async function GET(request: NextRequest) {
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export async function GET() {
   try {
-    let response = NextResponse.next();
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            );
-          },
-        },
-      }
-    );
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user?.email) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    // Use service role to query bookings (RLS may block anon reads)
-    const { createClient } = await import('@supabase/supabase-js');
-    const adminSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const user = await currentUser();
+    const email = user?.primaryEmailAddress?.emailAddress;
 
-    const { data: bookings, error: bookingsError } = await adminSupabase
+    if (!email) {
+      return NextResponse.json({ error: 'No se encontró email' }, { status: 400 });
+    }
+
+    const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
       .select(`
         id,
@@ -72,7 +55,7 @@ export async function GET(request: NextRequest) {
           revolut_status
         )
       `)
-      .eq('customer_email', user.email)
+      .eq('customer_email', email)
       .order('created_at', { ascending: false });
 
     if (bookingsError) {
@@ -94,7 +77,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ bookings: bookingsWithPaid, email: user.email });
+    return NextResponse.json({ bookings: bookingsWithPaid, email });
   } catch (error) {
     console.error('My bookings error:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
