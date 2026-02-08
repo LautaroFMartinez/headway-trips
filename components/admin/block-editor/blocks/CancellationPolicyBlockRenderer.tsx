@@ -1,13 +1,15 @@
 'use client';
 
-import { CancellationPolicyBlock } from '@/types/blocks';
+import { CancellationPolicyBlock, CancellationPolicyItem } from '@/types/blocks';
 
 interface CancellationPolicyBlockRendererProps {
   block: CancellationPolicyBlock;
 }
 
 export function CancellationPolicyBlockRenderer({ block }: CancellationPolicyBlockRendererProps) {
-  const { items, notes } = block.data;
+  const data = block.data as any;
+  const items: CancellationPolicyItem[] = data.items ?? [];
+  const notes: string = data.notes ?? '';
 
   const hasContent = items.some((i) => i.title || i.content) || notes;
 

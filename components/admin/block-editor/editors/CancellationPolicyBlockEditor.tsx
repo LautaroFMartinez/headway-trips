@@ -1,6 +1,6 @@
 'use client';
 
-import { CancellationPolicyBlock } from '@/types/blocks';
+import { CancellationPolicyBlock, CancellationPolicyItem } from '@/types/blocks';
 import { useBlockEditor } from '../BlockEditorContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +16,9 @@ interface CancellationPolicyBlockEditorProps {
 
 export function CancellationPolicyBlockEditor({ block }: CancellationPolicyBlockEditorProps) {
   const { updateBlock } = useBlockEditor();
-  const { items, notes } = block.data;
+  const data = block.data as any;
+  const items: CancellationPolicyItem[] = data.items ?? [];
+  const notes: string = data.notes ?? '';
 
   const addItem = () => {
     updateBlock(block.id, {

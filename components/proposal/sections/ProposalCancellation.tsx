@@ -1,6 +1,6 @@
 'use client';
 
-import type { CancellationPolicyBlock } from '@/types/blocks';
+import type { CancellationPolicyBlock, CancellationPolicyItem } from '@/types/blocks';
 import { ShieldX } from 'lucide-react';
 
 interface ProposalCancellationProps {
@@ -8,9 +8,11 @@ interface ProposalCancellationProps {
 }
 
 export function ProposalCancellation({ block }: ProposalCancellationProps) {
-  const { items, notes } = block.data;
+  const data = block.data as any;
+  const items: CancellationPolicyItem[] = data.items ?? [];
+  const notes: string = data.notes ?? '';
 
-  const hasContent = items.some((i) => i.title || i.content) || notes;
+  const hasContent = items.some((i: any) => i.title || i.content) || notes;
   if (!hasContent) return null;
 
   return (
