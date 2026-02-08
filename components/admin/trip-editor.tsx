@@ -364,9 +364,9 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
                     id="duration"
                     type="number"
                     value={durationDays || ''}
-                    onChange={(e) => setDurationDays(parseInt(e.target.value) || 1)}
+                    onChange={(e) => setDurationDays(e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                     placeholder="8"
-                    min={1}
+                    min={0}
                     className={errors.duration_days ? 'border-red-500' : ''}
                   />
                 </div>
