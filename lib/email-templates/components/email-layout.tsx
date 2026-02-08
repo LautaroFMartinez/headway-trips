@@ -12,6 +12,8 @@ import {
 import * as React from 'react';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://headwaytrips.com';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nsgbmppylrowvggmckhi.supabase.co';
+const LOGO_URL = `${SUPABASE_URL}/storage/v1/object/public/trips/branding/icono.png`;
 
 // Brand colors
 export const colors = {
@@ -53,7 +55,7 @@ export function EmailLayout({ preview, children, variant = 'customer' }: EmailLa
           {/* Header */}
           <Section style={{ ...styles.header, background: headerGradient }}>
             <Img
-              src={`${SITE_URL}/icono.png`}
+              src={LOGO_URL}
               width="40"
               height="40"
               alt="Headway Trips"

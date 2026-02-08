@@ -56,7 +56,8 @@ export async function GET() {
           title,
           image,
           departure_date,
-          duration
+          duration,
+          duration_days
         ),
         booking_payments (
           id,

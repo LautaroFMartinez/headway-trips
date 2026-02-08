@@ -77,6 +77,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       departure_date: body.departure_date || null,
       deposit_percentage: body.deposit_percentage ?? 10,
       start_dates: body.start_dates || [],
+      end_date: body.end_date || null,
+      end_dates: body.end_dates || [],
       updated_at: new Date().toISOString(),
     };
 

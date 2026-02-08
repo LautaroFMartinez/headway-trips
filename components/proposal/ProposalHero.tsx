@@ -11,6 +11,8 @@ interface ProposalHeroProps {
   durationDays: number;
   startDate?: string;
   endDate?: string;
+  startDates?: string[];
+  endDates?: string[];
   heroImage: string;
   gallery?: string[];
   companyLogo?: string;
@@ -26,6 +28,8 @@ export function ProposalHero({
   durationDays,
   startDate,
   endDate,
+  startDates = [],
+  endDates = [],
   heroImage,
   gallery = [],
   companyLogo,
@@ -37,11 +41,16 @@ export function ProposalHero({
   const displayImages = allImages.slice(0, 4);
   const hasMoreImages = allImages.length > 4;
 
-  // Formatear fechas si existen
+  // Formatear fechas
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return null;
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T12:00:00'));
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  const formatDateLong = (dateStr: string) => {
+    const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T12:00:00'));
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   const formattedStartDate = formatDate(startDate);
@@ -49,6 +58,8 @@ export function ProposalHero({
   const dateRange = formattedStartDate && formattedEndDate
     ? `${formattedStartDate} - ${formattedEndDate}`
     : null;
+
+  const hasMultipleDates = startDates.length > 1;
 
   return (
     <div className="bg-white pt-20">
@@ -92,6 +103,27 @@ export function ProposalHero({
             </div>
           </div>
         </div>
+
+        {/* Fechas disponibles (múltiples) */}
+        {hasMultipleDates && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {startDates.map((sd, i) => {
+              const end = endDates[i];
+              const label = end
+                ? `${formatDateLong(sd)} → ${formatDateLong(end)}`
+                : formatDateLong(sd);
+              return (
+                <span
+                  key={sd}
+                  className="inline-flex items-center gap-1.5 text-sm bg-primary/5 text-primary border border-primary/15 px-3 py-1.5 rounded-full"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span className="capitalize">{label}</span>
+                </span>
+              );
+            })}
+          </div>
+        )}
 
         {/* Galería de imágenes estilo MOGU */}
         <div className="relative">

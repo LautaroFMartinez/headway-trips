@@ -39,6 +39,7 @@ export interface ProposalTrip {
   currentBookings?: number;
   departureDate?: string;
   startDates?: string[];
+  endDates?: string[];
   depositPercentage?: number;
 }
 
@@ -131,6 +132,8 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
         durationDays={trip.durationDays}
         startDate={trip.startDate}
         endDate={trip.endDate}
+        startDates={trip.startDates}
+        endDates={trip.endDates}
         heroImage={trip.heroImage}
         gallery={trip.gallery}
         companyLogo={displayContact.logo}
@@ -264,7 +267,9 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
           currentBookings={trip.currentBookings}
           depositPercentage={trip.depositPercentage}
           startDates={trip.startDates}
+          endDates={trip.endDates}
           departureDate={trip.departureDate}
+          endDate={trip.endDate}
         />
       )}
 

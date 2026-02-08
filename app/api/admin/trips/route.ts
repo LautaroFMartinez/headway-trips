@@ -69,6 +69,8 @@ export async function GET(request: NextRequest) {
       departure_date: t.departure_date || null,
       deposit_percentage: t.deposit_percentage ?? 10,
       start_dates: t.start_dates || [],
+      end_date: t.end_date || null,
+      end_dates: t.end_dates || [],
       created_at: t.created_at,
       updated_at: t.updated_at,
     }));
@@ -155,6 +157,8 @@ export async function POST(request: NextRequest) {
         departure_date: body.departure_date || null,
         deposit_percentage: body.deposit_percentage ?? 10,
         start_dates: body.start_dates || [],
+        end_date: body.end_date || null,
+        end_dates: body.end_dates || [],
       })
       .select()
       .single();

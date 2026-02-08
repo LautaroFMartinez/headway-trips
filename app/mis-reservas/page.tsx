@@ -36,6 +36,7 @@ interface BookingTrip {
   image: string | null;
   departure_date: string | null;
   duration: string | null;
+  duration_days: number | null;
 }
 
 interface BookingPayment {
@@ -556,6 +557,18 @@ function BookingsList() {
     });
   };
 
+  const formatTravelDateRange = (booking: Booking) => {
+    const startStr = booking.travel_date;
+    const days = booking.trips?.duration_days;
+    if (!startStr) return '';
+    const start = formatDate(startStr);
+    if (!days || days <= 1) return start;
+    const endD = new Date(startStr + (startStr.includes('T') ? '' : 'T12:00:00'));
+    endD.setDate(endD.getDate() + days - 1);
+    const end = endD.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    return `${start} → ${end}`;
+  };
+
   const formatCurrency = (amount: number, currency: string = 'USD') => {
     return `${currency} $${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
   };
@@ -625,7 +638,7 @@ function BookingsList() {
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5" />
-                          {formatDate(booking.travel_date)}
+                          {formatTravelDateRange(booking)}
                         </span>
                         <span className="flex items-center gap-1">
                           <Users className="w-3.5 h-3.5" />
@@ -655,8 +668,8 @@ function BookingsList() {
                             <dd className="text-gray-900 font-mono text-xs">{booking.id.slice(0, 8)}</dd>
                           </div>
                           <div className="flex justify-between">
-                            <dt className="text-gray-500">Fecha de viaje</dt>
-                            <dd className="text-gray-900">{formatDate(booking.travel_date)}</dd>
+                            <dt className="text-gray-500">Fecha del viaje</dt>
+                            <dd className="text-gray-900 capitalize">{formatTravelDateRange(booking)}</dd>
                           </div>
                           {booking.trips?.duration && (
                             <div className="flex justify-between">

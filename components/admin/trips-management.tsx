@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
-import { Plus, Search, Edit, Trash2, MoreHorizontal, Eye, ChevronLeft, ChevronRight, ImageIcon, MapPin, Calendar, DollarSign } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, MoreHorizontal, Eye, ChevronLeft, ChevronRight, ImageIcon, MapPin, Calendar, DollarSign, Mail, Loader2, Send } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -58,6 +62,15 @@ export function TripsManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [tripToDelete, setTripToDelete] = useState<Trip | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Email dialog state
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailTrip, setEmailTrip] = useState<Trip | null>(null);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [recipientCount, setRecipientCount] = useState<number | null>(null);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [sendResult, setSendResult] = useState<{ sent: number; errors: number } | null>(null);
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -157,6 +170,65 @@ export function TripsManagement() {
     } catch (error) {
       console.error('Error toggling active:', error);
     }
+  };
+
+  const handleEmailClick = async (trip: Trip) => {
+    setEmailTrip(trip);
+    setEmailSubject('');
+    setEmailMessage('');
+    setRecipientCount(null);
+    setSendResult(null);
+    setEmailDialogOpen(true);
+
+    try {
+      const response = await fetch(`/api/admin/trips/${trip.id}/recipients`);
+      if (response.ok) {
+        const data = await response.json();
+        setRecipientCount(data.count);
+      } else {
+        setRecipientCount(0);
+      }
+    } catch {
+      setRecipientCount(0);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailTrip || !emailSubject.trim() || !emailMessage.trim()) return;
+
+    setIsSendingEmail(true);
+    try {
+      const response = await fetch(`/api/admin/trips/${emailTrip.id}/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: emailSubject, message: emailMessage }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Error al enviar emails');
+        return;
+      }
+
+      setSendResult({ sent: data.sent, errors: data.errors });
+      if (data.sent > 0) {
+        toast.success(`${data.sent} email${data.sent > 1 ? 's' : ''} enviado${data.sent > 1 ? 's' : ''}`);
+      }
+      if (data.errors > 0) {
+        toast.error(`${data.errors} email${data.errors > 1 ? 's' : ''} fallaron`);
+      }
+    } catch {
+      toast.error('Error al enviar emails');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  const handleEmailDialogClose = () => {
+    if (isSendingEmail) return;
+    setEmailDialogOpen(false);
+    setEmailTrip(null);
   };
 
   const totalPages = Math.ceil(totalTrips / ITEMS_PER_PAGE);
@@ -328,6 +400,10 @@ export function TripsManagement() {
                           <Eye className="h-4 w-4 mr-2" />
                           Ver en sitio
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEmailClick(trip)}>
+                          <Mail className="h-4 w-4 mr-2" />
+                          Enviar email
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEditTrip(trip)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Editar
@@ -388,6 +464,101 @@ export function TripsManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Email Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={handleEmailDialogClose}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Enviar email masivo
+            </DialogTitle>
+            <DialogDescription>
+              {emailTrip?.title}
+            </DialogDescription>
+          </DialogHeader>
+
+          {recipientCount === null ? (
+            <div className="flex flex-col items-center gap-3 py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+              <p className="text-sm text-slate-500">Cargando destinatarios...</p>
+            </div>
+          ) : recipientCount === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-8">
+              <Mail className="h-8 w-8 text-slate-300" />
+              <p className="text-sm text-slate-500">No hay clientes con reservas activas para este viaje.</p>
+            </div>
+          ) : sendResult ? (
+            <div className="space-y-4 py-4">
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex items-center gap-4">
+                  {sendResult.sent > 0 && (
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">{sendResult.sent}</p>
+                      <p className="text-sm text-slate-500">enviado{sendResult.sent > 1 ? 's' : ''}</p>
+                    </div>
+                  )}
+                  {sendResult.errors > 0 && (
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-red-600">{sendResult.errors}</p>
+                      <p className="text-sm text-slate-500">error{sendResult.errors > 1 ? 'es' : ''}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleEmailDialogClose}>Cerrar</Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email-subject">Asunto</Label>
+                <Input
+                  id="email-subject"
+                  placeholder="Ej: Información importante sobre tu viaje"
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                  disabled={isSendingEmail}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email-message">Mensaje</Label>
+                <Textarea
+                  id="email-message"
+                  placeholder="Escribe el mensaje para los pasajeros..."
+                  value={emailMessage}
+                  onChange={(e) => setEmailMessage(e.target.value)}
+                  rows={6}
+                  disabled={isSendingEmail}
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={handleEmailDialogClose} disabled={isSendingEmail}>
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleSendEmail}
+                  disabled={isSendingEmail || !emailSubject.trim() || !emailMessage.trim()}
+                  className="gap-2"
+                >
+                  {isSendingEmail ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      Enviar a {recipientCount} destinatario{recipientCount > 1 ? 's' : ''}
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -44,6 +44,8 @@ interface Trip {
   departure_date?: string;
   deposit_percentage?: number;
   start_dates?: string[];
+  end_date?: string;
+  end_dates?: string[];
 }
 
 interface TripEditorProps {
@@ -69,6 +71,13 @@ const REGIONS = [
   { value: 'oceania', label: 'Oceanía' },
   { value: 'africa', label: 'África' },
 ];
+
+function calcEndDate(startDate: string, days: number): string {
+  if (!startDate || days <= 0) return '';
+  const d = new Date(startDate + 'T12:00:00');
+  d.setDate(d.getDate() + days - 1);
+  return d.toISOString().split('T')[0];
+}
 
 export function TripEditor({ trip, open, onClose }: TripEditorProps) {
   const isEditing = !!trip;
@@ -239,7 +248,9 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         is_active: isActive,
         max_capacity: maxCapacity,
         departure_date: dateMode === 'fixed' ? (departureDate || null) : null,
+        end_date: dateMode === 'fixed' && departureDate ? (calcEndDate(departureDate, durationDays) || null) : null,
         start_dates: dateMode === 'multiple' ? startDates.filter(Boolean) : [],
+        end_dates: dateMode === 'multiple' ? startDates.filter(Boolean).map(d => calcEndDate(d, durationDays)) : [],
         deposit_percentage: depositPercentage,
       };
 
@@ -432,17 +443,29 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
 
                 <div className="grid grid-cols-2 gap-4">
                   {dateMode === 'fixed' ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="departure_date">Fecha de salida</Label>
-                      <Input
-                        id="departure_date"
-                        type="date"
-                        value={departureDate}
-                        onChange={(e) => setDepartureDate(e.target.value)}
-                      />
-                    </div>
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="departure_date">Fecha de inicio</Label>
+                        <Input
+                          id="departure_date"
+                          type="date"
+                          value={departureDate}
+                          onChange={(e) => setDepartureDate(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Fecha de fin</Label>
+                        <Input
+                          type="date"
+                          value={departureDate ? calcEndDate(departureDate, durationDays) : ''}
+                          disabled
+                          className="bg-slate-50 text-slate-500"
+                        />
+                        <p className="text-xs text-slate-400">Calculada automáticamente ({durationDays} días)</p>
+                      </div>
+                    </>
                   ) : (
-                    <div className="space-y-2 col-span-2 sm:col-span-1">
+                    <div className="space-y-2 col-span-2">
                       <Label>Fechas disponibles</Label>
                       <div className="space-y-2">
                         {startDates.map((date, i) => (
@@ -456,6 +479,13 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
                                 setStartDates(updated);
                               }}
                               className="flex-1"
+                            />
+                            <span className="text-sm text-slate-400 shrink-0">→</span>
+                            <Input
+                              type="date"
+                              value={date ? calcEndDate(date, durationDays) : ''}
+                              disabled
+                              className="flex-1 bg-slate-50 text-slate-500"
                             />
                             <Button
                               type="button"

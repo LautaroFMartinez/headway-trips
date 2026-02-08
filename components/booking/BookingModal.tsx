@@ -18,7 +18,9 @@ interface BookingModalProps {
   currentBookings: number;
   depositPercentage?: number;
   startDates?: string[];
+  endDates?: string[];
   departureDate?: string;
+  endDate?: string;
 }
 
 export function BookingModal({
@@ -32,7 +34,9 @@ export function BookingModal({
   currentBookings,
   depositPercentage = 10,
   startDates = [],
+  endDates = [],
   departureDate,
+  endDate,
 }: BookingModalProps) {
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
@@ -185,14 +189,24 @@ export function BookingModal({
                 Fecha de salida
               </Label>
               <div className="space-y-2">
-                {startDates.map((date) => {
+                {startDates.map((date, i) => {
                   const d = new Date(date + 'T12:00:00');
                   const formatted = d.toLocaleDateString('es-ES', {
-                    weekday: 'long',
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
                   });
+                  const endDateStr = endDates[i];
+                  let label = formatted;
+                  if (endDateStr) {
+                    const ed = new Date(endDateStr + 'T12:00:00');
+                    const formattedEnd = ed.toLocaleDateString('es-ES', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    });
+                    label = `${formatted} → ${formattedEnd}`;
+                  }
                   return (
                     <label
                       key={date}
@@ -210,7 +224,7 @@ export function BookingModal({
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="accent-primary"
                       />
-                      <span className="text-sm capitalize">{formatted}</span>
+                      <span className="text-sm capitalize">{label}</span>
                     </label>
                   );
                 })}
@@ -223,13 +237,12 @@ export function BookingModal({
             <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
               <CalendarDays className="w-4 h-4" />
               <span>
-                Fecha de salida:{' '}
+                {endDate ? 'Fecha: ' : 'Fecha de salida: '}
                 <span className="font-medium capitalize">
-                  {new Date(departureDate + 'T12:00:00').toLocaleDateString('es-ES', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  {endDate
+                    ? `del ${new Date(departureDate + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })} al ${new Date(endDate + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                    : new Date(departureDate + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
+                  }
                 </span>
               </span>
             </div>
