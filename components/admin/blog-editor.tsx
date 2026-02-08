@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
+import { uploadToStorage } from '@/lib/upload';
 import { X, Upload, ImageIcon, Loader2, Save, Eye, ExternalLink } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -128,21 +129,8 @@ export function BlogEditor({ blog, open, onClose }: BlogEditorProps) {
   const uploadFile = useCallback(async (file: File) => {
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'image');
-
-      const response = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCoverImage(data.url);
-      } else {
-        console.error('Upload failed');
-      }
+      const { url } = await uploadToStorage(file, 'main');
+      setCoverImage(url);
     } catch (error) {
       console.error('Upload error:', error);
     } finally {

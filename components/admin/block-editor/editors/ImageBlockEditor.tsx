@@ -16,6 +16,7 @@ import { Upload, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
+import { uploadToStorage } from '@/lib/upload';
 
 interface ImageBlockEditorProps {
   block: ImageBlock;
@@ -38,21 +39,9 @@ export function ImageBlockEditor({ block }: ImageBlockEditorProps) {
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al subir la imagen');
-      }
-
-      const data = await response.json();
+      const { url: uploadedUrl } = await uploadToStorage(file, 'gallery');
       updateBlock(block.id, {
-        url: data.url,
+        url: uploadedUrl,
         alt: alt || file.name.replace(/\.[^/.]+$/, ''),
       });
       toast.success('Imagen subida correctamente');

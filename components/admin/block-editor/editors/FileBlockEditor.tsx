@@ -16,6 +16,7 @@ import {
 import { Upload, FileText, File } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
+import { uploadToStorage } from '@/lib/upload';
 
 interface FileBlockEditorProps {
   block: FileBlock;
@@ -33,19 +34,8 @@ export function FileBlockEditor({ block }: FileBlockEditorProps) {
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al subir el archivo');
-      }
-
-      const data = await response.json();
+      const isPdf = file.type === 'application/pdf';
+      const { url: uploadedUrl } = await uploadToStorage(file, isPdf ? 'pdf' : 'main');
 
       // Determine file type
       let fileType: FileBlock['data']['type'] = 'other';
@@ -56,7 +46,7 @@ export function FileBlockEditor({ block }: FileBlockEditorProps) {
       }
 
       updateBlock(block.id, {
-        url: data.url,
+        url: uploadedUrl,
         name: name || file.name,
         type: fileType,
         size: file.size,

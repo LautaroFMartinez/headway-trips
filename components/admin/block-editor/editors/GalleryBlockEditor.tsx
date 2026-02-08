@@ -18,6 +18,7 @@ import Image from 'next/image';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+import { uploadToStorage } from '@/lib/upload';
 
 interface GalleryBlockEditorProps {
   block: GalleryBlock;
@@ -40,20 +41,10 @@ export function GalleryBlockEditor({ block }: GalleryBlockEditorProps) {
       for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) continue;
 
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) continue;
-
-        const data = await response.json();
+        const { url: uploadedUrl } = await uploadToStorage(file, 'gallery');
         newImages.push({
           id: uuidv4(),
-          url: data.url,
+          url: uploadedUrl,
           alt: file.name.replace(/\.[^/.]+$/, ''),
         });
       }

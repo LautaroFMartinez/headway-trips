@@ -14,10 +14,10 @@ export function ProposalAbout({ description, textBlocks = [] }: ProposalAboutPro
   return (
     <section id="sobre-el-viaje" className="scroll-mt-24">
       <div className="prose prose-gray max-w-none">
-        <p className="text-base leading-relaxed text-gray-700">
+        <div className="text-base leading-relaxed text-gray-700 whitespace-pre-line">
           <strong className="text-gray-900">Sobre el viaje</strong>{' '}
           {description}
-        </p>
+        </div>
 
         {/* Bloques de texto adicionales */}
         {hasTextBlocks && textBlocks.map((block) => (

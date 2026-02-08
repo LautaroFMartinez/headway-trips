@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
 import { X, Upload, ImageIcon, FileText, Trash2, Loader2, Save, Eye, ExternalLink } from 'lucide-react';
+import { uploadToStorage } from '@/lib/upload';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -150,14 +151,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
     else setPdfFile(tempFile);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', type);
-
-      const response = await fetch('/api/admin/upload', { method: 'POST', body: formData });
-      if (!response.ok) throw new Error('Upload failed');
-
-      const { url } = await response.json();
+      const { url } = await uploadToStorage(file, type);
       const uploadedFile: UploadedFile = { id: tempId, url, name: file.name, type: type === 'pdf' ? 'pdf' : 'image', isUploading: false };
 
       if (type === 'main') setMainImage(uploadedFile);
