@@ -114,7 +114,7 @@ export default function NosotrosPage() {
         </section>
 
         {/* Stats */}
-        <section className="py-20 md:py-28 bg-background">
+       {/* <section className="py-20 md:py-28 bg-background">
           <div className="container mx-auto px-6">
             <div className="bg-primary rounded-2xl p-8 md:p-12">
               <div className="text-center mb-8">
@@ -140,7 +140,7 @@ export default function NosotrosPage() {
             </div>
           </div>
         </section>
-
+       */}
         {/* Por qué elegirnos */}
         <section className="py-20 md:py-28 bg-secondary/30">
           <div className="container mx-auto px-6">

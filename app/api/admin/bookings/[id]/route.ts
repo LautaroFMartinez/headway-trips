@@ -22,7 +22,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Reserva no encontrada' }, { status: 404 });
     }
 
-    return NextResponse.json(booking);
+    // Fetch passengers with linked client data
+    const { data: passengers } = await supabase
+      .from('booking_passengers')
+      .select('*, clients(id, full_name, email, phone, nationality, passport_number)')
+      .eq('booking_id', id)
+      .order('created_at', { ascending: true });
+
+    return NextResponse.json({ ...booking, passengers: passengers || [] });
   } catch (error) {
     console.error('Get booking error:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

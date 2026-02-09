@@ -55,6 +55,26 @@ interface Booking {
   } | null;
 }
 
+interface Passenger {
+  id: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  nationality: string | null;
+  birth_date: string | null;
+  document_number: string | null;
+  is_adult: boolean;
+  client_id: string | null;
+  clients?: {
+    id: string;
+    full_name: string;
+    email: string | null;
+    phone: string | null;
+    nationality: string | null;
+    passport_number: string | null;
+  } | null;
+}
+
 interface Payment {
   id: string;
   booking_id: string;
@@ -489,6 +509,7 @@ function BookingDetailDialog({
   onStatusChange: (status: string) => void;
   onPaymentChange: (status: string) => void;
 }) {
+  const [passengers, setPassengers] = useState<Passenger[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -506,6 +527,17 @@ function BookingDetailDialog({
     notes: '',
   });
 
+  const fetchPassengers = useCallback(async () => {
+    if (!booking) return;
+    try {
+      const res = await fetch(`/api/admin/bookings/${booking.id}`);
+      const data = await res.json();
+      if (res.ok) setPassengers(data.passengers || []);
+    } catch {
+      // silently fail
+    }
+  }, [booking]);
+
   const fetchPayments = useCallback(async () => {
     if (!booking) return;
     setLoadingPayments(true);
@@ -522,8 +554,10 @@ function BookingDetailDialog({
 
   useEffect(() => {
     if (open && booking) {
+      fetchPassengers();
       fetchPayments();
     } else {
+      setPassengers([]);
       setPayments([]);
       setShowPaymentForm(false);
       setRevolutCheckoutUrl(null);
@@ -531,7 +565,7 @@ function BookingDetailDialog({
       setRevolutAmount('');
       resetPaymentForm();
     }
-  }, [open, booking, fetchPayments]);
+  }, [open, booking, fetchPassengers, fetchPayments]);
 
   const resetPaymentForm = () => {
     setPaymentForm({
@@ -693,6 +727,52 @@ function BookingDetailDialog({
               )}
             </div>
           </div>
+
+          {/* Pasajeros */}
+          {passengers.length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase text-slate-400 tracking-wide flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5" /> Pasajeros ({passengers.length})
+                </p>
+                <div className="space-y-2">
+                  {passengers.map((p) => (
+                    <div key={p.id} className="p-2.5 bg-slate-50 rounded-lg border space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-slate-900">{p.full_name}</p>
+                          <Badge variant="outline" className={`text-xs border-0 ${p.is_adult ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                            {p.is_adult ? 'Adulto' : 'Menor'}
+                          </Badge>
+                        </div>
+                        {p.client_id && (
+                          <Link
+                            href="/admin/clientes"
+                            className="text-xs text-primary hover:underline flex items-center gap-1"
+                            onClick={onClose}
+                          >
+                            Ver ficha <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+                        {p.email && (
+                          <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{p.email}</span>
+                        )}
+                        {p.document_number && (
+                          <span className="flex items-center gap-1">Pasaporte: {p.document_number}</span>
+                        )}
+                        {p.nationality && (
+                          <span>{p.nationality}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           <Separator />
 

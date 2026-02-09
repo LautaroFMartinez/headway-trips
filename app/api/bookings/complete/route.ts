@@ -65,10 +65,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (booking.token_expires_at && new Date(booking.token_expires_at) < new Date()) {
-      return NextResponse.json(
-        { error: 'El enlace ha expirado. Contacta a soporte para asistencia.' },
-        { status: 410 }
-      );
+      // Auto-renew expired token so user can still complete
+      await supabase
+        .from('bookings')
+        .update({ token_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() })
+        .eq('id', booking.id);
     }
 
     // Create a client and booking_passenger for each passenger
@@ -116,6 +117,7 @@ export async function POST(request: NextRequest) {
       // Create booking passenger
       await supabase.from('booking_passengers').insert({
         booking_id: booking.id,
+        client_id: client?.id || null,
         full_name: p.full_name,
         nationality: p.nationality || null,
         birth_date: p.birth_date || null,

@@ -22,14 +22,41 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
     }
 
-    // Obtener reservas del cliente
-    const { data: bookings } = await supabase
+    // Obtener reservas donde es titular
+    const { data: directBookings } = await supabase
       .from('bookings')
       .select('id, trip_id, travel_date, status, payment_status, total_price, currency, created_at, trips(title, image)')
       .eq('client_id', id)
       .order('created_at', { ascending: false });
 
-    return NextResponse.json({ ...client, bookings: bookings || [] });
+    // Obtener reservas donde es pasajero secundario
+    const { data: passengerEntries } = await supabase
+      .from('booking_passengers')
+      .select('booking_id')
+      .eq('client_id', id);
+
+    let allBookings = directBookings || [];
+
+    if (passengerEntries && passengerEntries.length > 0) {
+      const directIds = new Set(allBookings.map((b) => b.id));
+      const extraIds = passengerEntries
+        .map((p) => p.booking_id)
+        .filter((bid) => !directIds.has(bid));
+
+      if (extraIds.length > 0) {
+        const { data: extraBookings } = await supabase
+          .from('bookings')
+          .select('id, trip_id, travel_date, status, payment_status, total_price, currency, created_at, trips(title, image)')
+          .in('id', extraIds)
+          .order('created_at', { ascending: false });
+
+        if (extraBookings) {
+          allBookings = [...allBookings, ...extraBookings];
+        }
+      }
+    }
+
+    return NextResponse.json({ ...client, bookings: allBookings });
   } catch (error) {
     console.error('Get client error:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

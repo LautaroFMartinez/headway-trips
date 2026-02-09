@@ -611,10 +611,7 @@ function BookingsList() {
             const isExpanded = expandedBooking === booking.id;
             const statusInfo = STATUS_LABELS[booking.status] || STATUS_LABELS.pending;
             const remaining = Number(booking.total_price) - booking.total_paid;
-            const canComplete = !booking.details_completed &&
-              booking.completion_token &&
-              booking.token_expires_at &&
-              new Date(booking.token_expires_at) > new Date();
+            const canComplete = !booking.details_completed && booking.completion_token;
 
             return (
               <div key={booking.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -685,7 +682,9 @@ function BookingsList() {
                           </div>
                           <div className="flex justify-between">
                             <dt className="text-gray-500">Datos completados</dt>
-                            <dd className="text-gray-900">{booking.details_completed ? 'Sí' : 'No'}</dd>
+                            <dd className={booking.details_completed ? 'text-green-600 font-medium' : 'text-amber-600 font-medium'}>
+                              {booking.details_completed ? 'Sí' : 'Pendiente'}
+                            </dd>
                           </div>
                           <div className="flex justify-between">
                             <dt className="text-gray-500">Reserva creada</dt>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { generateBookingToken } from '@/lib/booking-tokens';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -128,6 +129,9 @@ export async function POST(request: NextRequest) {
         special_requests: body.special_requests || null,
         internal_notes: body.internal_notes || null,
         client_id: clientId,
+        completion_token: generateBookingToken(),
+        token_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        details_completed: false,
       })
       .select('*, trips(title, image)')
       .single();

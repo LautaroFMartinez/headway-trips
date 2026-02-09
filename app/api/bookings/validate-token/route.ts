@@ -52,8 +52,16 @@ export async function GET(request: NextRequest) {
       booking = data;
     }
 
-    // Check token expiration
-    const isExpired = booking.token_expires_at && new Date(booking.token_expires_at) < new Date();
+    // Check token expiration — auto-renew if expired and details not yet completed
+    let isExpired = booking.token_expires_at && new Date(booking.token_expires_at) < new Date();
+    if (isExpired && !booking.details_completed) {
+      const newExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      await supabase
+        .from('bookings')
+        .update({ token_expires_at: newExpiry })
+        .eq('id', booking.id);
+      isExpired = false;
+    }
 
     // Get trip info
     const { data: trip } = await supabase
@@ -63,7 +71,16 @@ export async function GET(request: NextRequest) {
       .single();
 
     // Check Revolut payment status if needed
-    let paymentCompleted = booking.payment_status !== 'pending';
+    // If no Revolut payments exist (admin-created booking), allow form access
+    const { data: revolutPayments } = await supabase
+      .from('booking_payments')
+      .select('id')
+      .eq('booking_id', booking.id)
+      .not('revolut_order_id', 'is', null)
+      .limit(1);
+    const hasRevolutPayments = (revolutPayments?.length || 0) > 0;
+
+    let paymentCompleted = booking.payment_status !== 'pending' || !hasRevolutPayments;
     if (!paymentCompleted && orderId) {
       try {
         const revolutOrder = await getOrder(orderId);
