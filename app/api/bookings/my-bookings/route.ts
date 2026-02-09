@@ -15,25 +15,20 @@ export async function GET() {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    // Use clerkClient to reliably get user data
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
 
-    // Collect ALL email addresses from the Clerk user
     const allEmails = user.emailAddresses?.map((e) => e.emailAddress) || [];
     const primaryEmail = user.primaryEmailAddressId
       ? user.emailAddresses?.find((e) => e.id === user.primaryEmailAddressId)?.emailAddress
       : null;
-
-    // Use primary email first, otherwise first available
     const mainEmail = primaryEmail || allEmails[0];
 
     if (!mainEmail || allEmails.length === 0) {
-      console.error('No email found for Clerk user:', userId);
       return NextResponse.json({ error: 'No se encontró email asociado a tu cuenta' }, { status: 400 });
     }
 
-    // Query bookings matching ANY of the user's emails (case-insensitive)
+    // Query bookings
     let query = supabase
       .from('bookings')
       .select(`
@@ -51,6 +46,7 @@ export async function GET() {
         details_completed,
         completion_token,
         token_expires_at,
+        client_id,
         created_at,
         trips (
           id,
@@ -59,22 +55,6 @@ export async function GET() {
           departure_date,
           duration,
           duration_days
-        ),
-        booking_passengers (
-          id,
-          full_name,
-          email,
-          phone,
-          nationality,
-          birth_date,
-          document_number,
-          emergency_contact_name,
-          emergency_contact_phone,
-          clients (
-            passport_number,
-            passport_issuing_country,
-            passport_expiry_date
-          )
         ),
         booking_payments (
           id,
@@ -89,7 +69,6 @@ export async function GET() {
     if (allEmails.length === 1) {
       query = query.ilike('customer_email', allEmails[0]);
     } else {
-      // Match any of the user's emails
       const orFilter = allEmails.map((e) => `customer_email.ilike.${e}`).join(',');
       query = query.or(orFilter);
     }
@@ -102,7 +81,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Error al obtener reservas' }, { status: 500 });
     }
 
-    // Generate completion_token for bookings that don't have one (legacy bookings)
+    // Generate completion_token for legacy bookings that don't have one
     const bookingsNeedingToken = (bookings || []).filter((b) => !b.completion_token);
     if (bookingsNeedingToken.length > 0) {
       await Promise.all(
@@ -116,7 +95,6 @@ export async function GET() {
             .eq('id', b.id)
         )
       );
-      // Re-fetch to get updated tokens
       const { data: updatedTokens } = await supabase
         .from('bookings')
         .select('id, completion_token')
@@ -129,29 +107,74 @@ export async function GET() {
       }
     }
 
-    // Calculate total paid + real details_completed per booking
+    // Fetch booking_passengers and clients separately for completeness check
+    const bookingIds = (bookings || []).map((b) => b.id);
+    const clientIds = (bookings || []).map((b) => b.client_id).filter(Boolean) as string[];
+
+    let passengersMap: Record<string, Record<string, unknown>[]> = {};
+    let clientsMap: Record<string, Record<string, unknown>> = {};
+
+    if (bookingIds.length > 0) {
+      const { data: passengers } = await supabase
+        .from('booking_passengers')
+        .select('booking_id, full_name, email, phone, nationality, birth_date, document_number, emergency_contact_name, emergency_contact_phone, client_id')
+        .in('booking_id', bookingIds);
+
+      if (passengers) {
+        for (const p of passengers) {
+          if (!passengersMap[p.booking_id]) passengersMap[p.booking_id] = [];
+          passengersMap[p.booking_id].push(p);
+          if (p.client_id && !clientIds.includes(p.client_id)) {
+            clientIds.push(p.client_id);
+          }
+        }
+      }
+    }
+
+    if (clientIds.length > 0) {
+      const { data: clients } = await supabase
+        .from('clients')
+        .select('id, passport_number, passport_issuing_country, passport_expiry_date, nationality, birth_date, emergency_contact_name, emergency_contact_phone')
+        .in('id', clientIds);
+
+      if (clients) {
+        for (const c of clients) {
+          clientsMap[c.id] = c;
+        }
+      }
+    }
+
+    // Build response with computed details_completed
     const bookingsWithPaid = (bookings || []).map((booking) => {
       const payments = Array.isArray(booking.booking_payments) ? booking.booking_payments : [];
       const totalPaid = payments
         .filter((p: { revolut_status?: string }) => !p.revolut_status || p.revolut_status === 'completed' || p.revolut_status === 'COMPLETED')
         .reduce((sum: number, p: { amount: number }) => sum + Number(p.amount), 0);
 
-      // Compute details_completed from actual passenger data
-      const passengers = Array.isArray(booking.booking_passengers) ? booking.booking_passengers : [];
+      // Compute details_completed from actual passenger + client data
+      const passengers = passengersMap[booking.id] || [];
       const expectedCount = (booking.adults || 0) + (booking.children || 0);
       let realDetailsCompleted = false;
 
       if (passengers.length >= expectedCount && expectedCount > 0) {
-        realDetailsCompleted = passengers.every((p: Record<string, unknown>, i: number) => {
-          const client = p.clients as Record<string, unknown> | null;
+        realDetailsCompleted = passengers.every((p, i) => {
+          const cl = p.client_id ? clientsMap[p.client_id as string] : null;
+          // Also check booking-level client
+          const bookingClient = booking.client_id ? clientsMap[booking.client_id] : null;
+          const effectiveClient = cl || bookingClient;
+
           const hasBasic = !!(p.full_name && p.nationality && p.birth_date);
           const hasPassport = !!(
-            p.document_number &&
-            client?.passport_issuing_country &&
-            client?.passport_expiry_date
+            (p.document_number || effectiveClient?.passport_number) &&
+            effectiveClient?.passport_issuing_country &&
+            effectiveClient?.passport_expiry_date
           );
-          const hasEmergency = !!(p.emergency_contact_name && p.emergency_contact_phone);
+          const hasEmergency = !!(
+            (p.emergency_contact_name || effectiveClient?.emergency_contact_name) &&
+            (p.emergency_contact_phone || effectiveClient?.emergency_contact_phone)
+          );
           const hasContact = i === 0 ? !!(p.email && p.phone) : true;
+
           return hasBasic && hasPassport && hasEmergency && hasContact;
         });
       }
