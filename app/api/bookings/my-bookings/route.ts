@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
+import { generateBookingToken } from '@/lib/booking-tokens';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -59,6 +60,22 @@ export async function GET() {
           duration,
           duration_days
         ),
+        booking_passengers (
+          id,
+          full_name,
+          email,
+          phone,
+          nationality,
+          birth_date,
+          document_number,
+          emergency_contact_name,
+          emergency_contact_phone,
+          clients (
+            passport_number,
+            passport_issuing_country,
+            passport_expiry_date
+          )
+        ),
         booking_payments (
           id,
           amount,
@@ -85,17 +102,65 @@ export async function GET() {
       return NextResponse.json({ error: 'Error al obtener reservas' }, { status: 500 });
     }
 
-    // Calculate total paid per booking
+    // Generate completion_token for bookings that don't have one (legacy bookings)
+    const bookingsNeedingToken = (bookings || []).filter((b) => !b.completion_token);
+    if (bookingsNeedingToken.length > 0) {
+      await Promise.all(
+        bookingsNeedingToken.map((b) =>
+          supabase
+            .from('bookings')
+            .update({
+              completion_token: generateBookingToken(),
+              token_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            })
+            .eq('id', b.id)
+        )
+      );
+      // Re-fetch to get updated tokens
+      const { data: updatedTokens } = await supabase
+        .from('bookings')
+        .select('id, completion_token')
+        .in('id', bookingsNeedingToken.map((b) => b.id));
+      if (updatedTokens) {
+        for (const ut of updatedTokens) {
+          const b = bookings?.find((bk) => bk.id === ut.id);
+          if (b) (b as Record<string, unknown>).completion_token = ut.completion_token;
+        }
+      }
+    }
+
+    // Calculate total paid + real details_completed per booking
     const bookingsWithPaid = (bookings || []).map((booking) => {
       const payments = Array.isArray(booking.booking_payments) ? booking.booking_payments : [];
       const totalPaid = payments
         .filter((p: { revolut_status?: string }) => !p.revolut_status || p.revolut_status === 'completed' || p.revolut_status === 'COMPLETED')
         .reduce((sum: number, p: { amount: number }) => sum + Number(p.amount), 0);
 
+      // Compute details_completed from actual passenger data
+      const passengers = Array.isArray(booking.booking_passengers) ? booking.booking_passengers : [];
+      const expectedCount = (booking.adults || 0) + (booking.children || 0);
+      let realDetailsCompleted = false;
+
+      if (passengers.length >= expectedCount && expectedCount > 0) {
+        realDetailsCompleted = passengers.every((p: Record<string, unknown>, i: number) => {
+          const client = p.clients as Record<string, unknown> | null;
+          const hasBasic = !!(p.full_name && p.nationality && p.birth_date);
+          const hasPassport = !!(
+            p.document_number &&
+            client?.passport_issuing_country &&
+            client?.passport_expiry_date
+          );
+          const hasEmergency = !!(p.emergency_contact_name && p.emergency_contact_phone);
+          const hasContact = i === 0 ? !!(p.email && p.phone) : true;
+          return hasBasic && hasPassport && hasEmergency && hasContact;
+        });
+      }
+
       return {
         ...booking,
         total_paid: totalPaid,
         payments_count: payments.length,
+        details_completed: realDetailsCompleted,
       };
     });
 
