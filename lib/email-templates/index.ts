@@ -5,6 +5,7 @@ import { ContactCustomerConfirmationEmail } from './ContactCustomerConfirmation'
 import { ContactAdminNotificationEmail } from './ContactAdminNotification';
 import { BookingReminderEmail } from './BookingReminderEmail';
 import { TripUpdateEmail } from './TripUpdateEmail';
+import { NewBookingNotificationEmail } from './NewBookingNotificationEmail';
 
 // Quote Customer Confirmation
 
@@ -132,4 +133,31 @@ export async function tripUpdateText(
   props: TripUpdateProps
 ): Promise<string> {
   return render(TripUpdateEmail(props), { plainText: true });
+}
+
+// New Booking Notification
+
+interface NewBookingNotificationProps {
+  customerName: string;
+  customerEmail: string;
+  tripTitle: string;
+  tripId: string;
+  passengers: number;
+  totalPrice: number;
+  currency: string;
+  travelDate?: string;
+  bookingId: string;
+  withPayment: boolean;
+}
+
+export async function newBookingNotificationHtml(
+  props: NewBookingNotificationProps
+): Promise<string> {
+  return render(NewBookingNotificationEmail(props));
+}
+
+export async function newBookingNotificationText(
+  props: NewBookingNotificationProps
+): Promise<string> {
+  return render(NewBookingNotificationEmail(props), { plainText: true });
 }

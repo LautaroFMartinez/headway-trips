@@ -92,14 +92,14 @@ const styles = {
     lineHeight: '1.6',
   },
   tripBox: {
-    backgroundColor: '#f0fdf4',
-    border: '1px solid #bbf7d0',
+    backgroundColor: '#eff6ff',
+    border: '1px solid #bfdbfe',
     borderRadius: '8px',
     padding: '20px',
     marginBottom: '24px',
   },
   tripLabel: {
-    color: '#15803d',
+    color: '#1e40af',
     fontSize: '12px',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',

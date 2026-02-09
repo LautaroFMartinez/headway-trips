@@ -524,6 +524,16 @@ function BookingsList() {
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [payingBooking, setPayingBooking] = useState<string | null>(null);
+  const [paymentsEnabled, setPaymentsEnabled] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/settings/public')
+      .then((res) => res.json())
+      .then((data) => {
+        setPaymentsEnabled(data.payments_enabled === true || data.payments_enabled === 'true');
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchBookings = useCallback(async () => {
     setLoadingBookings(true);
@@ -726,7 +736,7 @@ function BookingsList() {
                       </div>
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-3">
-                      {remaining > 0 && booking.status !== 'cancelled' && (
+                      {remaining > 0 && booking.status !== 'cancelled' && paymentsEnabled && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -737,6 +747,11 @@ function BookingsList() {
                           <CreditCard className="w-3.5 h-3.5" />
                           Realizar pago
                         </button>
+                      )}
+                      {remaining > 0 && booking.status !== 'cancelled' && !paymentsEnabled && (
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-50 text-amber-700 text-sm font-medium rounded-lg border border-amber-200">
+                          Pagos deshabilitados temporalmente
+                        </span>
                       )}
                       {canComplete && (
                         <Link href={`/reserva/completar?token=${booking.completion_token}`} className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors">

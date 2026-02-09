@@ -56,7 +56,7 @@ export function TripGrid() {
         </motion.div>
 
         {/* Search and Filters Container */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="mb-12 space-y-8 bg-card p-6 rounded-2xl border border-border shadow-sm">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="mb-12 space-y-8 bg-card p-8 md:p-10 rounded-2xl border border-border shadow-sm">
           {/* Top Row: Search */}
           <div className="relative max-w-2xl mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -69,7 +69,7 @@ export function TripGrid() {
           </div>
 
           {/* Filters Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 pt-4 border-t border-border/50">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 pt-6 border-t border-border/50">
             {/* Region Filter */}
             <div className="space-y-4">
               <Label>Región</Label>

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Minus, Plus, Users, CreditCard, CalendarDays } from 'lucide-react';
+import { Loader2, Minus, Plus, Users, CreditCard, CalendarDays, CheckCircle } from 'lucide-react';
 
 interface BookingModalProps {
   open: boolean;
@@ -45,6 +45,16 @@ export function BookingModal({
   const [selectedDate, setSelectedDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [paymentsEnabled, setPaymentsEnabled] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/settings/public')
+      .then((res) => res.json())
+      .then((data) => {
+        setPaymentsEnabled(data.payments_enabled === true || data.payments_enabled === 'true');
+      })
+      .catch(() => {});
+  }, []);
 
   const hasMultipleDates = startDates.length > 1;
 
@@ -85,7 +95,11 @@ export function BookingModal({
         payload.selected_date = selectedDate;
       }
 
-      const res = await fetch('/api/bookings/payment-link', {
+      const endpoint = paymentsEnabled
+        ? '/api/bookings/payment-link'
+        : '/api/bookings/reserve';
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -98,8 +112,14 @@ export function BookingModal({
         return;
       }
 
-      // Redirect to Revolut checkout
-      window.location.href = data.checkout_url;
+      if (paymentsEnabled) {
+        // Redirect to Revolut checkout
+        window.location.href = data.checkout_url;
+      } else {
+        // Redirect directly to completion page
+        const siteUrl = window.location.origin;
+        window.location.href = `${siteUrl}/reserva/completar?token=${data.token}`;
+      }
     } catch {
       setError('Error de conexión. Intenta de nuevo.');
     } finally {
@@ -281,17 +301,25 @@ export function BookingModal({
                 USD ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </span>
             </div>
-            <div className="border-t border-gray-200 pt-2 flex justify-between">
-              <span className="text-sm font-semibold text-gray-900">
-                Depósito ({depositPercentage}%)
-              </span>
-              <span className="text-lg font-bold text-primary">
-                USD ${deposit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-            <p className="text-xs text-gray-400">
-              El saldo restante se coordina con nuestro equipo
-            </p>
+            {paymentsEnabled ? (
+              <>
+                <div className="border-t border-gray-200 pt-2 flex justify-between">
+                  <span className="text-sm font-semibold text-gray-900">
+                    Depósito ({depositPercentage}%)
+                  </span>
+                  <span className="text-lg font-bold text-primary">
+                    USD ${deposit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">
+                  El saldo restante se coordina con nuestro equipo
+                </p>
+              </>
+            ) : (
+              <p className="text-xs text-amber-600 border-t border-gray-200 pt-2">
+                El pago se coordinará directamente con nuestro equipo
+              </p>
+            )}
           </div>
 
           {error && (
@@ -310,17 +338,24 @@ export function BookingModal({
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Procesando...
               </>
-            ) : (
+            ) : paymentsEnabled ? (
               <>
                 <CreditCard className="w-4 h-4" />
                 Continuar al pago
               </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                Confirmar reserva
+              </>
             )}
           </Button>
 
-          <p className="text-xs text-gray-400 text-center">
-            Serás redirigido a Revolut para completar el pago de forma segura
-          </p>
+          {paymentsEnabled && (
+            <p className="text-xs text-gray-400 text-center">
+              Serás redirigido a Revolut para completar el pago de forma segura
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>

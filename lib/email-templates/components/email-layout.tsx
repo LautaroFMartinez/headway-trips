@@ -17,8 +17,8 @@ const LOGO_URL = `${SUPABASE_URL}/storage/v1/object/public/trips/branding/icono.
 
 // Brand colors
 export const colors = {
-  primary: '#0f766e',
-  primaryLight: '#14b8a6',
+  primary: '#1a365d',
+  primaryLight: '#2b6cb0',
   secondary: '#7c3aed',
   text: '#18181b',
   textMuted: '#71717a',
@@ -26,7 +26,7 @@ export const colors = {
   border: '#e4e4e7',
   background: '#f4f4f5',
   white: '#ffffff',
-  success: '#22c55e',
+  success: '#2b6cb0',
   warning: '#eab308',
   whatsapp: '#25D366',
 };
@@ -44,7 +44,7 @@ interface EmailLayoutProps {
 export function EmailLayout({ preview, children, variant = 'customer' }: EmailLayoutProps) {
   const headerGradient = variant === 'admin'
     ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)'
-    : 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)';
+    : 'linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%)';
 
   return (
     <Html>

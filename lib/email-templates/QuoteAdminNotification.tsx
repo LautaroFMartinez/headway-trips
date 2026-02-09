@@ -194,7 +194,7 @@ const styles = {
     marginBottom: '24px',
   },
   statBox: {
-    backgroundColor: '#ecfdf5',
+    backgroundColor: '#eff6ff',
     padding: '16px 20px',
     borderRadius: '8px',
     width: '48%',
@@ -206,7 +206,7 @@ const styles = {
     width: '48%',
   },
   statLabel: {
-    color: '#059669',
+    color: '#1e40af',
     fontSize: '12px',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',

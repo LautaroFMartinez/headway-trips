@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { createOrder } from '@/lib/revolut';
 import { generateBookingToken, getTokenExpiration } from '@/lib/booking-tokens';
 import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from '@/lib/rate-limit';
 import { render } from '@react-email/components';
@@ -40,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Get trip info
     const { data: trip, error: tripError } = await supabase
       .from('trips')
-      .select('id, title, price_value, group_size_max, booking_count, departure_date, available, deposit_percentage, start_dates')
+      .select('id, title, price_value, group_size_max, booking_count, departure_date, available, start_dates')
       .eq('id', trip_id)
       .single();
 
@@ -70,25 +69,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate deposit
-    const depositPct = (trip.deposit_percentage ?? 10) / 100;
+    // Calculate price
     const totalPrice = trip.price_value * totalPassengers;
-    const deposit = Math.round(totalPrice * depositPct * 100) / 100;
 
     // Generate token
     const token = generateBookingToken();
     const tokenExpiresAt = getTokenExpiration();
 
-    // Determine travel_date: selected_date > departure_date > today
+    // Determine travel_date
     const travelDate = selected_date || trip.departure_date || new Date().toISOString().split('T')[0];
 
-    // Create booking (pending)
+    // Find/create client by email
+    let resolvedClientId: string | null = null;
+    const { data: existingClient } = await supabase
+      .from('clients')
+      .select('id')
+      .ilike('email', customer_email.trim())
+      .limit(1)
+      .single();
+
+    if (existingClient) {
+      resolvedClientId = existingClient.id;
+    } else {
+      const { data: newClient } = await supabase
+        .from('clients')
+        .insert({
+          full_name: customer_name.trim(),
+          email: customer_email.trim(),
+        })
+        .select('id')
+        .single();
+      if (newClient) {
+        resolvedClientId = newClient.id;
+      }
+    }
+
+    // Create booking (pending, no payment)
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert({
         trip_id,
-        customer_name,
-        customer_email,
+        client_id: resolvedClientId,
+        customer_name: customer_name.trim(),
+        customer_email: customer_email.trim(),
         customer_phone: '',
         adults,
         children: childrenCount,
@@ -110,36 +133,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Error al crear la reserva' }, { status: 500 });
     }
 
-    // Create Revolut order with redirect back to completion page
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://headwaytrips.com';
-    const redirectUrl = `${siteUrl}/reserva/completar?token=${token}`;
-
-    const order = await createOrder(
-      deposit,
-      'USD',
-      `Depósito ${trip.deposit_percentage ?? 10}% - ${trip.title} (${totalPassengers} pasajero${totalPassengers > 1 ? 's' : ''})`,
-      redirectUrl
-    );
-
-    // Create payment record
-    await supabase.from('booking_payments').insert({
-      booking_id: booking.id,
-      amount: deposit,
-      currency: 'USD',
-      payment_method: 'revolut',
-      reference: `Depósito 10%`,
-      payment_date: new Date().toISOString().split('T')[0],
-      revolut_order_id: order.id,
-      revolut_status: 'pending',
-    });
-
     // Send notification email to reservas@headwaytrips.com
     if (process.env.RESEND_API_KEY) {
       try {
         const emailHtml = await render(
           NewBookingNotificationEmail({
-            customerName: customer_name,
-            customerEmail: customer_email,
+            customerName: customer_name.trim(),
+            customerEmail: customer_email.trim(),
             tripTitle: trip.title,
             tripId: trip.id,
             passengers: totalPassengers,
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
             currency: 'USD',
             travelDate,
             bookingId: booking.id,
-            withPayment: true,
+            withPayment: false,
           })
         );
 
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify({
             from: process.env.EMAIL_FROM || 'Headway Trips <no-reply@headwaytrips.com>',
             to: 'reservas@headwaytrips.com',
-            subject: `Nueva reserva - ${trip.title} - ${customer_name}`,
+            subject: `Nueva reserva - ${trip.title} - ${customer_name.trim()}`,
             html: emailHtml,
           }),
         });
@@ -170,14 +170,12 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      checkout_url: order.checkout_url,
-      booking_id: booking.id,
       token,
-      deposit,
+      booking_id: booking.id,
       total_price: totalPrice,
     });
   } catch (error) {
-    console.error('Payment link error:', error);
+    console.error('Reserve error:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }

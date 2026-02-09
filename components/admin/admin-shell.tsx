@@ -24,6 +24,7 @@ const navigation = [
   { name: 'Clientes', href: '/admin/clientes', icon: Users },
   { name: 'Cotizaciones', href: '/admin/cotizaciones', icon: FileText },
   { name: 'Mensajes', href: '/admin/mensajes', icon: MessageSquare },
+  { name: 'Configuración', href: '/admin/configuracion', icon: Settings },
 ];
 
 export function AdminShell({ children, adminName, adminEmail }: AdminShellProps) {
