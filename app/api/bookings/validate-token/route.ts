@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     if (token) {
       const { data, error } = await supabase
         .from('bookings')
-        .select('id, trip_id, customer_name, customer_email, adults, children, total_price, currency, status, payment_status, completion_token, token_expires_at, details_completed')
+        .select('id, trip_id, customer_name, customer_email, customer_phone, adults, children, total_price, currency, status, payment_status, completion_token, token_expires_at, details_completed, client_id')
         .eq('completion_token', token)
         .single();
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
       const { data, error } = await supabase
         .from('bookings')
-        .select('id, trip_id, customer_name, customer_email, adults, children, total_price, currency, status, payment_status, completion_token, token_expires_at, details_completed')
+        .select('id, trip_id, customer_name, customer_email, customer_phone, adults, children, total_price, currency, status, payment_status, completion_token, token_expires_at, details_completed, client_id')
         .eq('id', payment.booking_id)
         .single();
 
@@ -108,7 +108,25 @@ export async function GET(request: NextRequest) {
       .eq('booking_id', booking.id)
       .order('created_at', { ascending: true });
 
+    // Helper to parse structured notes from client
+    function parseClientNotes(notes: string | null | undefined) {
+      let instagram = '';
+      let allergies = '';
+      let additionalNotes = '';
+      let dietary = '';
+      if (notes && typeof notes === 'string') {
+        for (const line of notes.split('\n')) {
+          if (line.startsWith('Instagram: ')) instagram = line.replace('Instagram: ', '');
+          else if (line.startsWith('Dieta: ')) dietary = line.replace('Dieta: ', '');
+          else if (line.startsWith('Alergias: ')) allergies = line.replace('Alergias: ', '');
+          else if (line.startsWith('Notas: ')) additionalNotes = line.replace('Notas: ', '');
+        }
+      }
+      return { instagram, allergies, additionalNotes, dietary };
+    }
+
     let passengersData: Record<string, unknown>[] = [];
+
     if (existingPassengers && existingPassengers.length > 0) {
       // Fetch client data for passport info and notes
       const clientIds = existingPassengers.map((p) => p.client_id).filter(Boolean) as string[];
@@ -116,7 +134,7 @@ export async function GET(request: NextRequest) {
       if (clientIds.length > 0) {
         const { data: clients } = await supabase
           .from('clients')
-          .select('id, passport_number, passport_issuing_country, passport_expiry_date, emergency_contact_name, emergency_contact_phone, notes')
+          .select('id, full_name, email, phone, nationality, birth_date, passport_number, passport_issuing_country, passport_expiry_date, emergency_contact_name, emergency_contact_phone, notes')
           .in('id', clientIds);
         if (clients) {
           for (const c of clients) clientsMap[c.id] = c;
@@ -125,37 +143,53 @@ export async function GET(request: NextRequest) {
 
       passengersData = existingPassengers.map((p) => {
         const cl = p.client_id ? clientsMap[p.client_id] : null;
-        // Parse notes for instagram, dietary, allergies, additional from client
-        let instagram = '';
-        let allergies = '';
-        let additionalNotes = '';
-        let dietaryFromClient = '';
-        if (cl?.notes && typeof cl.notes === 'string') {
-          for (const line of (cl.notes as string).split('\n')) {
-            if (line.startsWith('Instagram: ')) instagram = line.replace('Instagram: ', '');
-            else if (line.startsWith('Dieta: ')) dietaryFromClient = line.replace('Dieta: ', '');
-            else if (line.startsWith('Alergias: ')) allergies = line.replace('Alergias: ', '');
-            else if (line.startsWith('Notas: ')) additionalNotes = line.replace('Notas: ', '');
-          }
-        }
+        const parsed = parseClientNotes(cl?.notes as string);
         return {
           full_name: p.full_name || '',
           email: p.email || '',
           phone: p.phone || '',
-          nationality: p.nationality || '',
-          birth_date: p.birth_date || '',
+          nationality: p.nationality || (cl?.nationality as string) || '',
+          birth_date: p.birth_date || (cl?.birth_date as string) || '',
           passport_number: p.document_number || (cl?.passport_number as string) || '',
           passport_issuing_country: (cl?.passport_issuing_country as string) || '',
           passport_expiry_date: (cl?.passport_expiry_date as string) || '',
-          instagram,
+          instagram: parsed.instagram,
           emergency_contact_name: p.emergency_contact_name || (cl?.emergency_contact_name as string) || '',
           emergency_contact_phone: p.emergency_contact_phone || (cl?.emergency_contact_phone as string) || '',
-          dietary_notes: p.dietary_restrictions || dietaryFromClient || '',
-          allergies,
-          additional_notes: additionalNotes,
+          dietary_notes: p.dietary_restrictions || parsed.dietary || '',
+          allergies: parsed.allergies,
+          additional_notes: parsed.additionalNotes,
           is_adult: p.is_adult ?? true,
         };
       });
+    } else if (booking.client_id) {
+      // No booking_passengers yet (admin-created booking) — build from client record
+      const { data: client } = await supabase
+        .from('clients')
+        .select('id, full_name, email, phone, nationality, birth_date, passport_number, passport_issuing_country, passport_expiry_date, emergency_contact_name, emergency_contact_phone, notes')
+        .eq('id', booking.client_id)
+        .single();
+
+      if (client) {
+        const parsed = parseClientNotes(client.notes);
+        passengersData.push({
+          full_name: client.full_name || booking.customer_name || '',
+          email: client.email || booking.customer_email || '',
+          phone: client.phone || booking.customer_phone || '',
+          nationality: client.nationality || '',
+          birth_date: client.birth_date || '',
+          passport_number: client.passport_number || '',
+          passport_issuing_country: client.passport_issuing_country || '',
+          passport_expiry_date: client.passport_expiry_date || '',
+          instagram: parsed.instagram,
+          emergency_contact_name: client.emergency_contact_name || '',
+          emergency_contact_phone: client.emergency_contact_phone || '',
+          dietary_notes: parsed.dietary || '',
+          allergies: parsed.allergies,
+          additional_notes: parsed.additionalNotes,
+          is_adult: true,
+        });
+      }
     }
 
     return NextResponse.json({
