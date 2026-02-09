@@ -101,6 +101,63 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Fetch existing passenger data for pre-filling the form
+    const { data: existingPassengers } = await supabase
+      .from('booking_passengers')
+      .select('full_name, email, phone, nationality, birth_date, document_number, emergency_contact_name, emergency_contact_phone, dietary_restrictions, is_adult, client_id')
+      .eq('booking_id', booking.id)
+      .order('created_at', { ascending: true });
+
+    let passengersData: Record<string, unknown>[] = [];
+    if (existingPassengers && existingPassengers.length > 0) {
+      // Fetch client data for passport info and notes
+      const clientIds = existingPassengers.map((p) => p.client_id).filter(Boolean) as string[];
+      let clientsMap: Record<string, Record<string, unknown>> = {};
+      if (clientIds.length > 0) {
+        const { data: clients } = await supabase
+          .from('clients')
+          .select('id, passport_number, passport_issuing_country, passport_expiry_date, emergency_contact_name, emergency_contact_phone, notes')
+          .in('id', clientIds);
+        if (clients) {
+          for (const c of clients) clientsMap[c.id] = c;
+        }
+      }
+
+      passengersData = existingPassengers.map((p) => {
+        const cl = p.client_id ? clientsMap[p.client_id] : null;
+        // Parse notes for instagram, dietary, allergies, additional from client
+        let instagram = '';
+        let allergies = '';
+        let additionalNotes = '';
+        let dietaryFromClient = '';
+        if (cl?.notes && typeof cl.notes === 'string') {
+          for (const line of (cl.notes as string).split('\n')) {
+            if (line.startsWith('Instagram: ')) instagram = line.replace('Instagram: ', '');
+            else if (line.startsWith('Dieta: ')) dietaryFromClient = line.replace('Dieta: ', '');
+            else if (line.startsWith('Alergias: ')) allergies = line.replace('Alergias: ', '');
+            else if (line.startsWith('Notas: ')) additionalNotes = line.replace('Notas: ', '');
+          }
+        }
+        return {
+          full_name: p.full_name || '',
+          email: p.email || '',
+          phone: p.phone || '',
+          nationality: p.nationality || '',
+          birth_date: p.birth_date || '',
+          passport_number: p.document_number || (cl?.passport_number as string) || '',
+          passport_issuing_country: (cl?.passport_issuing_country as string) || '',
+          passport_expiry_date: (cl?.passport_expiry_date as string) || '',
+          instagram,
+          emergency_contact_name: p.emergency_contact_name || (cl?.emergency_contact_name as string) || '',
+          emergency_contact_phone: p.emergency_contact_phone || (cl?.emergency_contact_phone as string) || '',
+          dietary_notes: p.dietary_restrictions || dietaryFromClient || '',
+          allergies,
+          additional_notes: additionalNotes,
+          is_adult: p.is_adult ?? true,
+        };
+      });
+    }
+
     return NextResponse.json({
       booking_id: booking.id,
       token: booking.completion_token,
@@ -114,6 +171,7 @@ export async function GET(request: NextRequest) {
       is_expired: isExpired,
       token_expires_at: booking.token_expires_at,
       payment_completed: paymentCompleted,
+      existing_passengers: passengersData,
       trip: trip ? {
         title: trip.title,
         price: trip.price,

@@ -45,6 +45,24 @@ function createEmptyPassenger(isAdult: boolean): PassengerForm {
   };
 }
 
+interface ExistingPassenger {
+  full_name: string;
+  email: string;
+  phone: string;
+  nationality: string;
+  birth_date: string;
+  passport_number: string;
+  passport_issuing_country: string;
+  passport_expiry_date: string;
+  instagram: string;
+  emergency_contact_name: string;
+  emergency_contact_phone: string;
+  dietary_notes: string;
+  allergies: string;
+  additional_notes: string;
+  is_adult: boolean;
+}
+
 interface ClientDetailsFormProps {
   token: string;
   customerName: string;
@@ -52,6 +70,7 @@ interface ClientDetailsFormProps {
   tripTitle: string;
   adults: number;
   children: number;
+  existingPassengers?: ExistingPassenger[];
   onSuccess: () => void;
 }
 
@@ -62,11 +81,44 @@ export function ClientDetailsForm({
   tripTitle,
   adults,
   children,
+  existingPassengers,
   onSuccess,
 }: ClientDetailsFormProps) {
   const totalPassengers = adults + children;
 
   const [passengers, setPassengers] = useState<PassengerForm[]>(() => {
+    // If we have existing passenger data, use it to pre-fill
+    if (existingPassengers && existingPassengers.length > 0) {
+      const list: PassengerForm[] = [];
+      // Map existing passengers first (adults then children)
+      const existingAdults = existingPassengers.filter((p) => p.is_adult);
+      const existingChildren = existingPassengers.filter((p) => !p.is_adult);
+
+      for (let i = 0; i < adults; i++) {
+        const existing = existingAdults[i];
+        if (existing) {
+          list.push({ ...existing });
+        } else {
+          const p = createEmptyPassenger(true);
+          if (i === 0 && list.length === 0) {
+            p.full_name = customerName || '';
+            p.email = customerEmail || '';
+          }
+          list.push(p);
+        }
+      }
+      for (let i = 0; i < children; i++) {
+        const existing = existingChildren[i];
+        if (existing) {
+          list.push({ ...existing });
+        } else {
+          list.push(createEmptyPassenger(false));
+        }
+      }
+      return list;
+    }
+
+    // No existing data — default behavior
     const list: PassengerForm[] = [];
     for (let i = 0; i < adults; i++) {
       const p = createEmptyPassenger(true);

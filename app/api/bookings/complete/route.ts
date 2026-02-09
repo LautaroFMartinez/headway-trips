@@ -60,16 +60,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Reserva no encontrada' }, { status: 404 });
     }
 
-    if (booking.details_completed) {
-      return NextResponse.json({ error: 'Esta reserva ya fue completada' }, { status: 400 });
-    }
-
     if (booking.token_expires_at && new Date(booking.token_expires_at) < new Date()) {
       // Auto-renew expired token so user can still complete
       await supabase
         .from('bookings')
         .update({ token_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() })
         .eq('id', booking.id);
+    }
+
+    // Remove existing booking_passengers and their clients (from admin-created or previous partial submission)
+    const { data: existingBP } = await supabase
+      .from('booking_passengers')
+      .select('id, client_id')
+      .eq('booking_id', booking.id);
+
+    if (existingBP && existingBP.length > 0) {
+      // Delete existing booking_passengers
+      await supabase
+        .from('booking_passengers')
+        .delete()
+        .eq('booking_id', booking.id);
+
+      // Delete orphaned clients that were created for these passengers
+      const orphanClientIds = existingBP.map((bp) => bp.client_id).filter(Boolean) as string[];
+      if (orphanClientIds.length > 0) {
+        await supabase
+          .from('clients')
+          .delete()
+          .in('id', orphanClientIds);
+      }
     }
 
     // Create a client and booking_passenger for each passenger

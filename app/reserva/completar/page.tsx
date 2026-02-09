@@ -8,6 +8,24 @@ import { Loader2, CheckCircle, AlertTriangle, Clock, XCircle } from 'lucide-reac
 import { ClientDetailsForm } from '@/components/booking/ClientDetailsForm';
 import { Header } from '@/components/header';
 
+interface ExistingPassenger {
+  full_name: string;
+  email: string;
+  phone: string;
+  nationality: string;
+  birth_date: string;
+  passport_number: string;
+  passport_issuing_country: string;
+  passport_expiry_date: string;
+  instagram: string;
+  emergency_contact_name: string;
+  emergency_contact_phone: string;
+  dietary_notes: string;
+  allergies: string;
+  additional_notes: string;
+  is_adult: boolean;
+}
+
 interface BookingData {
   booking_id: string;
   token: string;
@@ -21,6 +39,7 @@ interface BookingData {
   is_expired: boolean;
   token_expires_at: string;
   payment_completed: boolean;
+  existing_passengers?: ExistingPassenger[];
   trip: {
     title: string;
     price: string;
@@ -66,9 +85,7 @@ function CompletarContent() {
 
         setData(result);
 
-        if (result.details_completed) {
-          setState('completed');
-        } else if (result.is_expired) {
+        if (result.is_expired) {
           setState('expired');
         } else if (result.payment_completed) {
           setState('form');
@@ -166,6 +183,7 @@ function CompletarContent() {
               tripTitle={data.trip?.title || ''}
               adults={data.adults}
               children={data.children}
+              existingPassengers={data.existing_passengers}
               onSuccess={handleSuccess}
             />
           </div>
