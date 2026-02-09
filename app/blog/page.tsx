@@ -151,7 +151,7 @@ export default async function BlogPage() {
                         className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
                       >
                         {/* Image */}
-                        <div className="relative aspect-[16/10] overflow-hidden">
+                        <Link href={`/blog/${post.slug}`} className="relative aspect-[16/10] overflow-hidden block">
                           <Image
                             src={post.coverImage}
                             alt={post.title}
@@ -164,7 +164,7 @@ export default async function BlogPage() {
                               {getCategoryName(post.category)}
                             </span>
                           </div>
-                        </div>
+                        </Link>
 
                         {/* Content */}
                         <div className="p-5">

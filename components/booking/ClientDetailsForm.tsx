@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, CheckCircle, User, FileText, Phone, Utensils, Users, Baby } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, User, FileText, Phone, Utensils, Users, Baby } from 'lucide-react';
 
 interface PassengerForm {
   full_name: string;
@@ -156,6 +156,18 @@ export function ClientDetailsForm({
     return `Niño ${childIndex}`;
   };
 
+  const isPassengerComplete = (p: PassengerForm, index: number): boolean => {
+    if (!p.full_name.trim() || !p.nationality.trim() || !p.birth_date) return false;
+    if (!p.passport_number.trim() || !p.passport_issuing_country.trim() || !p.passport_expiry_date) return false;
+    if (!p.emergency_contact_name.trim() || !p.emergency_contact_phone.trim()) return false;
+    if (index === 0 && (!p.email.trim() || !p.phone.trim())) return false;
+    return true;
+  };
+
+  const hasPassengerData = (p: PassengerForm): boolean => {
+    return !!(p.full_name.trim() || p.email.trim() || p.nationality.trim());
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -212,26 +224,35 @@ export function ClientDetailsForm({
       {/* Passenger tabs */}
       {totalPassengers > 1 && (
         <div className="flex flex-wrap gap-2">
-          {passengers.map((p, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setActivePassenger(i)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activePassenger === i
-                  ? 'bg-primary text-white'
-                  : p.full_name.trim()
-                    ? 'bg-green-50 text-green-700 border border-green-200'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {p.is_adult ? <Users className="w-3.5 h-3.5" /> : <Baby className="w-3.5 h-3.5" />}
-              {p.full_name.trim() || getPassengerLabel(i)}
-              {p.full_name.trim() && activePassenger !== i && (
-                <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-              )}
-            </button>
-          ))}
+          {passengers.map((p, i) => {
+            const complete = isPassengerComplete(p, i);
+            const started = hasPassengerData(p);
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActivePassenger(i)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activePassenger === i
+                    ? 'bg-primary text-white'
+                    : complete
+                      ? 'bg-green-50 text-green-700 border border-green-200'
+                      : started
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {p.is_adult ? <Users className="w-3.5 h-3.5" /> : <Baby className="w-3.5 h-3.5" />}
+                {p.full_name.trim() || getPassengerLabel(i)}
+                {activePassenger !== i && complete && (
+                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                )}
+                {activePassenger !== i && started && !complete && (
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 

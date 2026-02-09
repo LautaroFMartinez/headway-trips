@@ -32,21 +32,42 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Error al obtener clientes' }, { status: 500 });
     }
 
-    // Obtener conteo de bookings por cliente
+    // Obtener conteo de bookings por cliente (directo + como pasajero)
     const clientIds = (clients || []).map((c) => c.id);
     let bookingCounts: Record<string, number> = {};
 
     if (clientIds.length > 0) {
-      const { data: countData } = await supabase
+      // Collect unique booking IDs per client from both sources
+      const clientBookingIds: Record<string, Set<string>> = {};
+
+      // Bookings where client is the primary (booking.client_id)
+      const { data: directBookings } = await supabase
         .from('bookings')
-        .select('client_id')
+        .select('id, client_id')
         .in('client_id', clientIds);
 
-      if (countData) {
-        bookingCounts = countData.reduce((acc: Record<string, number>, row) => {
-          acc[row.client_id] = (acc[row.client_id] || 0) + 1;
-          return acc;
-        }, {});
+      if (directBookings) {
+        for (const row of directBookings) {
+          if (!clientBookingIds[row.client_id]) clientBookingIds[row.client_id] = new Set();
+          clientBookingIds[row.client_id].add(row.id);
+        }
+      }
+
+      // Bookings where client is a passenger (booking_passengers.client_id)
+      const { data: passengerBookings } = await supabase
+        .from('booking_passengers')
+        .select('client_id, booking_id')
+        .in('client_id', clientIds);
+
+      if (passengerBookings) {
+        for (const row of passengerBookings) {
+          if (!clientBookingIds[row.client_id]) clientBookingIds[row.client_id] = new Set();
+          clientBookingIds[row.client_id].add(row.booking_id);
+        }
+      }
+
+      for (const [cid, bookingSet] of Object.entries(clientBookingIds)) {
+        bookingCounts[cid] = bookingSet.size;
       }
     }
 

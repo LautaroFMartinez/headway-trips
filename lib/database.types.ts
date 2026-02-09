@@ -82,6 +82,7 @@ export type Database = {
         Row: {
           birth_date: string | null
           booking_id: string | null
+          client_id: string | null
           created_at: string | null
           dietary_restrictions: string | null
           document_number: string | null
@@ -92,13 +93,13 @@ export type Database = {
           full_name: string
           id: string
           is_adult: boolean | null
-          medical_conditions: string | null
           nationality: string | null
           phone: string | null
         }
         Insert: {
           birth_date?: string | null
           booking_id?: string | null
+          client_id?: string | null
           created_at?: string | null
           dietary_restrictions?: string | null
           document_number?: string | null
@@ -109,13 +110,13 @@ export type Database = {
           full_name: string
           id?: string
           is_adult?: boolean | null
-          medical_conditions?: string | null
           nationality?: string | null
           phone?: string | null
         }
         Update: {
           birth_date?: string | null
           booking_id?: string | null
+          client_id?: string | null
           created_at?: string | null
           dietary_restrictions?: string | null
           document_number?: string | null
@@ -126,7 +127,6 @@ export type Database = {
           full_name?: string
           id?: string
           is_adult?: boolean | null
-          medical_conditions?: string | null
           nationality?: string | null
           phone?: string | null
         }

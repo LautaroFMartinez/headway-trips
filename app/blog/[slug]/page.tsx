@@ -179,7 +179,7 @@ export default async function BlogPostPage({
       <script
         dangerouslySetInnerHTML={{
           __html: `
-            document.addEventListener('DOMContentLoaded', function() {
+            (function() {
               var btn = document.getElementById('copy-link-btn');
               if (btn) {
                 btn.addEventListener('click', function() {
@@ -191,7 +191,7 @@ export default async function BlogPostPage({
                   });
                 });
               }
-            });
+            })();
           `,
         }}
       />
