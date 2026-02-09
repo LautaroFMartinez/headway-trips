@@ -36,6 +36,7 @@ export async function GET() {
         trip_id,
         customer_name,
         customer_email,
+        customer_phone,
         adults,
         children,
         total_price,
@@ -157,9 +158,9 @@ export async function GET() {
       let realDetailsCompleted = false;
 
       if (passengers.length >= expectedCount && expectedCount > 0) {
+        // Has booking_passengers — check each one
         realDetailsCompleted = passengers.every((p, i) => {
           const cl = p.client_id ? clientsMap[p.client_id as string] : null;
-          // Also check booking-level client
           const bookingClient = booking.client_id ? clientsMap[booking.client_id] : null;
           const effectiveClient = cl || bookingClient;
 
@@ -177,6 +178,16 @@ export async function GET() {
 
           return hasBasic && hasPassport && hasEmergency && hasContact;
         });
+      } else if (passengers.length === 0 && expectedCount === 1 && booking.client_id) {
+        // Admin-created booking with no booking_passengers — check from client directly
+        const cl = clientsMap[booking.client_id];
+        if (cl) {
+          const hasBasic = !!(cl.nationality && cl.birth_date);
+          const hasPassport = !!(cl.passport_number && cl.passport_issuing_country && cl.passport_expiry_date);
+          const hasEmergency = !!(cl.emergency_contact_name && cl.emergency_contact_phone);
+          const hasContact = !!(booking.customer_email && booking.customer_phone);
+          realDetailsCompleted = hasBasic && hasPassport && hasEmergency && hasContact;
+        }
       }
 
       return {

@@ -16,7 +16,7 @@ export async function GET() {
 
     // Obtener estadísticas generales usando las tablas correctas
     const [tripsResult, quotesResult, messagesResult] = await Promise.all([
-      supabase.from('trips').select('id', { count: 'exact', head: true }),
+      supabase.from('trips').select('id', { count: 'exact', head: true }).eq('is_active', true),
       supabase.from('quote_requests').select('id, status, created_at', { count: 'exact' }),
       supabase.from('contact_messages').select('id, read, created_at', { count: 'exact' }),
     ]);
