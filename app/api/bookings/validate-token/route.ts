@@ -190,6 +190,35 @@ export async function GET(request: NextRequest) {
           is_adult: true,
         });
       }
+    } else if (booking.customer_email) {
+      // No booking_passengers and no client_id — look up client by email (returning customer)
+      const { data: clientByEmail } = await supabase
+        .from('clients')
+        .select('id, full_name, email, phone, nationality, birth_date, passport_number, passport_issuing_country, passport_expiry_date, emergency_contact_name, emergency_contact_phone, notes')
+        .ilike('email', booking.customer_email)
+        .limit(1)
+        .single();
+
+      if (clientByEmail) {
+        const parsed = parseClientNotes(clientByEmail.notes);
+        passengersData.push({
+          full_name: clientByEmail.full_name || booking.customer_name || '',
+          email: clientByEmail.email || booking.customer_email || '',
+          phone: clientByEmail.phone || booking.customer_phone || '',
+          nationality: clientByEmail.nationality || '',
+          birth_date: clientByEmail.birth_date || '',
+          passport_number: clientByEmail.passport_number || '',
+          passport_issuing_country: clientByEmail.passport_issuing_country || '',
+          passport_expiry_date: clientByEmail.passport_expiry_date || '',
+          instagram: parsed.instagram,
+          emergency_contact_name: clientByEmail.emergency_contact_name || '',
+          emergency_contact_phone: clientByEmail.emergency_contact_phone || '',
+          dietary_notes: parsed.dietary || '',
+          allergies: parsed.allergies,
+          additional_notes: parsed.additionalNotes,
+          is_adult: true,
+        });
+      }
     }
 
     return NextResponse.json({

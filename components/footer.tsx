@@ -5,7 +5,6 @@ import Image from 'next/image';
 const footerLinks = {
   destinos: [
     { href: '/#destinos', label: 'Todos los destinos' },
-    { href: '/comparador', label: 'Comparador' },
     { href: '/blog', label: 'Blog' },
   ],
   empresa: [

@@ -68,30 +68,13 @@ export async function POST(request: NextRequest) {
         .eq('id', booking.id);
     }
 
-    // Remove existing booking_passengers and their clients (from admin-created or previous partial submission)
-    const { data: existingBP } = await supabase
+    // Remove existing booking_passengers (will be recreated with updated data)
+    await supabase
       .from('booking_passengers')
-      .select('id, client_id')
+      .delete()
       .eq('booking_id', booking.id);
 
-    if (existingBP && existingBP.length > 0) {
-      // Delete existing booking_passengers
-      await supabase
-        .from('booking_passengers')
-        .delete()
-        .eq('booking_id', booking.id);
-
-      // Delete orphaned clients that were created for these passengers
-      const orphanClientIds = existingBP.map((bp) => bp.client_id).filter(Boolean) as string[];
-      if (orphanClientIds.length > 0) {
-        await supabase
-          .from('clients')
-          .delete()
-          .in('id', orphanClientIds);
-      }
-    }
-
-    // Create a client and booking_passenger for each passenger
+    // Upsert client and create booking_passenger for each passenger
     let primaryClientId: string | null = null;
 
     for (let i = 0; i < passengers.length; i++) {
@@ -105,38 +88,64 @@ export async function POST(request: NextRequest) {
       if (p.additional_notes) notesParts.push(`Notas: ${p.additional_notes}`);
       const notes = notesParts.length > 0 ? notesParts.join('\n') : null;
 
-      // Create client
-      const { data: client, error: clientError } = await supabase
-        .from('clients')
-        .insert({
-          full_name: p.full_name,
-          email: p.email || null,
-          phone: p.phone || null,
-          nationality: p.nationality || null,
-          birth_date: p.birth_date || null,
-          passport_number: p.passport_number || null,
-          passport_issuing_country: p.passport_issuing_country || null,
-          passport_expiry_date: p.passport_expiry_date || null,
-          emergency_contact_name: p.emergency_contact_name || null,
-          emergency_contact_phone: p.emergency_contact_phone || null,
-          notes,
-        })
-        .select('id')
-        .single();
+      const clientData = {
+        full_name: p.full_name,
+        email: p.email || null,
+        phone: p.phone || null,
+        nationality: p.nationality || null,
+        birth_date: p.birth_date || null,
+        passport_number: p.passport_number || null,
+        passport_issuing_country: p.passport_issuing_country || null,
+        passport_expiry_date: p.passport_expiry_date || null,
+        emergency_contact_name: p.emergency_contact_name || null,
+        emergency_contact_phone: p.emergency_contact_phone || null,
+        notes,
+      };
 
-      if (clientError) {
-        console.error(`Error creating client for passenger ${i}:`, clientError);
-        continue;
+      let resolvedClientId: string | null = null;
+
+      // Try to find existing client by email to avoid duplicates
+      if (p.email) {
+        const { data: existingClient } = await supabase
+          .from('clients')
+          .select('id')
+          .ilike('email', p.email)
+          .limit(1)
+          .single();
+
+        if (existingClient) {
+          // Update existing client with new data
+          await supabase
+            .from('clients')
+            .update(clientData)
+            .eq('id', existingClient.id);
+          resolvedClientId = existingClient.id;
+        }
       }
 
-      if (i === 0 && client) {
-        primaryClientId = client.id;
+      // No existing client found — create new one
+      if (!resolvedClientId) {
+        const { data: newClient, error: clientError } = await supabase
+          .from('clients')
+          .insert(clientData)
+          .select('id')
+          .single();
+
+        if (clientError) {
+          console.error(`Error creating client for passenger ${i}:`, clientError);
+        } else if (newClient) {
+          resolvedClientId = newClient.id;
+        }
+      }
+
+      if (i === 0) {
+        primaryClientId = resolvedClientId;
       }
 
       // Create booking passenger
       await supabase.from('booking_passengers').insert({
         booking_id: booking.id,
-        client_id: client?.id || null,
+        client_id: resolvedClientId,
         full_name: p.full_name,
         nationality: p.nationality || null,
         birth_date: p.birth_date || null,

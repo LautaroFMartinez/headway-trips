@@ -92,11 +92,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Si viene client_id (desde admin), usarlo directamente.
-    // Si no, auto-crear cliente desde los datos del formulario público.
+    // Si no, buscar cliente existente por email o crear uno nuevo.
     let clientId: string | null = body.client_id || null;
-    if (!clientId && body.customer_name) {
+    if (!clientId && body.customer_email) {
       try {
-        const { data: client } = await supabase
+        // Try to find existing client by email
+        const { data: existingClient } = await supabase
+          .from('clients')
+          .select('id')
+          .ilike('email', body.customer_email)
+          .limit(1)
+          .single();
+
+        if (existingClient) {
+          clientId = existingClient.id;
+        } else {
+          const { data: newClient } = await supabase
+            .from('clients')
+            .insert({
+              full_name: body.customer_name,
+              email: body.customer_email || null,
+              phone: body.customer_phone || null,
+            })
+            .select('id')
+            .single();
+          if (newClient) clientId = newClient.id;
+        }
+      } catch {
+        // Best-effort: si falla, la reserva se crea igual
+      }
+    } else if (!clientId && body.customer_name) {
+      try {
+        const { data: newClient } = await supabase
           .from('clients')
           .insert({
             full_name: body.customer_name,
@@ -105,10 +132,9 @@ export async function POST(request: NextRequest) {
           })
           .select('id')
           .single();
-
-        if (client) clientId = client.id;
+        if (newClient) clientId = newClient.id;
       } catch {
-        // Best-effort: si falla la creación del cliente, la reserva se crea igual
+        // Best-effort
       }
     }
 
