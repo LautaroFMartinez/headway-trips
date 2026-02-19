@@ -192,6 +192,7 @@ export function ProposalPage({ trip, contact, isAdmin = false }: ProposalPagePro
             <ProposalSidebar
               sections={SECTIONS}
               tripId={trip.id}
+              pdfUrl={trip.pdfUrl}
               contact={displayContact}
               maxCapacity={trip.maxCapacity}
               currentBookings={trip.currentBookings}

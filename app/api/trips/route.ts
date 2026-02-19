@@ -21,6 +21,7 @@ interface DatabaseTrip {
   includes: string[] | null;
   excludes: string[] | null;
   itinerary: string | null;
+  con_cachi_y_nano?: boolean;
 }
 
 interface FormattedTrip {
@@ -42,6 +43,7 @@ interface FormattedTrip {
   includes: string[];
   excludes: string[];
   itinerary: string;
+  conCachiYNano: boolean;
 }
 
 function transformTrip(trip: DatabaseTrip): FormattedTrip {
@@ -64,6 +66,7 @@ function transformTrip(trip: DatabaseTrip): FormattedTrip {
     includes: trip.includes || [],
     excludes: trip.excludes || [],
     itinerary: trip.itinerary || '',
+    conCachiYNano: trip.con_cachi_y_nano ?? false,
   };
 }
 
@@ -89,6 +92,7 @@ export async function GET(request: NextRequest) {
     const maxDays = searchParams.get('maxDays');
     const tags = searchParams.get('tags'); // comma-separated
     const available = searchParams.get('available');
+    const conCachiYNano = searchParams.get('conCachiYNano');
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
 
@@ -122,6 +126,10 @@ export async function GET(request: NextRequest) {
 
     if (available === 'true') {
       query = query.eq('available', true);
+    }
+
+    if (conCachiYNano === 'true') {
+      query = query.eq('con_cachi_y_nano', true);
     }
 
     // Paginación

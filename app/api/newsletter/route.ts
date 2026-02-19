@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase';
 import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from '@/lib/rate-limit';
+import { resend, isResendConfigured, FROM_EMAIL } from '@/lib/resend';
+import { newsletterWelcomeHtml } from '@/lib/email-templates';
 
 const subscribeSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -34,6 +36,11 @@ export async function POST(request: NextRequest) {
     // Si Supabase no está configurado, modo demo
     if (!isSupabaseConfigured()) {
       console.log('[Newsletter] New subscriber (demo mode):', email);
+      if (isResendConfigured() && resend) {
+        newsletterWelcomeHtml({})
+          .then((html) => resend!.emails.send({ from: FROM_EMAIL, to: email, subject: 'Gracias por suscribirte - Headway Trips', html }))
+          .catch((err) => console.error('[Newsletter] Welcome email error:', err));
+      }
       return NextResponse.json(
         { success: true, message: 'Suscripción exitosa' },
         { status: 200 }
@@ -68,6 +75,11 @@ export async function POST(request: NextRequest) {
         .update({ status: 'active', subscribed_at: new Date().toISOString() })
         .eq('id', existing.id);
 
+      if (isResendConfigured() && resend) {
+        newsletterWelcomeHtml({})
+          .then((html) => resend!.emails.send({ from: FROM_EMAIL, to: email, subject: 'Gracias por suscribirte - Headway Trips', html }))
+          .catch((err) => console.error('[Newsletter] Welcome email error:', err));
+      }
       return NextResponse.json(
         { success: true, message: 'Suscripción reactivada' },
         { status: 200 }
@@ -87,6 +99,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (isResendConfigured() && resend) {
+      newsletterWelcomeHtml({})
+        .then((html) => resend!.emails.send({ from: FROM_EMAIL, to: email, subject: 'Gracias por suscribirte - Headway Trips', html }))
+        .catch((err) => console.error('[Newsletter] Welcome email error:', err));
+    }
     return NextResponse.json(
       { success: true, message: 'Suscripción exitosa' },
       { status: 200 }

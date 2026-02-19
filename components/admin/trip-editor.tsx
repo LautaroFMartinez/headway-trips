@@ -40,6 +40,7 @@ interface Trip {
   content_blocks?: ContentBlock[];
   is_featured: boolean;
   is_active: boolean;
+  con_cachi_y_nano?: boolean;
   max_capacity?: number;
   departure_date?: string;
   deposit_percentage?: number;
@@ -92,6 +93,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
   const [durationDays, setDurationDays] = useState<number>(1);
   const [isActive, setIsActive] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
+  const [conCachiYNano, setConCachiYNano] = useState(false);
   const [maxCapacity, setMaxCapacity] = useState<number>(20);
   const [departureDate, setDepartureDate] = useState<string>('');
   const [startDates, setStartDates] = useState<string[]>([]);
@@ -124,6 +126,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         setDurationDays(trip.duration_days || 1);
         setIsActive(trip.is_active ?? true);
         setIsFeatured(trip.is_featured ?? false);
+        setConCachiYNano(trip.con_cachi_y_nano ?? false);
         setMaxCapacity(trip.max_capacity ?? 20);
         setDepartureDate(trip.departure_date || '');
         const dates = trip.start_dates || [];
@@ -145,6 +148,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         setDurationDays(1);
         setIsActive(true);
         setIsFeatured(false);
+        setConCachiYNano(false);
         setMaxCapacity(20);
         setDepartureDate('');
         setStartDates([]);
@@ -246,6 +250,7 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
         content_blocks: contentBlocks,
         is_featured: isFeatured,
         is_active: isActive,
+        con_cachi_y_nano: conCachiYNano,
         max_capacity: maxCapacity,
         departure_date: dateMode === 'fixed' ? (departureDate || null) : null,
         end_date: dateMode === 'fixed' && departureDate ? (calcEndDate(departureDate, durationDays) || null) : null,
@@ -675,6 +680,13 @@ export function TripEditor({ trip, open, onClose }: TripEditorProps) {
                   <p className="text-xs text-slate-500">Aparece en la sección de destacados</p>
                 </div>
                 <Switch checked={isFeatured} onCheckedChange={setIsFeatured} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Con Cachi y Nano</Label>
+                  <p className="text-xs text-slate-500">Aparece al filtrar por &quot;Con Cachi y Nano&quot; en la página principal</p>
+                </div>
+                <Switch checked={conCachiYNano} onCheckedChange={setConCachiYNano} />
               </div>
             </div>
           )}

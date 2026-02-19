@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from '@/lib/rate-limit';
 import { render } from '@react-email/components';
 import { BookingConfirmationEmail } from '@/lib/email-templates/BookingConfirmationEmail';
+import { resend, isResendConfigured, FROM_EMAIL } from '@/lib/resend';
+import { clientWelcomeHtml } from '@/lib/email-templates';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -135,6 +137,16 @@ export async function POST(request: NextRequest) {
           console.error(`Error creating client for passenger ${i}:`, clientError);
         } else if (newClient) {
           resolvedClientId = newClient.id;
+          if (p.email && isResendConfigured() && resend) {
+            clientWelcomeHtml({ name: p.full_name })
+              .then((html) => resend!.emails.send({
+                from: FROM_EMAIL,
+                to: p.email,
+                subject: 'Bienvenido a Headway Trips',
+                html,
+              }))
+              .catch((err) => console.error('[Client welcome] Email error:', err));
+          }
         }
       }
 

@@ -73,6 +73,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       pdf_url: body.pdf_url || null,
       available: body.is_active ?? true,
       featured: body.is_featured || false,
+      con_cachi_y_nano: body.con_cachi_y_nano ?? false,
       group_size_max: body.max_capacity ?? 20,
       departure_date: body.departure_date || null,
       deposit_percentage: body.deposit_percentage ?? 10,

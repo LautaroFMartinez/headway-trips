@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generateBookingToken } from '@/lib/booking-tokens';
+import { resend, isResendConfigured, FROM_EMAIL } from '@/lib/resend';
+import { clientWelcomeHtml } from '@/lib/email-templates';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+function sendClientWelcomeIfNew(to: string, name: string) {
+  if (!to || !isResendConfigured() || !resend) return;
+  clientWelcomeHtml({ name })
+    .then((html) => resend!.emails.send({ from: FROM_EMAIL, to, subject: 'Bienvenido a Headway Trips', html }))
+    .catch((err) => console.error('[Client welcome] Email error:', err));
+}
 
 // GET - Lista de reservas con filtros
 export async function GET(request: NextRequest) {
@@ -116,7 +125,12 @@ export async function POST(request: NextRequest) {
             })
             .select('id')
             .single();
-          if (newClient) clientId = newClient.id;
+          if (newClient) {
+            clientId = newClient.id;
+            if (body.customer_email) {
+              sendClientWelcomeIfNew(body.customer_email, body.customer_name);
+            }
+          }
         }
       } catch {
         // Best-effort: si falla, la reserva se crea igual
@@ -132,7 +146,12 @@ export async function POST(request: NextRequest) {
           })
           .select('id')
           .single();
-        if (newClient) clientId = newClient.id;
+        if (newClient) {
+          clientId = newClient.id;
+          if (body.customer_email) {
+            sendClientWelcomeIfNew(body.customer_email, body.customer_name);
+          }
+        }
       } catch {
         // Best-effort
       }

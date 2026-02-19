@@ -15,22 +15,25 @@ import { trips as staticTrips, type Trip } from '@/lib/trips-data';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 
+// Keys lowercase for lookup via region.toLowerCase(); values are display labels
 const regionLabels: Record<string, string> = {
-  sudamerica: 'Sudamerica',
-  norteamerica: 'Norteamerica',
+  sudamerica: 'Sudamérica',
+  norteamerica: 'Norteamérica',
+  norteamérica: 'Norteamérica',
   caribe: 'Caribe',
   europa: 'Europa',
   escandinavia: 'Escandinavia',
   'medio-oriente': 'Medio Oriente',
   asia: 'Asia',
-  oceania: 'Oceania',
-  africa: 'Africa',
+  oceania: 'Oceanía',
+  africa: 'África',
 };
 
 interface TripFilters {
   priceRange: [number, number];
   durationRange: [number, number];
   regions: string[];
+  conCachiYNano: boolean;
 }
 
 export function DestinationsGrid() {
@@ -81,6 +84,7 @@ export function DestinationsGrid() {
     priceRange: [priceMin, priceMax],
     durationRange: [durationMin, durationMax],
     regions: [],
+    conCachiYNano: false,
   });
 
   // Update filters when trips change
@@ -94,11 +98,38 @@ export function DestinationsGrid() {
     }
   }, [isLoadingTrips, priceMin, priceMax, durationMin, durationMax]);
 
-  // Initialize search from URL
+  // Restore filters and search from URL whenever URL changes (e.g. back/forward or initial load)
   useEffect(() => {
-    const searchParam = searchParams.get('q');
-    if (searchParam) setSearchQuery(searchParam);
-  }, [searchParams]);
+    if (isLoadingTrips) return;
+    const q = searchParams.get('q');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const minDays = searchParams.get('minDays');
+    const maxDays = searchParams.get('maxDays');
+    const regionsParam = searchParams.get('regions');
+    const cachi = searchParams.get('cachi');
+    const hasAny = q != null || minPrice != null || maxPrice != null || minDays != null || maxDays != null || regionsParam != null || cachi != null;
+    if (!hasAny) return;
+    if (q != null) setSearchQuery(q);
+    const parseNum = (v: string | null, fallback: number, min: number, max: number) => {
+      if (v == null) return fallback;
+      const n = Number(v);
+      return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+    };
+    const pLow = parseNum(minPrice, priceMin, priceMin, priceMax);
+    const pHigh = parseNum(maxPrice, priceMax, priceMin, priceMax);
+    const dLow = parseNum(minDays, durationMin, durationMin, durationMax);
+    const dHigh = parseNum(maxDays, durationMax, durationMin, durationMax);
+    const regions = regionsParam ? regionsParam.split(',').map((r) => r.trim()).filter(Boolean) : [];
+    const conCachiYNano = cachi === '1' || cachi === 'true';
+    setFilters((prev) => ({
+      ...prev,
+      priceRange: [Math.min(pLow, pHigh), Math.max(pLow, pHigh)] as [number, number],
+      durationRange: [Math.min(dLow, dHigh), Math.max(dLow, dHigh)] as [number, number],
+      regions,
+      conCachiYNano,
+    }));
+  }, [searchParams, isLoadingTrips, priceMin, priceMax, durationMin, durationMax]);
 
   // Filter trips
   const filteredTrips = useMemo(() => {
@@ -111,18 +142,29 @@ export function DestinationsGrid() {
       if (trip.priceValue < filters.priceRange[0] || trip.priceValue > filters.priceRange[1]) return false;
       if (trip.durationDays < filters.durationRange[0] || trip.durationDays > filters.durationRange[1]) return false;
       if (filters.regions.length > 0 && !filters.regions.includes(trip.region)) return false;
+      if (filters.conCachiYNano && !trip.conCachiYNano) return false;
       return true;
     });
   }, [trips, debouncedQuery, filters]);
 
-  // Update URL
+  // Update URL with all filter state so views are shareable and survive reload
   const updateURL = useCallback(() => {
     const params = new URLSearchParams();
-    if (searchQuery.trim()) params.set('q', searchQuery);
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    if (filters.priceRange[0] !== priceMin || filters.priceRange[1] !== priceMax) {
+      params.set('minPrice', String(filters.priceRange[0]));
+      params.set('maxPrice', String(filters.priceRange[1]));
+    }
+    if (filters.durationRange[0] !== durationMin || filters.durationRange[1] !== durationMax) {
+      params.set('minDays', String(filters.durationRange[0]));
+      params.set('maxDays', String(filters.durationRange[1]));
+    }
+    if (filters.regions.length > 0) params.set('regions', filters.regions.join(','));
+    if (filters.conCachiYNano) params.set('cachi', '1');
     const queryString = params.toString();
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
     router.replace(newUrl, { scroll: false });
-  }, [searchQuery, pathname, router]);
+  }, [searchQuery, filters, pathname, router, priceMin, priceMax, durationMin, durationMax]);
 
   useEffect(() => {
     const timer = setTimeout(updateURL, 500);
@@ -132,13 +174,15 @@ export function DestinationsGrid() {
   const activeFiltersCount = 
     (filters.priceRange[0] !== priceMin || filters.priceRange[1] !== priceMax ? 1 : 0) + 
     (filters.durationRange[0] !== durationMin || filters.durationRange[1] !== durationMax ? 1 : 0) + 
-    filters.regions.length;
+    filters.regions.length +
+    (filters.conCachiYNano ? 1 : 0);
 
   const resetFilters = () => {
     setFilters({
       priceRange: [priceMin, priceMax],
       durationRange: [durationMin, durationMax],
       regions: [],
+      conCachiYNano: false,
     });
     setSearchQuery('');
   };
@@ -249,6 +293,25 @@ export function DestinationsGrid() {
                     />
                   </div>
 
+                  {/* Con Cachi y Nano */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="filter-cachi-nano"
+                        checked={filters.conCachiYNano}
+                        onCheckedChange={(checked) =>
+                          setFilters((prev) => ({ ...prev, conCachiYNano: checked === true }))
+                        }
+                      />
+                      <label htmlFor="filter-cachi-nano" className="text-sm font-medium cursor-pointer flex-1">
+                        Con Cachi y Nano
+                        <span className="text-muted-foreground ml-2 font-normal">
+                          ({trips.filter((t) => t.conCachiYNano).length})
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
                   {/* Regions */}
                   <div className="space-y-4">
                     <Label className="text-sm font-medium">Regiones</Label>
@@ -261,7 +324,7 @@ export function DestinationsGrid() {
                             onCheckedChange={() => toggleRegion(region)}
                           />
                           <label htmlFor={`region-${region}`} className="text-sm cursor-pointer flex-1">
-                            {regionLabels[region] || region}
+                            {regionLabels[region?.toLowerCase() ?? ''] || region}
                             <span className="text-muted-foreground ml-2">
                               ({trips.filter((t) => t.region === region).length})
                             </span>
@@ -285,7 +348,7 @@ export function DestinationsGrid() {
             )}
           </div>
 
-          {/* Quick Region Pills */}
+          {/* Quick Region Pills + Con Cachi y Nano */}
           <div className="flex flex-wrap gap-2 justify-center">
             <button
               onClick={() => setFilters((prev) => ({ ...prev, regions: [] }))}
@@ -298,6 +361,19 @@ export function DestinationsGrid() {
             >
               Todos
             </button>
+            <button
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, conCachiYNano: !prev.conCachiYNano }))
+              }
+              className={cn(
+                'px-4 py-2 rounded-full text-sm font-medium transition-all',
+                filters.conCachiYNano
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-background border border-border text-muted-foreground hover:border-primary hover:text-foreground'
+              )}
+            >
+              Con Cachi y Nano
+            </button>
             {allRegions.slice(0, 5).map((region) => (
               <button
                 key={region}
@@ -309,7 +385,7 @@ export function DestinationsGrid() {
                     : 'bg-background border border-border text-muted-foreground hover:border-primary hover:text-foreground'
                 )}
               >
-                {regionLabels[region] || region}
+                {regionLabels[region?.toLowerCase() ?? ''] || region}
               </button>
             ))}
           </div>

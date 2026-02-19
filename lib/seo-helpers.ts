@@ -22,7 +22,7 @@ export function generateSEOMetadata({ title, description, url, image = '/og-imag
   return {
     title: fullTitle,
     description,
-    keywords: [...keywords, 'viajes', 'turismo', 'Argentina', 'Headway Trips'],
+    keywords: [...keywords, 'viajes', 'turismo', 'Europa', 'viajes Europa', 'Headway Trips'],
     authors: author ? [{ name: author }] : [{ name: siteName }],
     creator: siteName,
     publisher: siteName,
@@ -31,7 +31,7 @@ export function generateSEOMetadata({ title, description, url, image = '/og-imag
     },
     openGraph: {
       type,
-      locale: 'es_AR',
+      locale: 'es_ES',
       url: fullUrl,
       siteName,
       title: fullTitle,
@@ -81,7 +81,6 @@ export function generateTouristDestinationSchema(destination: { name: string; de
     ...(destination.address && {
       address: {
         '@type': 'PostalAddress',
-        addressCountry: 'AR',
         addressLocality: destination.address,
       },
     }),
@@ -99,7 +98,7 @@ export function generateTripOfferSchema(trip: { name: string; description: strin
     offers: {
       '@type': 'Offer',
       price: trip.price,
-      priceCurrency: trip.currency || 'ARS',
+      priceCurrency: trip.currency || 'EUR',
       availability: trip.availability || 'https://schema.org/InStock',
       url: trip.url,
     },
@@ -131,7 +130,7 @@ export function generateOrganizationSchema() {
     name: 'Headway Trips',
     url: 'https://headwaytrips.com',
     logo: 'https://headwaytrips.com/icono.png',
-    description: 'Tu agencia de viajes de confianza en Argentina',
+    description: 'Agencia de viajes internacional especializada en Europa. Experiencias para viajeros de 20 a 30 años.',
     sameAs: ['https://facebook.com/headwaytrips', 'https://instagram.com/headwaytrips', 'https://twitter.com/headwaytrips'],
   };
 }
@@ -143,7 +142,7 @@ export function generateWebPageSchema({ title, description, url }: { title: stri
     name: title,
     description,
     url: `https://headwaytrips.com${url}`,
-    inLanguage: 'es-AR',
+    inLanguage: 'es-ES',
     isPartOf: {
       '@type': 'WebSite',
       name: 'Headway Trips',
@@ -240,21 +239,20 @@ export function generateLocalBusinessSchema() {
     url: 'https://headwaytrips.com',
     logo: 'https://headwaytrips.com/icono.png',
     image: 'https://headwaytrips.com/og-image.jpg',
-    description: 'Tu agencia de viajes de confianza en Argentina. Creamos experiencias de viaje inolvidables.',
+    description: 'Agencia de viajes internacional especializada en Europa. Creamos experiencias de viaje inolvidables para viajeros de 20 a 30 años.',
     telephone: '+525527118391',
     email: 'info@headwaytrips.com',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Buenos Aires',
-      addressLocality: 'Buenos Aires',
-      addressRegion: 'CABA',
-      postalCode: '1000',
-      addressCountry: 'AR',
+      addressLocality: 'Madrid',
+      addressRegion: 'Madrid',
+      postalCode: '28001',
+      addressCountry: 'ES',
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: -34.6037,
-      longitude: -58.3816,
+      latitude: 40.4168,
+      longitude: -3.7038,
     },
     openingHoursSpecification: [
       {

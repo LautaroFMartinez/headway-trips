@@ -14,6 +14,7 @@ interface Section {
 interface ProposalSidebarProps {
   sections: Section[];
   tripId: string;
+  pdfUrl?: string;
   contact: ProposalContact;
   maxCapacity?: number;
   currentBookings?: number;
@@ -21,7 +22,7 @@ interface ProposalSidebarProps {
   onBookingClick?: () => void;
 }
 
-export function ProposalSidebar({ sections, tripId, contact, maxCapacity, currentBookings, price, onBookingClick }: ProposalSidebarProps) {
+export function ProposalSidebar({ sections, tripId, pdfUrl, contact, maxCapacity, currentBookings, price, onBookingClick }: ProposalSidebarProps) {
   const [activeSection, setActiveSection] = useState<string>('');
   const [contactExpanded, setContactExpanded] = useState(true);
 
@@ -60,10 +61,12 @@ export function ProposalSidebar({ sections, tripId, contact, maxCapacity, curren
 
   return (
     <div className="sticky top-24 space-y-6">
-      {/* Botón Descargar PDF */}
+      {/* Botón Descargar PDF: externo (Supabase) → nueva pestaña; generado por API → descarga */}
       <a
-        href={`/api/trips/${tripId}/pdf`}
-        download
+        href={pdfUrl || `/api/trips/${tripId}/pdf`}
+        download={!pdfUrl}
+        target={pdfUrl ? '_blank' : undefined}
+        rel={pdfUrl ? 'noopener noreferrer' : undefined}
         className="flex items-center justify-center gap-2 w-full bg-primary text-white py-3 px-4 rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-md"
       >
         <Download className="w-5 h-5" />

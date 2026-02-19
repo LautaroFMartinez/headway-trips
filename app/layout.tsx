@@ -26,12 +26,12 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Headway Trips - Tu Agencia de Viajes de Confianza',
+    default: 'Headway Trips - Viajes a Europa para jóvenes',
     template: '%s | Headway Trips',
   },
   manifest: '/manifest.json', // Link manifest
-  description: 'Descubrí destinos únicos alrededor del mundo con Headway Trips. Creamos experiencias de viaje inolvidables en Europa, Asia, América, Oceanía y más.',
-  keywords: ['viajes', 'turismo', 'agencia de viajes', 'viajes internacionales', 'París', 'Tokio', 'Nueva York', 'Dubai', 'Headway Trips', 'viajes globales'],
+  description: 'Agencia de viajes internacional especializada en Europa. Experiencias para viajeros de 20 a 30 años: rutas, escapadas urbanas, aventura y cultura. París, Roma, Barcelona, Lisboa y más.',
+  keywords: ['viajes Europa', 'turismo Europa', 'agencia de viajes internacional', 'viajes jóvenes', 'París', 'Roma', 'Barcelona', 'Lisboa', 'Amsterdam', 'Praga', 'Headway Trips', 'gap year', 'viajes 20-30'],
   authors: [{ name: 'Headway Trips' }],
   creator: 'Headway Trips',
   publisher: 'Headway Trips',
@@ -46,24 +46,24 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://headwaytrips.com'),
   openGraph: {
     type: 'website',
-    locale: 'es_AR',
+    locale: 'es_ES',
     url: 'https://headwaytrips.com',
     siteName: 'Headway Trips',
-    title: 'Headway Trips - Tu Agencia de Viajes de Confianza',
-    description: 'Descubrí destinos únicos con Headway Trips. Creamos experiencias de viaje inolvidables.',
+    title: 'Headway Trips - Viajes a Europa para jóvenes',
+    description: 'Agencia de viajes internacional especializada en Europa. Experiencias inolvidables para viajeros de 20 a 30 años.',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Headway Trips - Agencia de Viajes',
+        alt: 'Headway Trips - Agencia de Viajes Internacional Europa',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Headway Trips - Tu Agencia de Viajes',
-    description: 'Descubrí destinos únicos con Headway Trips.',
+    title: 'Headway Trips - Viajes a Europa para jóvenes',
+    description: 'Agencia de viajes internacional especializada en Europa. Experiencias para viajeros de 20 a 30 años.',
     images: ['/og-image.jpg'],
   },
   robots: {

@@ -3,6 +3,8 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Shield, Award, Users, HeartHandshake, Globe, MapPin, Plane, Star } from 'lucide-react';
 import { generateSEOMetadata, generateOrganizationSchema, generateBreadcrumbSchema } from '@/lib/seo-helpers';
+import { TeamMemberCard } from '@/components/team-member-card';
+import { teamMembers } from '@/lib/nosotros-data';
 
 export const metadata: Metadata = generateSEOMetadata({
   title: 'Sobre Nosotros',
@@ -96,8 +98,30 @@ export default function NosotrosPage() {
             {/* aca poner timeline con fotitos de ig etc*/}
         </section>
 
-        {/* Valores */}
+        {/* Nuestro equipo */}
         <section className="py-20 md:py-28 bg-secondary/30">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-12 md:mb-16">
+              <span className="inline-block text-sm font-medium text-accent uppercase tracking-widest mb-3">
+                Nuestro equipo
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Los rostros detrás de <span className="font-serif italic text-primary">Headway Trips</span>
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Tres apasionados por los viajes que diseñan cada experiencia con dedicación
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {teamMembers.map((member) => (
+                <TeamMemberCard key={member.name} member={member} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Valores */}
+        <section className="py-20 md:py-28 bg-background">
           <div className="container mx-auto px-6">
             <div className="text-center mb-12 md:mb-16">
               <span className="inline-block text-sm font-medium text-accent uppercase tracking-widest mb-3">
@@ -109,6 +133,23 @@ export default function NosotrosPage() {
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Cada decision que tomamos esta guiada por estos principios fundamentales
               </p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+              {values.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.title}
+                    className="rounded-2xl border border-border bg-card p-6 text-center shadow-sm"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>

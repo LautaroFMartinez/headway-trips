@@ -10,9 +10,9 @@ import { generateSEOMetadata, generateBreadcrumbSchema } from '@/lib/seo-helpers
 
 export const metadata: Metadata = generateSEOMetadata({
   title: 'Blog de Viajes',
-  description: 'Noticias, consejos, guías y tips para tus próximas aventuras. Descubrí los mejores destinos de Argentina y el mundo.',
+  description: 'Noticias, consejos, guías y tips para tus próximas aventuras. Descubrí los mejores destinos de Europa y el mundo.',
   url: '/blog',
-  keywords: ['blog viajes', 'consejos viaje', 'guías turismo', 'destinos Argentina'],
+  keywords: ['blog viajes', 'consejos viaje', 'guías turismo', 'destinos Europa'],
 });
 
 export const revalidate = 60; // Revalidate every minute

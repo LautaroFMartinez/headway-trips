@@ -638,10 +638,10 @@ function getMealBadges(meals: { breakfast: boolean; lunch: boolean; dinner: bool
 function getEssenceQuote(region?: string): string {
   const quotes: Record<string, string> = {
     sudamerica: '"Donde la naturaleza habla y el alma escucha"',
-    patagonia: '"Donde los glaciares tocan el cielo y cada amanecer cuenta una historia"',
-    caribe: '"Donde el mar azul se funde con tus sueños"',
     europa: '"Donde la historia cobra vida en cada esquina"',
+    caribe: '"Donde el mar azul se funde con tus sueños"',
     asia: '"Donde lo ancestral y lo moderno se encuentran"',
+    oceania: '"Donde los paisajes de película se hacen realidad"',
   };
   return quotes[region?.toLowerCase() || ''] || '"Tu próxima aventura comienza aquí"';
 }

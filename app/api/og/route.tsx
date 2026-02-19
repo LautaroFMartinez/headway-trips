@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   
   const title = searchParams.get('title') || 'Headway Trips';
-  const subtitle = searchParams.get('subtitle') || 'Tu agencia de viajes de confianza';
+  const subtitle = searchParams.get('subtitle') || 'Agencia de viajes internacional · Europa y el mundo';
   const destination = searchParams.get('destination') || '';
 
   return new ImageResponse(

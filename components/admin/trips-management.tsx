@@ -39,6 +39,7 @@ interface Trip {
   itinerary?: string;
   is_featured: boolean;
   is_active: boolean;
+  con_cachi_y_nano?: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -109,7 +109,7 @@ export function FlightBlockEditor({ block }: FlightBlockEditorProps) {
                       <Input
                         value={segment.airline}
                         onChange={(e) => updateSegment(segment.id, { airline: e.target.value })}
-                        placeholder="Aerolíneas Argentinas"
+                        placeholder="Ej: Iberia, Lufthansa, Ryanair"
                       />
                     </div>
                     <div className="space-y-1">

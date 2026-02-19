@@ -45,7 +45,7 @@ export async function generateMetadata({
     url: `/blog/${post.slug}`,
     image: `/api/og?title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(post.excerpt.slice(0, 80))}`,
     type: 'article',
-    keywords: [post.category, 'blog viajes', 'Argentina'],
+    keywords: [post.category, 'blog viajes', 'Europa'],
     author: post.author.name,
     publishedTime: post.publishedAt,
   });

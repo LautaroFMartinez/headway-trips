@@ -21,11 +21,15 @@ export function TripGrid() {
   const { wishlist, toggleWishlist } = useWishlist();
   const regions = getRegions();
 
+  // Keys lowercase to match trip.region when normalized (lookup via region.toLowerCase())
   const regionLabels: Record<string, string> = {
-    patagonia: 'Patagonia',
-    litoral: 'Litoral',
-    cuyo: 'Cuyo',
-    norte: 'Norte',
+    europa: 'Europa',
+    asia: 'Asia',
+    sudamerica: 'Sudamérica',
+    caribe: 'Caribe',
+    oceania: 'Oceanía',
+    norteamérica: 'Norteamérica',
+    norteamerica: 'Norteamérica',
   };
 
   const filteredTrips = useMemo(() => {
@@ -79,7 +83,7 @@ export function TripGrid() {
                 </button>
                 {regions.map((region) => (
                   <button key={region} onClick={() => setSelectedRegion(region)} className={cn('px-3 py-1.5 rounded-full text-xs font-medium transition-all', selectedRegion === region ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80')}>
-                    {regionLabels[region] || region}
+                    {regionLabels[region?.toLowerCase() ?? ''] || region}
                   </button>
                 ))}
               </div>

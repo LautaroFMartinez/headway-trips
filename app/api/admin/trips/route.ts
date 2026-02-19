@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { resend, isResendConfigured, FROM_EMAIL } from '@/lib/resend';
+import { newTripAnnouncementHtml } from '@/lib/email-templates';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+const NEWSLETTER_BATCH_SIZE = 10;
 
 // GET - Lista de viajes con filtros y paginación
 export async function GET(request: NextRequest) {
@@ -64,6 +68,7 @@ export async function GET(request: NextRequest) {
       content_blocks: t.content_blocks || [],
       is_featured: t.featured || false,
       is_active: t.available ?? true,
+      con_cachi_y_nano: t.con_cachi_y_nano ?? false,
       max_capacity: t.group_size_max ?? 20,
       current_bookings: t.booking_count ?? 0,
       departure_date: t.departure_date || null,
@@ -153,6 +158,7 @@ export async function POST(request: NextRequest) {
         accommodation_type: 'Hotel 4 estrellas',
         available: body.is_active ?? true,
         featured: body.is_featured || false,
+        con_cachi_y_nano: body.con_cachi_y_nano ?? false,
         group_size_max: body.max_capacity ?? 20,
         departure_date: body.departure_date || null,
         deposit_percentage: body.deposit_percentage ?? 10,
@@ -166,6 +172,38 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Error creating trip:', error.message, error.details, error.hint);
       return NextResponse.json({ error: 'Error al crear el viaje', details: error.message }, { status: 500 });
+    }
+
+    // Notificar al newsletter si está activado (maybeSingle: el setting puede no existir aún)
+    const { data: settingRow } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'newsletter_notify_on_new_trip')
+      .maybeSingle();
+
+    const notifyNewsletter = settingRow == null ? true : (settingRow.value === true || settingRow.value === 'true');
+
+    if (notifyNewsletter && isResendConfigured() && resend) {
+      const { data: subscribers } = await supabase
+        .from('newsletter_subscribers')
+        .select('email')
+        .eq('status', 'active');
+
+      const emails = (subscribers || []).map((s) => s.email).filter(Boolean);
+      if (emails.length > 0) {
+        const html = await newTripAnnouncementHtml({
+          tripTitle: trip.title,
+          tripId: trip.id,
+          subtitle: trip.subtitle || undefined,
+        });
+        const subject = `Nuevo viaje: ${trip.title}`;
+        for (let i = 0; i < emails.length; i += NEWSLETTER_BATCH_SIZE) {
+          const batch = emails.slice(i, i + NEWSLETTER_BATCH_SIZE);
+          await Promise.allSettled(
+            batch.map((to) => resend!.emails.send({ from: FROM_EMAIL, to, subject, html }))
+          );
+        }
+      }
     }
 
     return NextResponse.json(trip, { status: 201 });

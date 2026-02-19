@@ -428,7 +428,7 @@ function ClientDetailDialog({
                   </div>
                   <div className="space-y-2">
                     <Label>País de emisión</Label>
-                    <Input value={form.passport_issuing_country} onChange={(e) => setForm({ ...form, passport_issuing_country: e.target.value })} placeholder="Argentina" />
+                    <Input value={form.passport_issuing_country} onChange={(e) => setForm({ ...form, passport_issuing_country: e.target.value })} placeholder="España" />
                   </div>
                   <div className="space-y-2">
                     <Label>Vencimiento pasaporte</Label>
@@ -687,7 +687,7 @@ function CreateClientDialog({
               <Input
                 value={form.passport_issuing_country}
                 onChange={(e) => setForm({ ...form, passport_issuing_country: e.target.value })}
-                placeholder="Argentina"
+                placeholder="España"
               />
             </div>
             <div className="space-y-2">
@@ -703,7 +703,7 @@ function CreateClientDialog({
               <Input
                 value={form.nationality}
                 onChange={(e) => setForm({ ...form, nationality: e.target.value })}
-                placeholder="Argentina"
+                placeholder="España"
               />
             </div>
             <div className="space-y-2">

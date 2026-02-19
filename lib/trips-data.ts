@@ -16,6 +16,8 @@ export interface Trip {
   tags: string[];
   pdfUrl?: string;
   contentBlocks?: ContentBlock[];
+  /** Viajes con Cachi y Nano (filtro en home) */
+  conCachiYNano?: boolean;
 }
 
 // Datos estáticos de fallback (cuando Supabase no está disponible)
@@ -24,7 +26,7 @@ export const trips: Trip[] = [
     id: 'maldivas-grupo-mayo-2026',
     title: 'Viaje en Grupo a las Maldivas: Maafushi',
     subtitle: 'Maldivas - Mayo 2026',
-    region: 'Asia',
+    region: 'asia',
     description: 'No es un viaje. Es una experiencia que te cambia el ritmo. Un lugar en el que se vive descalzo, sin prisas, mirando el mar todos los días como si fuera la primera vez. Aguas turquesas, arena blanca, islas diminutas en medio del Océano Índico.',
     duration: '8 días / 7 noches',
     durationDays: 8,
@@ -36,25 +38,25 @@ export const trips: Trip[] = [
     tags: ['aventura', 'playa', 'grupo', 'snorkel'],
   },
   {
-    id: 'patagonia-glaciares-2026',
-    title: 'Patagonia Argentina: Glaciares y Montañas',
-    subtitle: 'El Calafate y El Chaltén',
-    region: 'Sudamerica',
-    description: 'Descubrí la majestuosidad de la Patagonia argentina. Caminá sobre el glaciar más famoso del mundo, navegá entre icebergs milenarios y recorré senderos con vistas a montañas que quitan el aliento.',
-    duration: '7 días / 6 noches',
-    durationDays: 7,
-    price: 'USD $1,850',
-    priceValue: 1850,
-    image: 'https://images.unsplash.com/photo-1589909202802-8f4aadce1849?w=800&h=600&fit=crop',
-    heroImage: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600&h=900&fit=crop',
-    highlights: ['Glaciar Perito Moreno', 'Trekking en El Chaltén', 'Navegación', 'Monte Fitz Roy'],
-    tags: ['aventura', 'trekking', 'glaciares', 'naturaleza'],
+    id: 'europa-clasica-2026',
+    title: 'Europa Clásica: París y Roma',
+    subtitle: 'Francia e Italia',
+    region: 'europa',
+    description: 'Descubrí dos de las ciudades más emblemáticas de Europa. Arte, historia, gastronomía y la magia de pasear por París y Roma en un solo viaje pensado para viajeros jóvenes.',
+    duration: '10 días / 9 noches',
+    durationDays: 10,
+    price: 'USD $2,400',
+    priceValue: 2400,
+    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&h=600&fit=crop',
+    heroImage: 'https://images.unsplash.com/photo-1523531294919-4f061f0c4738?w=1600&h=900&fit=crop',
+    highlights: ['Torre Eiffel y Louvre', 'Coliseo y Vaticano', 'Gastronomía francesa e italiana', 'Barrios con encanto'],
+    tags: ['aventura', 'cultura', 'gastronomía', 'Europa'],
   },
   {
     id: 'japon-tradicion-2026',
     title: 'Japón: Tradición y Modernidad',
     subtitle: 'Tokio, Kioto y Osaka',
-    region: 'Asia',
+    region: 'asia',
     description: 'Sumérgete en la fascinante cultura japonesa. Desde los templos milenarios de Kioto hasta los rascacielos futuristas de Tokio, este viaje te llevará por los contrastes únicos del país del sol naciente.',
     duration: '12 días / 11 noches',
     durationDays: 12,
@@ -69,7 +71,7 @@ export const trips: Trip[] = [
     id: 'riviera-maya-2026',
     title: 'Riviera Maya All Inclusive',
     subtitle: 'Cancún y Playa del Carmen',
-    region: 'Norteamérica',
+    region: 'norteamerica',
     description: 'Playas de arena blanca, aguas turquesas y la magia de la cultura maya. Relax total en resort all inclusive con excursiones a cenotes sagrados, ruinas de Tulum y la vibrante vida de Playa del Carmen.',
     duration: '7 días / 6 noches',
     durationDays: 7,

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { resend, isResendConfigured, FROM_EMAIL } from '@/lib/resend';
+import { clientWelcomeHtml } from '@/lib/email-templates';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -119,6 +121,17 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Error creating client:', error);
       return NextResponse.json({ error: 'Error al crear el cliente', details: error.message }, { status: 500 });
+    }
+
+    if (client.email && isResendConfigured() && resend) {
+      clientWelcomeHtml({ name: client.full_name })
+        .then((html) => resend!.emails.send({
+          from: FROM_EMAIL,
+          to: client.email,
+          subject: 'Bienvenido a Headway Trips',
+          html,
+        }))
+        .catch((err) => console.error('[Client welcome] Email error:', err));
     }
 
     return NextResponse.json(client, { status: 201 });

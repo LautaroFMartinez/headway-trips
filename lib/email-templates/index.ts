@@ -6,6 +6,9 @@ import { ContactAdminNotificationEmail } from './ContactAdminNotification';
 import { BookingReminderEmail } from './BookingReminderEmail';
 import { TripUpdateEmail } from './TripUpdateEmail';
 import { NewBookingNotificationEmail } from './NewBookingNotificationEmail';
+import { NewsletterWelcomeEmail } from './NewsletterWelcomeEmail';
+import { NewTripAnnouncementEmail } from './NewTripAnnouncementEmail';
+import { ClientWelcomeEmail } from './ClientWelcomeEmail';
 
 // Quote Customer Confirmation
 
@@ -160,4 +163,60 @@ export async function newBookingNotificationText(
   props: NewBookingNotificationProps
 ): Promise<string> {
   return render(NewBookingNotificationEmail(props), { plainText: true });
+}
+
+// Newsletter Welcome
+
+interface NewsletterWelcomeProps {
+  name?: string;
+}
+
+export async function newsletterWelcomeHtml(
+  props: NewsletterWelcomeProps = {}
+): Promise<string> {
+  return render(NewsletterWelcomeEmail(props));
+}
+
+export async function newsletterWelcomeText(
+  props: NewsletterWelcomeProps = {}
+): Promise<string> {
+  return render(NewsletterWelcomeEmail(props), { plainText: true });
+}
+
+// New Trip Announcement
+
+interface NewTripAnnouncementProps {
+  tripTitle: string;
+  tripId: string;
+  subtitle?: string;
+}
+
+export async function newTripAnnouncementHtml(
+  props: NewTripAnnouncementProps
+): Promise<string> {
+  return render(NewTripAnnouncementEmail(props));
+}
+
+export async function newTripAnnouncementText(
+  props: NewTripAnnouncementProps
+): Promise<string> {
+  return render(NewTripAnnouncementEmail(props), { plainText: true });
+}
+
+// Client Welcome
+
+interface ClientWelcomeProps {
+  name?: string;
+}
+
+export async function clientWelcomeHtml(
+  props: ClientWelcomeProps = {}
+): Promise<string> {
+  return render(ClientWelcomeEmail(props));
+}
+
+export async function clientWelcomeText(
+  props: ClientWelcomeProps = {}
+): Promise<string> {
+  return render(ClientWelcomeEmail(props), { plainText: true });
 }

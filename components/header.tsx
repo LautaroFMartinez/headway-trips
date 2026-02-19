@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useSmoothScroll } from '@/hooks/use-smooth-scroll';
@@ -57,7 +57,6 @@ export function Header() {
               { href: '/blog', label: 'Blog' },
               { href: '/nosotros', label: 'Nosotros' },
               { href: '/#contacto', label: 'Contacto' },
-              { href: '/mis-reservas', label: 'Mis Reservas' },
             ].map((link) => (
               <Link
                 key={link.href}
@@ -76,6 +75,18 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/mis-reservas"
+              className={`p-2.5 rounded-lg transition-colors ${
+                isOverHero
+                  ? 'text-white/90 hover:text-white hover:bg-white/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+              }`}
+              aria-label="Mis Reservas"
+              style={heroTextShadow}
+            >
+              <User className="h-5 w-5" />
+            </Link>
             <Link href="/#destinos" onClick={handleSmoothScroll} className="hidden md:inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-primary/90 transition-all">
               Explorar destinos
             </Link>

@@ -27,7 +27,7 @@ test.describe('SEO - Meta tags', () => {
 
 test.describe('SEO - Structured Data', () => {
   test('viaje detalle tiene JSON-LD si hay datos', async ({ page }) => {
-    await page.goto('/viaje/bariloche');
+    await page.goto('/viaje/europa-clasica-2026');
 
     const jsonLdScripts = page.locator('script[type="application/ld+json"]');
     const count = await jsonLdScripts.count();

@@ -308,7 +308,7 @@ export function ClientDetailsForm({
             <Input
               value={current.nationality}
               onChange={(e) => updateField(activePassenger, 'nationality', e.target.value)}
-              placeholder="Argentina"
+              placeholder="España"
             />
           </div>
           <div className="space-y-1.5">
@@ -353,7 +353,7 @@ export function ClientDetailsForm({
             <Input
               value={current.passport_issuing_country}
               onChange={(e) => updateField(activePassenger, 'passport_issuing_country', e.target.value)}
-              placeholder="Argentina"
+              placeholder="España"
             />
           </div>
           <div className="space-y-1.5">

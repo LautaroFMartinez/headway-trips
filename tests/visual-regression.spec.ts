@@ -42,7 +42,7 @@ test.describe('Visual Regression - Homepage', () => {
 test.describe('Visual Regression - Trip Detail', () => {
   test('trip detail page - desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto('/viaje/bariloche');
+    await page.goto('/viaje/europa-clasica-2026');
     await page.waitForLoadState('networkidle');
     await waitForAnimations(page);
 
@@ -54,7 +54,7 @@ test.describe('Visual Regression - Trip Detail', () => {
 
   test('trip detail page - mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/viaje/bariloche');
+    await page.goto('/viaje/europa-clasica-2026');
     await page.waitForLoadState('networkidle');
     await waitForAnimations(page);
 

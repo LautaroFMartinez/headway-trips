@@ -2,14 +2,14 @@ import { test, expect } from '../helpers/fixtures';
 
 test.describe('Detalle de viaje', () => {
   test('carga página de viaje existente con contenido', async ({ page }) => {
-    await page.goto('/viaje/bariloche');
+    await page.goto('/viaje/europa-clasica-2026');
 
     // Debe tener h1 con nombre del destino
     await expect(page.locator('h1')).toBeVisible();
   });
 
   test('schema.org JSON-LD presente y válido', async ({ page }) => {
-    await page.goto('/viaje/bariloche');
+    await page.goto('/viaje/europa-clasica-2026');
 
     // Los JSON-LD se inyectan en app/viaje/[id]/page.tsx
     const jsonLdScripts = page.locator('script[type="application/ld+json"]');

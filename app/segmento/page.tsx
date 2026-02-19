@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 export const metadata: Metadata = generateSEOMetadata({
   title: 'Todos los Segmentos de Viaje | Headway Trips',
   description: 'Explorá todos nuestros tipos de viaje: por región, actividad o temporada. Encontrá el destino perfecto para tu próxima aventura.',
-  keywords: ['segmentos viaje', 'tipos de viaje', 'destinos argentina', 'turismo argentina'],
+  keywords: ['segmentos viaje', 'tipos de viaje', 'destinos Europa', 'turismo Europa'],
   url: '/segmento',
 });
 
@@ -31,7 +31,7 @@ const typeLabels = {
 };
 
 const typeDescriptions = {
-  region: 'Explorá Argentina por sus regiones más emblemáticas',
+  region: 'Explorá Europa por sus regiones más emblemáticas',
   activity: 'Encontrá viajes según tus actividades favoritas',
   season: 'Descubrí los mejores destinos para cada época del año',
 };
